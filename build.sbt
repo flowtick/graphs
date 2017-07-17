@@ -53,8 +53,8 @@ updateDocs := {
   val siteDir = (makeSite in graphs).value
   val scalaDocDir = (makeSite in coreJVM).value / "latest" / "api"
 
-  IO.copyDirectory(siteDir, tempSite / "graphs")
-  IO.copyDirectory(scalaDocDir, tempSite / "graphs" / "api")
+  IO.copyDirectory(siteDir, tempSite / "graphs", overwrite = true)
+  IO.copyDirectory(scalaDocDir, tempSite / "graphs" / "api", overwrite = true)
 
   Process("git add .", tempSite).!
   Process(Seq("git", "commit", "-m", "'update docs'"), tempSite).!
