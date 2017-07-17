@@ -6,14 +6,15 @@ A simple dependency graph and its topological order:
 ```scala
 
 import com.flowtick.graphs._ 
+import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.algorithm._ 
 
 object GraphApp extends App {
-  val graph = Graph[DefaultNode, DirectedEdge[DefaultNode]](
-    n("A") ~> n("B"),
-    n("B") ~> n("C"),
+  val graph = Graph.create[DefaultNode, Edge[DefaultNode]] { implicit graph =>
+    n("A") ~> n("B")
+    n("B") ~> n("C")
     n("D") ~> n("A")
-  )
+  }
 
   println(graph.topologicalSort)
   // List(DefaultNode(D), DefaultNode(A), DefaultNode(B), DefaultNode(C))
