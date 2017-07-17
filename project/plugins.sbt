@@ -1,0 +1,7 @@
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.5.0")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.18")
+addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.6.0")
+addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.1.1")
+addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.5")
+addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "1.2.1")
