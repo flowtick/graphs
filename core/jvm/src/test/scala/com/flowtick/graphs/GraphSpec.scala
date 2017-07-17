@@ -1,7 +1,7 @@
 package com.flowtick.graphs
 
 import com.flowtick.graphs.defaults._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class GraphSpec extends FlatSpec with Matchers {
 

@@ -10,11 +10,11 @@ case class DefaultDirectedEdge[N <: Node](label: Option[String] = None, source: 
 case class DefaultUndirectedEdge[N <: Node](label: Option[String] = None, source: N, target: N) extends UndirectedEdge[N]
 
 case class DefaultWeightedEdge[T: Numeric, N <: Node](
-                                                       value: T,
-                                                       override val label: Option[String] = None,
-                                                       override val source: N,
-                                                       override val target: N
-                                                     ) extends WeightedEdge[T, N](value, label, source, target)
+  value: T,
+  override val label: Option[String] = None,
+  override val source: N,
+  override val target: N
+) extends WeightedEdge[T, N](value, label, source, target)
 
 case class DefaultGraph[N <: Node, E <: Edge[N]](nodes: Set[N], edges: Set[E]) extends Graph[N, E] {
   val (incomingMap, outgoingMap) = {

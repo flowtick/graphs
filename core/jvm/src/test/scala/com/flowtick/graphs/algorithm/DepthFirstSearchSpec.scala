@@ -3,7 +3,7 @@ package com.flowtick.graphs.algorithm
 import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
 import org.scalamock.scalatest.proxy.MockFactory
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class DepthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
   "Dfs" should "traverse in depth first manner" in {

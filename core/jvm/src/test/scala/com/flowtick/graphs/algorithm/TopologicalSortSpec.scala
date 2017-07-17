@@ -2,7 +2,7 @@ package com.flowtick.graphs.algorithm
 
 import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class TopologicalSortSpec extends FlatSpec with Matchers {
   "Topological sort" should "sort dependent nodes" in {

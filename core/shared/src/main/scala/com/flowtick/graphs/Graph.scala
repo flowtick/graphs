@@ -29,7 +29,6 @@ trait Graph[N <: Node, E <: Edge[N]] {
 }
 
 object Graph {
-  def create[N <: Node, E <: Edge[N]](block: GraphBuilder[N, E] => Unit)
-                                     (implicit graphBuilderProvider: () => GraphBuilder[N, E]): Graph[N, E] =
+  def create[N <: Node, E <: Edge[N]](block: GraphBuilder[N, E] => Unit)(implicit graphBuilderProvider: () => GraphBuilder[N, E]): Graph[N, E] =
     graphBuilderProvider()(block)
 }

@@ -20,8 +20,8 @@ package object defaults {
   }
 
   implicit class DefaultNodeOps[N <: Node](n: N) extends NodeOps[N, Edge[N]]
-    with DirectedNodeOps[N, Edge[N]]
-    with UndirectedNodeOps[N, Edge[N]] {
+      with DirectedNodeOps[N, Edge[N]]
+      with UndirectedNodeOps[N, Edge[N]] {
     val node = n
 
     override def ~>(target: N)(implicit graphBuilder: GraphBuilder[N, Edge[N]]): N = {
