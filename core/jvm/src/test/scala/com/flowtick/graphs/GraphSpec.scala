@@ -1,17 +1,18 @@
 package com.flowtick.graphs
 
-import org.scalatest.{ FlatSpec, Matchers }
+import com.flowtick.graphs.defaults._
+import org.scalatest.{FlatSpec, Matchers}
 
 class GraphSpec extends FlatSpec with Matchers {
 
-  val graph = Graph[DefaultNode, Edge[DefaultNode]](
-    n("A") ~> n("B"),
-    n("B") ~> n("C"),
-    n("C") ~> n("D"),
-    n("D") ~> n("A"),
-    n("A") ~> n("C"),
+  val graph = Graph.create[DefaultNode, Edge[DefaultNode]] { implicit g =>
+    n("A") ~> n("B")
+    n("B") ~> n("C")
+    n("C") ~> n("D")
+    n("D") ~> n("A")
+    n("A") ~> n("C")
     n("B") ~> n("D")
-  )
+  }
 
   "Graph" should "provide incoming edges for nodes" in {
     graph.incoming(n("A")).toList should be(List(
@@ -54,15 +55,15 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph" should "provide incoming and outgoing edges for undirected edges" in {
-    val graph = Graph[DefaultNode, Edge[DefaultNode]](
-      n("A") ~ n("B"),
-      n("C") ~> n("B"),
+    val graph = Graph.create[DefaultNode, Edge[DefaultNode]] { implicit g =>
+      n("A") ~ n("B")
+      n("C") ~> n("B")
       n("D") ~> n("A")
-    )
+    }
 
     graph.incoming(n("A")).toList should be(List[Edge[DefaultNode]](
-      DefaultUndirectedEdge(None, n("A"), n("B")),
-      DefaultDirectedEdge(None, n("D"), n("A"))
+      DefaultDirectedEdge(None, n("D"), n("A")),
+      DefaultUndirectedEdge(None, n("A"), n("B"))
     ))
 
     graph.outgoing(n("A")).toList should be(List(
@@ -70,8 +71,8 @@ class GraphSpec extends FlatSpec with Matchers {
     ))
 
     graph.incoming(n("B")).toList should be(List[Edge[DefaultNode]](
-      DefaultUndirectedEdge(None, n("A"), n("B")),
-      DefaultDirectedEdge(None, n("C"), n("B"))
+      DefaultDirectedEdge(None, n("C"), n("B")),
+      DefaultUndirectedEdge(None, n("A"), n("B"))
     ))
   }
 

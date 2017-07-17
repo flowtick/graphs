@@ -1,23 +1,22 @@
 package com.flowtick.graphs.algorithm
 
 import com.flowtick.graphs._
+import com.flowtick.graphs.defaults._
 import org.scalamock.scalatest.proxy.MockFactory
 import org.scalatest.{ FlatSpec, Matchers }
 
 class BreadthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
   "Bfs" should "traverse in breadth first manner" in {
 
-    val graph = Graph[DefaultNode, DirectedEdge[DefaultNode]](
-      n("A") ~> n("B"),
-      n("A") ~> n("C"),
-      n("A") ~> n("D"),
-
-      n("B") ~> n("E"),
-      n("B") ~> n("F"),
-      n("B") ~> n("G"),
-
+    val graph = Graph.create[DefaultNode, Edge[DefaultNode]] { implicit g =>
+      n("A") ~> n("B")
+      n("A") ~> n("C")
+      n("A") ~> n("D")
+      n("B") ~> n("E")
+      n("B") ~> n("F")
+      n("B") ~> n("G")
       n("E") ~> n("H")
-    )
+    }
 
     val visitMock = mockFunction[DefaultNode, Unit](functionName("visitCallback"))
     val completeMock = mockFunction[DefaultNode, Unit](functionName("completeCallback"))
@@ -41,7 +40,7 @@ class BreadthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
       completeMock.expects(n("H"))
     }
 
-    graph.bfs(startNode = Some(n("A"))).onVisit(node => {
+    graph.bfs.find(startNode = Some(n("A"))).onVisit(node => {
       println(s"visit: $node")
       visitMock(node)
     }).onComplete(node => {
