@@ -21,4 +21,4 @@ object GraphApp extends App {
 }
 ```
 
-Check the [tests](https://bitbucket.org/flowtick/graphs/src/master/core/jvm/src/test/scala/com/drobisch/graphs/) for more examples.
+Check the [tests](https://bitbucket.org/flowtick/graphs/src/master/core/jvm/src/test/scala/com/flowtick/graphs/) for more examples.
