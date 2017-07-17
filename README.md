@@ -3,7 +3,7 @@ graphs
 
 A simple graph library for Scala and Scala.js
 
-Please check the [docs](docs/index.md)
+Please check the [docs](https://flowtick.bitbucket.io/graphs)
 
 License
 =======

@@ -43,4 +43,22 @@ lazy val graphs = (project in file("."))
     )
   ).aggregate(coreJS, coreJVM)
 
+lazy val updateDocs = taskKey[Unit]("push docs to https://flowtick.bitbucket.io")
+
+updateDocs := {
+  val tempSite = file("target") / "flowtick-site"
+  IO.delete(tempSite)
+  s"git clone git@bitbucket.org:flowtick/flowtick.bitbucket.io.git ${tempSite.absolutePath}".!
+
+  val siteDir = (makeSite in graphs).value
+  val scalaDocDir = (makeSite in coreJVM).value / "latest" / "api"
+
+  IO.copyDirectory(siteDir, tempSite / "graphs")
+  IO.copyDirectory(scalaDocDir, tempSite / "graphs" / "api")
+
+  Process("git add .", tempSite).!
+  Process(Seq("git", "commit", "-m", "'update docs'"), tempSite).!
+  Process(Seq("git", "push", "origin", "master", "--force"), tempSite).!
+}
+
 addCommandAlias("testWithCoverage", ";clean;coverage;test;coverageReport")
