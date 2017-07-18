@@ -1,6 +1,7 @@
 package com.flowtick.graphs
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 trait NodeOps[N <: Node, E <: Edge[N]] {
   val node: N
@@ -23,13 +24,31 @@ trait GraphBuilder[N <: Node, E <: Edge[N]] {
     build
   }
 
-  protected val nodes = mutable.HashSet.empty[N]
-  protected val edges = mutable.HashSet.empty[E]
+  val nodes = mutable.HashSet.empty[N]
+  val edges = mutable.HashSet.empty[E]
 
-  def addNode(node: N) = nodes += node
-  def addEdge(edge: E) = {
+  val incoming: mutable.Map[N, ListBuffer[E]] = mutable.Map[N, mutable.ListBuffer[E]]()
+  val outgoing: mutable.Map[N, ListBuffer[E]] = mutable.Map[N, mutable.ListBuffer[E]]()
+
+  def addNode(node: N): nodes.type = nodes += node
+
+  def addEdge(edge: E): edges.type = {
+    def updateIncomingAndOutgoing(e: E) = {
+      incoming.put(e.target, incoming.getOrElse(e.target, ListBuffer()) += e)
+      outgoing.put(e.source, outgoing.getOrElse(e.source, ListBuffer()) += e)
+    }
+
+    edge match {
+      case e: UndirectedEdge[N] =>
+        updateIncomingAndOutgoing(edge)
+        outgoing.put(edge.target, outgoing.getOrElse(edge.target, ListBuffer()) += edge)
+        incoming.put(edge.source, incoming.getOrElse(edge.source, ListBuffer()) += edge)
+      case _ => updateIncomingAndOutgoing(edge)
+    }
+
     addNode(edge.source)
     addNode(edge.target)
+
     edges += edge
   }
 

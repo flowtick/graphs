@@ -12,11 +12,11 @@ class DepthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
       n("1") ~> n("2")
       n("1") ~> n("9")
 
-      n("2") ~> n("3")
       n("2") ~> n("6")
+      n("2") ~> n("3")
 
-      n("3") ~> n("4")
       n("3") ~> n("5")
+      n("3") ~> n("4")
 
       n("6") ~> n("7")
       n("6") ~> n("8")

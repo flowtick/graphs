@@ -29,6 +29,15 @@ trait Graph[N <: Node, E <: Edge[N]] {
 }
 
 object Graph {
-  def create[N <: Node, E <: Edge[N]](block: GraphBuilder[N, E] => Unit)(implicit graphBuilderProvider: () => GraphBuilder[N, E]): Graph[N, E] =
+  def create[N <: Node, E <: Edge[N]](block: GraphBuilder[N, E] => Unit)
+                                     (implicit graphBuilderProvider: () => GraphBuilder[N, E]): Graph[N, E] =
     graphBuilderProvider()(block)
+}
+
+abstract class AbstractGraph[N <: Node, E <: Edge[N]](graphBuilder: GraphBuilder[N, E]) extends Graph[N, E] {
+  val edges: Set[E] = graphBuilder.edges.toSet
+  val nodes: Set[N] = graphBuilder.nodes.toSet
+
+  def incoming(node: N): Iterable[E] = graphBuilder.incoming.getOrElse(node, Iterable.empty)
+  def outgoing(node: N): Iterable[E] = graphBuilder.outgoing.getOrElse(node, Iterable.empty)
 }

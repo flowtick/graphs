@@ -9,9 +9,9 @@ class BreadthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
   "Bfs" should "traverse in breadth first manner" in {
 
     val graph = Graph.create[DefaultNode, Edge[DefaultNode]] { implicit g =>
-      n("A") ~> n("B")
-      n("A") ~> n("C")
       n("A") ~> n("D")
+      n("A") ~> n("C")
+      n("A") ~> n("B")
       n("B") ~> n("E")
       n("B") ~> n("F")
       n("B") ~> n("G")

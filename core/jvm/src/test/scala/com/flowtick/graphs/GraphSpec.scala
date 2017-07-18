@@ -36,8 +36,8 @@ class GraphSpec extends FlatSpec with Matchers {
 
   "Graph" should "provide outgoing edges for nodes" in {
     graph.outgoing(n("A")).toList should be(List(
-      DefaultDirectedEdge(None, n("A"), n("C")),
-      DefaultDirectedEdge(None, n("A"), n("B"))
+      DefaultDirectedEdge(None, n("A"), n("B")),
+      DefaultDirectedEdge(None, n("A"), n("C"))
     ))
 
     graph.outgoing(n("B")).toList should be(List(
@@ -62,8 +62,8 @@ class GraphSpec extends FlatSpec with Matchers {
     }
 
     graph.incoming(n("A")).toList should be(List[Edge[DefaultNode]](
-      DefaultDirectedEdge(None, n("D"), n("A")),
-      DefaultUndirectedEdge(None, n("A"), n("B"))
+      DefaultUndirectedEdge(None, n("A"), n("B")),
+      DefaultDirectedEdge(None, n("D"), n("A"))
     ))
 
     graph.outgoing(n("A")).toList should be(List(
@@ -71,8 +71,8 @@ class GraphSpec extends FlatSpec with Matchers {
     ))
 
     graph.incoming(n("B")).toList should be(List[Edge[DefaultNode]](
-      DefaultDirectedEdge(None, n("C"), n("B")),
-      DefaultUndirectedEdge(None, n("A"), n("B"))
+      DefaultUndirectedEdge(None, n("A"), n("B")),
+      DefaultDirectedEdge(None, n("C"), n("B"))
     ))
   }
 
