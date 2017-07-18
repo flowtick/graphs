@@ -7,9 +7,9 @@ Features
 ========
 
 * Simple graph creation API
-* Depth-first traversal (aka DFS)
-* Breadth-first traversal (aka BFS)
-* Topological Sorting using DFS
+* Depth-first traversal / search
+* Breadth-first traversal / search
+* Topological sorting
 * Dijkstras algorithm for shortest paths
 * <strike>graphml import / export</strike> (planned)
 * <strike>force based layout</strike> (planned)
@@ -32,5 +32,6 @@ graphs is published under the terms of the Apache 2.0 License. See the [LICENSE]
 
 * [Usage](usage.md)
 * [Example](example.md)
+* [Algorithms](algorithms.md)
 
 @@@

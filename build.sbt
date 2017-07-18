@@ -29,6 +29,10 @@ lazy val core = (crossProject in file(".") / "core")
 lazy val coreJS = core.js
 lazy val coreJVM = core.jvm
 
+lazy val examples = (project in file("examples"))
+      .settings(commonSettings)
+      .dependsOn(coreJVM)
+
 lazy val graphs = (project in file("."))
   .enablePlugins(ParadoxSitePlugin)
   .settings(commonSettings)
@@ -41,7 +45,7 @@ lazy val graphs = (project in file("."))
     mappings in makeSite ++= Seq(
       file("LICENSE") -> "LICENSE"
     )
-  ).aggregate(coreJS, coreJVM)
+  ).aggregate(coreJS, coreJVM, examples)
 
 lazy val updateDocs = taskKey[Unit]("push docs to https://flowtick.bitbucket.io")
 
