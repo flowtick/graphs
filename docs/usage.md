@@ -3,8 +3,10 @@ Usage
 
 Add the dependency to your build:
 
+@@@vars
 ```scala
 resolvers += Resolver.bintrayRepo("flowtick", "graphs")
 
-libraryDependencies += "com.flowtick" %% "graphs-core" % "0.1.5"
+libraryDependencies += "com.flowtick" %% "graphs-core" % "$version$"
 ```
+@@@

@@ -42,6 +42,7 @@ lazy val graphs = (project in file("."))
     test := {},
     sourceDirectory in Paradox := baseDirectory.value / "docs",
     paradoxTheme := Some(builtinParadoxTheme("generic")),
+    paradoxProperties += ("version" -> version.value),
     mappings in makeSite ++= Seq(
       file("LICENSE") -> "LICENSE"
     )
