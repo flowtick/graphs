@@ -1,8 +1,6 @@
 package com.flowtick.graphs
 
-trait Node {
-  def id: String
-}
+trait Node
 
 trait Edge[N <: Node] {
   def label: Option[String]

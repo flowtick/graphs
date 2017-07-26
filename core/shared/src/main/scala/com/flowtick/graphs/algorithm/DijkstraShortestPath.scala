@@ -16,20 +16,20 @@ class DijkstraShortestPath[T: Numeric, N <: Node, E <: WeightedEdge[T, N]](graph
    */
   def shortestPath(start: N, end: N): Option[List[N]] = {
     val numeric: Numeric[T] = implicitly[Numeric[T]]
-    val distanceMap = mutable.Map.empty[String, Double]
-    val predecessorMap = mutable.Map.empty[String, N]
+    val distanceMap = mutable.Map.empty[N, Double]
+    val predecessorMap = mutable.Map.empty[N, N]
 
     implicit val nodePriority = new Ordering[N] {
-      override def compare(x: N, y: N): Int = -distanceMap(x.id).compare(distanceMap(y.id))
+      override def compare(x: N, y: N): Int = -distanceMap(x).compare(distanceMap(y))
     }
 
     val queue = mutable.PriorityQueue.empty[N]
 
-    distanceMap.put(start.id, 0)
+    distanceMap.put(start, 0)
 
     graph.nodes.foreach { node =>
       if (node != start) {
-        distanceMap.put(node.id, Int.MaxValue)
+        distanceMap.put(node, Int.MaxValue)
       }
       queue.enqueue(node)
     }
@@ -37,24 +37,24 @@ class DijkstraShortestPath[T: Numeric, N <: Node, E <: WeightedEdge[T, N]](graph
     while (queue.nonEmpty) {
       val current = queue.dequeue()
       graph.outgoing(current).foreach { edge =>
-        val currentDistance: Double = distanceMap(current.id)
+        val currentDistance: Double = distanceMap(current)
         val newDist = currentDistance + numeric.toDouble(edge.weight)
-        if (newDist < distanceMap(edge.target.id)) {
-          distanceMap.put(edge.target.id, newDist)
-          predecessorMap.put(edge.target.id, current)
+        if (newDist < distanceMap(edge.target)) {
+          distanceMap.put(edge.target, newDist)
+          predecessorMap.put(edge.target, current)
         }
       }
     }
 
-    if (predecessorMap.get(end.id).nonEmpty) {
+    if (predecessorMap.get(end).nonEmpty) {
       val predecessors = mutable.Stack[N]()
       val predecessorList = ListBuffer.empty[N]
-      predecessorMap.get(end.id).foreach(predecessors.push)
+      predecessorMap.get(end).foreach(predecessors.push)
 
       while (predecessors.nonEmpty) {
         val currentPredecessor = predecessors.pop()
         predecessorList.prepend(currentPredecessor)
-        predecessorMap.get(currentPredecessor.id).foreach(predecessors.push)
+        predecessorMap.get(currentPredecessor).foreach(predecessors.push)
       }
 
       predecessorList.append(end)
