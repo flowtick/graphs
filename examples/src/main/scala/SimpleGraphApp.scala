@@ -1,8 +1,7 @@
-import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
 
 object SimpleGraphApp extends App {
-  val graph = Graph.create[DefaultNode, Edge[DefaultNode]] { implicit graph =>
+  val graph = DefaultGraph.create { implicit graph =>
     n("A") ~> n("B")
     n("B") ~> n("C")
     n("D") ~> n("A")

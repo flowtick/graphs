@@ -5,7 +5,7 @@ import org.scalatest.{ FlatSpec, Matchers }
 
 class GraphSpec extends FlatSpec with Matchers {
 
-  val graph = Graph.create[DefaultNode, Edge[DefaultNode]] { implicit g =>
+  val graph = DefaultGraph.create { implicit g =>
     n("A") ~> n("B")
     n("B") ~> n("C")
     n("C") ~> n("D")
@@ -55,7 +55,7 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   "Graph" should "provide incoming and outgoing edges for undirected edges" in {
-    val graph = Graph.create[DefaultNode, Edge[DefaultNode]] { implicit g =>
+    val graph = DefaultGraph.create { implicit g =>
       n("A") ~ n("B")
       n("C") ~> n("B")
       n("D") ~> n("A")

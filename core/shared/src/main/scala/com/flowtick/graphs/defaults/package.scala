@@ -3,22 +3,6 @@ package com.flowtick.graphs
 package object defaults {
   def n(id: String) = DefaultNode(id)
 
-  implicit val defaultGraphBuilderProvider = () => new GraphBuilder[DefaultNode, Edge[DefaultNode]] {
-    override def build: Graph[DefaultNode, Edge[DefaultNode]] = DefaultGraph(this)
-  }
-
-  implicit val defaultDirectedGraphBuilderProvider = () => new GraphBuilder[DefaultNode, DirectedEdge[DefaultNode]] {
-    override def build: Graph[DefaultNode, DirectedEdge[DefaultNode]] = DefaultGraph(this)
-  }
-
-  implicit val defaultUndirectedGraphBuilderProvider = () => new GraphBuilder[DefaultNode, UndirectedEdge[DefaultNode]] {
-    override def build: Graph[DefaultNode, UndirectedEdge[DefaultNode]] = DefaultGraph(this)
-  }
-
-  implicit val defaultWeightedGraphBuilderProvider = () => new GraphBuilder[DefaultNode, WeightedEdge[Int, DefaultNode]] {
-    override def build: Graph[DefaultNode, WeightedEdge[Int, DefaultNode]] = DefaultGraph(this)
-  }
-
   implicit class DefaultNodeOps[N <: Node](n: N) extends NodeOps[N, Edge[N]]
       with DirectedNodeOps[N, Edge[N]]
       with UndirectedNodeOps[N, Edge[N]] {
