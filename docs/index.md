@@ -34,5 +34,6 @@ graphs is published under the terms of the Apache 2.0 License. See the [LICENSE]
 * [Usage](usage.md)
 * [Example](example.md)
 * [Algorithms](algorithms.md)
+* [Custom Graph](custom-graph.md)
 
 @@@
