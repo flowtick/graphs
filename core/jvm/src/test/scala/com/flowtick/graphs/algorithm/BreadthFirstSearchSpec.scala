@@ -39,7 +39,7 @@ class BreadthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
       completeMock.expects(n("H"))
     }
 
-    graph.bfs.find(startNode = Some(n("A"))).onVisit(node => {
+    graph.bfs.traverse(startNode = Some(n("A"))).onVisit(node => {
       println(s"visit: $node")
       visitMock(node)
     }).onComplete(node => {

@@ -45,7 +45,7 @@ class DepthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
       completeMock.expects(n("1"))
     }
 
-    graph.dfs.find(startNode = Some(n("1"))).onVisit(node => {
+    graph.dfs.traverse(startNode = Some(n("1"))).onVisit(node => {
       println(s"visit: $node")
       visitMock(node)
     }).onComplete(node => {

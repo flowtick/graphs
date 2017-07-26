@@ -4,6 +4,6 @@ import com.flowtick.graphs.traversal.{ AdjacentNodesTraversal, FifoBuffer, Trave
 import com.flowtick.graphs.{ Edge, Graph, Node }
 
 class BreadthFirstSearch[N <: Node, E <: Edge[N]](graph: Graph[N, E]) {
-  def find(startNode: Option[N] = None): Traversal[N] =
+  def traverse(startNode: Option[N] = None): Traversal[N] =
     new AdjacentNodesTraversal[N, E](startNode, graph, () => new FifoBuffer[N]())
 }
