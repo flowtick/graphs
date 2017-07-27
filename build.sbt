@@ -6,7 +6,7 @@ lazy val commonSettings = Seq(
   crossScalaVersions := Seq(mainScalaVersion, "2.11.11", "2.10.6"),
   releaseCrossBuild := true,
   libraryDependencies ++=
-    "org.scalatest" %% "scalatest" % "3.0.1" % Test ::
+    "org.scalatest" %%% "scalatest" % "3.0.1" % Test ::
     "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % Test ::
     Nil,
   wartremoverErrors ++= Warts.unsafe.filterNot(Seq(
@@ -28,6 +28,17 @@ lazy val core = (crossProject in file(".") / "core")
 
 lazy val coreJS = core.js
 lazy val coreJVM = core.jvm
+
+lazy val graphml = (crossProject in file(".") / "graphml")
+  .enablePlugins(SiteScaladocPlugin)
+  .settings(commonSettings)
+  .settings(
+    name := "graphs-graphml",
+    libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % "1.0.7-SNAPSHOT"
+  ).dependsOn(core)
+
+lazy val graphmlJS = graphml.js
+lazy val graphmlJVM = graphml.jvm
 
 lazy val examples = (project in file("examples"))
       .settings(commonSettings)

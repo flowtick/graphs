@@ -6,12 +6,12 @@ package com.flowtick.graphs
 trait Node
 
 /**
-  * Type class to define id as string for a node type.
-  *
-  * Mainly useful for serialisation purposes
-  *
-  * @tparam T the node type
-  */
+ * Type class to define id as string for a node type.
+ *
+ * Mainly useful for serialisation purposes
+ *
+ * @tparam T the node type
+ */
 trait Identifiable[T <: Node] {
   def id(node: T): String
 }
