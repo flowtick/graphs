@@ -1,7 +1,7 @@
 package com.flowtick.graphs.graphml
 
 import com.flowtick.graphs.defaults._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.xml.Elem
 
