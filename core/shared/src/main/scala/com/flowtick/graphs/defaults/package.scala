@@ -3,6 +3,10 @@ package com.flowtick.graphs
 package object defaults {
   def n(id: String) = DefaultNode(id)
 
+  implicit def identifiable: Identifiable[DefaultNode] = new Identifiable[DefaultNode] {
+    override def id(node: DefaultNode): String = node.id
+  }
+
   implicit class DefaultNodeOps[N <: Node](n: N) extends NodeOps[N, Edge[N]]
       with DirectedNodeOps[N, Edge[N]]
       with UndirectedNodeOps[N, Edge[N]] {
