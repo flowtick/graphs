@@ -9,7 +9,6 @@ trait NodeOps[N <: Node, E <: Edge[N]] {
 
 trait DirectedNodeOps[N <: Node, E <: Edge[N]] { self: NodeOps[N, E] =>
   def ~>(target: N)(implicit graphBuilder: GraphBuilder[N, E]): N
-  def ~>(target: N, label: String)(implicit graphBuilder: GraphBuilder[N, E]): N
 }
 
 trait UndirectedNodeOps[N <: Node, E <: Edge[N]] { self: NodeOps[N, E] =>

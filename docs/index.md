@@ -31,9 +31,8 @@ graphs is published under the terms of the Apache 2.0 License. See the [LICENSE]
 
 @@@ index
 
-* [Usage](usage.md)
-* [Example](example.md)
+* [Setup](setup.md)
+* [Creating Graphs](creating-graphs.md)
 * [Algorithms](algorithms.md)
-* [Custom Graph](custom-graph.md)
 
 @@@

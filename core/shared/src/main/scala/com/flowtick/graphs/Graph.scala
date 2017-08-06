@@ -107,6 +107,7 @@ abstract class WeightedUndirectedEdge[T: Numeric, N <: Node](
  * @tparam N the node type
  * @tparam E the edge type
  */
+// #graph
 trait Graph[N <: Node, E <: Edge[N]] {
   def nodes: Set[N]
   def edges: Set[E]
@@ -114,7 +115,7 @@ trait Graph[N <: Node, E <: Edge[N]] {
   def incoming(node: N): Iterable[E]
   def outgoing(node: N): Iterable[E]
 }
-
+// #graph
 /**
  * Base class for creating custom graph types, mainly exists for DRY reasons, so that sub-classes do not need
  * to implement the delegation to the [[GraphBuilder]] on their own.

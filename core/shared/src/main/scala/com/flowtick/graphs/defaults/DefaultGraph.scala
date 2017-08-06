@@ -2,6 +2,7 @@ package com.flowtick.graphs.defaults
 
 import com.flowtick.graphs._
 
+// #default_graph
 case class DefaultNode(id: String) extends Node
 case class DefaultDirectedEdge[N <: Node](label: Option[String] = None, source: N, target: N) extends DirectedEdge[N]
 case class DefaultUndirectedEdge[N <: Node](label: Option[String] = None, source: N, target: N) extends UndirectedEdge[N]
@@ -14,6 +15,7 @@ case class DefaultWeightedEdge[T: Numeric, N <: Node](
 ) extends WeightedUndirectedEdge[T, N](value, label, source, target)
 
 case class DefaultGraph[N <: Node, E <: Edge[N]](graphBuilder: GraphBuilder[N, E]) extends AbstractGraph[N, E](graphBuilder)
+// #default_graph
 
 object DefaultGraph {
   class DefaultGraphBuilder extends GraphBuilder[DefaultNode, Edge[DefaultNode]] {

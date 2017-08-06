@@ -1,5 +1,4 @@
-Usage
-=====
+# Setup
 
 Add the dependency to your build:
 
