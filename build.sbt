@@ -3,7 +3,7 @@ val mainScalaVersion = "2.12.2"
 lazy val commonSettings = Seq(
   organization := "com.flowtick",
   scalaVersion := mainScalaVersion,
-  crossScalaVersions := Seq(mainScalaVersion, "2.11.11", "2.10.6"),
+  crossScalaVersions := Seq(mainScalaVersion, "2.11.11"),
   releaseCrossBuild := true,
   libraryDependencies ++=
     "org.scalatest" %%% "scalatest" % "3.0.1" % Test ::
@@ -33,8 +33,13 @@ lazy val graphml = (crossProject in file(".") / "graphml")
   .enablePlugins(SiteScaladocPlugin)
   .settings(commonSettings)
   .settings(
-    name := "graphs-graphml",
-    libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % "1.0.7-SNAPSHOT"
+    name := "graphs-graphml"
+  ).jvmSettings(
+    resolvers += Resolver.bintrayRepo("flowtick", "jgraphx"),
+    libraryDependencies ++= Seq(
+      "com.mxgraph" % "jgraphx" % "3.7.4",
+      "org.scala-lang.modules" %% "scala-xml" % "1.0.6"
+    )
   ).dependsOn(core)
 
 lazy val graphmlJS = graphml.js
@@ -57,7 +62,7 @@ lazy val graphs = (project in file("."))
     mappings in makeSite ++= Seq(
       file("LICENSE") -> "LICENSE"
     )
-  ).aggregate(coreJS, coreJVM, examples)
+  ).aggregate(coreJS, coreJVM, examples, graphmlJS, graphmlJVM)
 
 lazy val updateDocs = taskKey[Unit]("push docs to https://flowtick.bitbucket.io")
 

@@ -5,8 +5,8 @@ import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.xml.Elem
 
-class GraphMlRendererSpec extends FlatSpec with Matchers {
-  "GraphRenderer" should "render default graph" in new GraphMlRenderer {
+class GraphMLRendererSpec extends FlatSpec with Matchers {
+  "GraphRenderer" should "render default graph" in new GraphMLRenderer {
     val xml: Elem = render(DefaultGraph.create { implicit graph =>
       n("A") ~> n("B")
     })
