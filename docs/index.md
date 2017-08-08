@@ -13,7 +13,7 @@ Features
 * Dijkstras algorithm for shortest paths
 * <strike>graphml import / export</strike> (planned)
 * <strike>force based layout</strike> (planned)
-* cross compiled for Scala 2.10, 2.11, 2.12, Scala.js
+* cross compiled for Scala 2.11, 2.12, Scala.js
 
 Alternatives
 ============
