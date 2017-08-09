@@ -1,11 +1,16 @@
 package com.flowtick.graphs.graphml
 
-import com.flowtick.graphs.{ Edge, Graph, Identifiable, Node }
+import com.flowtick.graphs.layout.JGraphXLayout
+import com.flowtick.graphs.{Edge, Graph, Identifiable, Node}
+import com.mxgraph.model.{mxCell, mxGeometry, mxGraphModel}
 
+import scala.util.Try
 import scala.xml.Elem
 
 class GraphMLRenderer {
+  @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   def render[N <: Node, E <: Edge[N]](g: Graph[N, E])(implicit identifiable: Identifiable[N]): Elem = {
+    val layouted = new JGraphXLayout[N, E]().layout(g, _ => None)
     // format: OFF
     <graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:java="http://www.yworks.com/xml/yfiles-common/1.0/java" xmlns:sys="http://www.yworks.com/xml/yfiles-common/markup/primitives/2.0" xmlns:x="http://www.yworks.com/xml/yfiles-common/markup/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:y="http://www.yworks.com/xml/graphml" xmlns:yed="http://www.yworks.com/xml/yed/3" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd">
       <!-- Created by https://bitbucket.org/flowtick/graphs GraphML renderer -->
@@ -13,10 +18,19 @@ class GraphMLRenderer {
       <graph id="G" edgedefault="directed">
         {
           g.nodes.map { node =>
+            val geometry = Try {
+              layouted
+                .getModel.asInstanceOf[mxGraphModel]
+                .getCell(identifiable.id(node)).asInstanceOf[mxCell]
+                .getGeometry
+            }.getOrElse(new mxGeometry(0, 0, 30, 30))
             <node id={ identifiable.id(node) }>
               <data key="graphics">
                 <y:ShapeNode>
-                  <y:Geometry height="30.0" width="30.0" x="0" y="0"/>
+                  <y:Geometry height={geometry.getHeight.toString}
+                              width={geometry.getWidth.toString}
+                              x={geometry.getX.toString}
+                              y={geometry.getY.toString}/>
                   <y:Fill color="#FFFFFF" transparent="false"/>
                   <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
                   <y:NodeLabel alignment="center"
