@@ -1,9 +1,9 @@
 import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
 
-object DijkstraApp extends App {
+object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
-  val g = DefaultGraph.weighted { implicit g =>
+  val cities = DefaultGraph.weighted { implicit g =>
     n("Frankfurt") ~ (85, n("Mannheim"))
     n("Frankfurt") ~ (217, n("Wuerzburg"))
     n("Frankfurt") ~ (173, n("Kassel"))
@@ -16,8 +16,9 @@ object DijkstraApp extends App {
     n("Karlsruhe") ~ (250, n("Augsburg"))
     n("Augsburg") ~ (84, n("Muenchen"))
   }
+}
 
-  println(g.shortestPath(start = n("Frankfurt"), end = n("Muenchen")))
-
+object DijkstraApp extends App {
+  println(DijkstraGraph.cities.shortestPath(start = n("Frankfurt"), end = n("Muenchen")))
   // Some(List(DefaultNode(Frankfurt), DefaultNode(Wuerzburg), DefaultNode(Nuernberg), DefaultNode(Muenchen)))
 }

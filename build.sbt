@@ -47,7 +47,7 @@ lazy val graphmlJVM = graphml.jvm
 
 lazy val examples = (project in file("examples"))
       .settings(commonSettings)
-      .dependsOn(coreJVM)
+      .dependsOn(coreJVM, graphmlJVM)
 
 lazy val graphs = (project in file("."))
   .enablePlugins(ParadoxSitePlugin)
