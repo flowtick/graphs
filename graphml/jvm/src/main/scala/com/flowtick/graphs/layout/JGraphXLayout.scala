@@ -2,6 +2,7 @@ package com.flowtick.graphs.layout
 
 import java.util
 
+import com.flowtick.graphs.rendering.ShapeDefinition
 import com.flowtick.graphs.{ Edge, Graph, Identifiable, Node }
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
 import com.mxgraph.view.mxGraph
@@ -10,15 +11,15 @@ import scala.collection.mutable
 
 class JGraphXLayout[N <: Node, E <: Edge[N]](implicit val identifiable: Identifiable[N]) {
 
-  def layout(graph: Graph[N, E], shapeSpec: N => Option[ShapeSpec] = N => None): mxGraph = {
-    val layoutGraph = graphToMxGraph(graph, shapeSpec)
+  def layout(graph: Graph[N, E], shapeDefinition: N => Option[ShapeDefinition]): mxGraph = {
+    val layoutGraph = graphToMxGraph(graph, shapeDefinition)
 
     new mxHierarchicalLayout(layoutGraph).execute(layoutGraph.getDefaultParent)
     layoutGraph
   }
 
   @SuppressWarnings(Array("org.wartremover.warts.Null"))
-  private def graphToMxGraph(graph: Graph[N, E], shapeSpec: N => Option[ShapeSpec]): mxGraph = {
+  private def graphToMxGraph(graph: Graph[N, E], shapeSpec: N => Option[ShapeDefinition]): mxGraph = {
     val mxGraph = new mxGraph
     mxGraph.getModel.beginUpdate()
 

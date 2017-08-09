@@ -4,6 +4,7 @@ import java.io.FileOutputStream
 
 import com.flowtick.graphs.{ Edge, WeightedEdge }
 import com.flowtick.graphs.defaults.{ DefaultGraph, DefaultNode, n }
+import com.flowtick.graphs.rendering.ShapeDefinition
 import com.mxgraph.view.mxGraph
 import org.scalatest.FlatSpec
 
@@ -15,7 +16,7 @@ class JGraphXLayoutSpec extends FlatSpec {
       n("D") ~> n("A")
     }
 
-    val layoutedGraph = new JGraphXLayout[DefaultNode, Edge[DefaultNode]].layout(graph)
+    val layoutedGraph = new JGraphXLayout[DefaultNode, Edge[DefaultNode]].layout(graph, _ => None)
     saveLayoutedGraph("simple", layoutedGraph)
   }
 
@@ -39,9 +40,11 @@ class JGraphXLayoutSpec extends FlatSpec {
       n("Augsburg") ~ (84, n("Muenchen"))
     }
 
-    val layoutedGraph = new JGraphXLayout[DefaultNode, WeightedEdge[Int, DefaultNode]].layout(cities, {
-      case _ => Some(ShapeSpec(50, 70, rounded = true, color = "#FF0000", shapeType = "ellipse"))
-    })
+    val layoutedGraph = new JGraphXLayout[DefaultNode, WeightedEdge[Int, DefaultNode]].layout(
+      cities,
+      _ => Some(ShapeDefinition(50, 70, rounded = true, color = "#FF0000", shapeType = "ellipse"))
+    )
+
     saveLayoutedGraph("cities", layoutedGraph)
   }
 }

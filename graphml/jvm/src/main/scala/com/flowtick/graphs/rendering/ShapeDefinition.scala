@@ -1,6 +1,6 @@
-package com.flowtick.graphs.layout
+package com.flowtick.graphs.rendering
 
-case class ShapeSpec(
+case class ShapeDefinition(
   width: Int = 30,
   height: Int = 30,
   shapeType: String = "rectangle",
