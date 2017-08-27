@@ -1,3 +1,7 @@
 target
 *.iml
 .idea
+.ensime
+.ensime_cache
+ensime-langserver.log
+pc.stdout.log
