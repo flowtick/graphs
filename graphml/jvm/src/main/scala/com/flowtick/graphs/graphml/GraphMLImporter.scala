@@ -1,7 +1,7 @@
 package com.flowtick.graphs.graphml
 
 import scala.util._
-import scala.xml.XML
+import scala.xml.{ Node, Text, XML }
 import scala.collection.mutable
 
 class GraphMLImporter {
@@ -25,9 +25,8 @@ class GraphMLImporter {
 
       graphNode.child.foreach {
         case node: scala.xml.Node if node.label == "node" =>
-          val nodeId: String = singleAttributeValue("id", node).getOrElse("node")
-          val graphNode = GraphMLNode(nodeId)
-          nodes.put(nodeId, graphNode)
+          val graphNode = graphMLNode(node)
+          nodes.put(graphNode.id, graphNode)
           g.addNode(graphNode)
         case edge: scala.xml.Node if edge.label == "edge" =>
           edges.append(edge)
@@ -53,5 +52,20 @@ class GraphMLImporter {
         }
       }
     }
+  }
+
+  private def graphMLNode(node: Node) = {
+    val nodeId: String = singleAttributeValue("id", node).getOrElse("node")
+    val properties = mutable.HashMap[String, Any]()
+    node.child.foreach {
+      case data if data.label == "data" =>
+        singleAttributeValue("key", data).foreach { key =>
+          val value = if (data.child.exists(!_.isInstanceOf[Text])) data.child else data.child.text
+          properties.put(key, value)
+        }
+      case _ =>
+    }
+
+    GraphMLNode(nodeId, properties.toMap)
   }
 }

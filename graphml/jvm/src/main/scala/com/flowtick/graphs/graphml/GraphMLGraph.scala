@@ -2,9 +2,9 @@ package com.flowtick.graphs.graphml
 
 import com.flowtick.graphs._
 
-case class GraphMLNode(id: String) extends Node
-case class GraphMLEdge(id: String, label: Option[String] = None, source: GraphMLNode, target: GraphMLNode) extends DirectedEdge[GraphMLNode]
-case class GraphMLGraph(id: String, graphBuilder: GraphBuilder[GraphMLNode, GraphMLEdge]) extends AbstractGraph[GraphMLNode, GraphMLEdge](graphBuilder)
+final case class GraphMLNode(id: String, properties: Map[String, Any] = Map.empty) extends Node
+final case class GraphMLEdge(id: String, label: Option[String] = None, source: GraphMLNode, target: GraphMLNode) extends DirectedEdge[GraphMLNode]
+final case class GraphMLGraph(id: String, graphBuilder: GraphBuilder[GraphMLNode, GraphMLEdge]) extends AbstractGraph[GraphMLNode, GraphMLEdge](graphBuilder)
 
 class GraphMLGraphBuilder(id: String) extends GraphBuilder[GraphMLNode, GraphMLEdge] {
   override def build: GraphMLGraph = GraphMLGraph(id, this)

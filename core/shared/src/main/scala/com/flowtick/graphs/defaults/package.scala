@@ -16,6 +16,7 @@ package object defaults {
       graphBuilder.addEdge(DefaultDirectedEdge(None, node, target))
       target
     }
+
     def ~>(target: N, label: String)(implicit graphBuilder: GraphBuilder[N, Edge[N]]): N = {
       graphBuilder.addEdge(DefaultDirectedEdge(Some(label), node, target))
       target

@@ -11,10 +11,25 @@ import scala.xml.Elem
 class GraphMLRenderer {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   def render[N <: Node, E <: Edge[N]](g: Graph[N, E], shapeDefinition: N => Option[ShapeDefinition] = (node: N) => None)(implicit identifiable: Identifiable[N]): Elem = {
+    def dataKeys: Set[Elem] = g.nodes.flatMap {
+      case GraphMLNode(id, properties) => properties.keySet
+      case _ => Set.empty[String]
+    }.zipWithIndex.map {
+      case (key, index) => <key id={ key } for="node" attr.type="string"/>
+    }
+
+    def dataValues(node: Node) = (node match {
+      case GraphMLNode(id, properties) => properties
+      case _ => Map.empty[String, Any]
+    }).map {
+      case (key, value) => <data key={ key }>{ value }</data>
+    }
+
     val layouted = new JGraphXLayout[N, E]().layout(g, shapeDefinition)
     // format: OFF
     <graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:java="http://www.yworks.com/xml/yfiles-common/1.0/java" xmlns:sys="http://www.yworks.com/xml/yfiles-common/markup/primitives/2.0" xmlns:x="http://www.yworks.com/xml/yfiles-common/markup/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:y="http://www.yworks.com/xml/graphml" xmlns:yed="http://www.yworks.com/xml/yed/3" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd">
       <!-- Created by https://bitbucket.org/flowtick/graphs GraphML renderer -->
+      {dataKeys}
       <key for="node" id="graphics" yfiles.type="nodegraphics"/>
       <graph id="G" edgedefault="directed">
         {
@@ -27,6 +42,7 @@ class GraphMLRenderer {
             }.getOrElse(new mxGeometry(0, 0, 30, 30))
             val shape = shapeDefinition(node)
             <node id={ identifiable.id(node) }>
+              {dataValues(node)}
               <data key="graphics">
                 <y:ShapeNode>
                   <y:Geometry height={geometry.getHeight.toString}
@@ -37,8 +53,10 @@ class GraphMLRenderer {
                   <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
                   <y:NodeLabel alignment="center"
                                autoSizePolicy="content"
-                               fontFamily="Dialog" fontSize="12"
-                               fontStyle="plain" hasBackgroundColor="false"
+                               fontFamily="Dialog"
+                               fontSize="12"
+                               fontStyle="plain"
+                               hasBackgroundColor="false"
                                hasLineColor="false"
                                horizontalTextPosition="center"
                                iconTextGap="4"
@@ -68,4 +86,5 @@ class GraphMLRenderer {
     </graphml>
     // format: ON
   }
+
 }
