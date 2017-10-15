@@ -67,8 +67,7 @@ class JGraphXLayout[N <: Node, E <: Edge[N]](implicit val identifiable: Identifi
         null,
         edge.label.getOrElse(""),
         vertices.get(sourceId).orNull,
-        vertices.get(targetId).orNull
-      )
+        vertices.get(targetId).orNull)
     }
 
     mxGraph.getModel.endUpdate()

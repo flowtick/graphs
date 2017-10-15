@@ -6,8 +6,7 @@ import com.flowtick.graphs.rendering.ShapeDefinition
 
 object GraphMLRendererApp extends App {
   val graphXml = new GraphMLRenderer().render(DijkstraGraph.cities, (node: Node) => Some(
-    ShapeDefinition(rounded = true, color = "#AA0000")
-  ))
+    ShapeDefinition(rounded = true, color = "#AA0000")))
 
   val output = new FileOutputStream("target/cities.graphml")
   output.write(graphXml.toString().getBytes)

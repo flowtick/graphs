@@ -28,7 +28,7 @@ object CustomGraphApp extends App {
 
   // #custom_graph_builder
   implicit class MyNodeOps(n: MyNode) extends NodeOps[MyNode, MyEdge]
-      with DirectedNodeOps[MyNode, MyEdge] {
+    with DirectedNodeOps[MyNode, MyEdge] {
     val node: MyNode = n
 
     override def ~>(target: MyNode)(implicit graphBuilder: GraphBuilder[MyNode, MyEdge]): MyNode = {

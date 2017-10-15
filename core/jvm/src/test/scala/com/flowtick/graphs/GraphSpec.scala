@@ -16,42 +16,34 @@ class GraphSpec extends FlatSpec with Matchers {
 
   "Graph" should "provide incoming edges for nodes" in {
     graph.incoming(n("A")).toList should be(List(
-      DefaultDirectedEdge(None, n("D"), n("A"))
-    ))
+      DefaultDirectedEdge(None, n("D"), n("A"))))
 
     graph.incoming(n("B")).toList should be(List(
-      DefaultDirectedEdge(None, n("A"), n("B"))
-    ))
+      DefaultDirectedEdge(None, n("A"), n("B"))))
 
     graph.incoming(n("C")).toList should be(List(
       DefaultDirectedEdge(None, n("B"), n("C")),
-      DefaultDirectedEdge(None, n("A"), n("C"))
-    ))
+      DefaultDirectedEdge(None, n("A"), n("C"))))
 
     graph.incoming(n("D")).toList should be(List(
       DefaultDirectedEdge(None, n("C"), n("D")),
-      DefaultDirectedEdge(None, n("B"), n("D"))
-    ))
+      DefaultDirectedEdge(None, n("B"), n("D"))))
   }
 
   "Graph" should "provide outgoing edges for nodes" in {
     graph.outgoing(n("A")).toList should be(List(
       DefaultDirectedEdge(None, n("A"), n("B")),
-      DefaultDirectedEdge(None, n("A"), n("C"))
-    ))
+      DefaultDirectedEdge(None, n("A"), n("C"))))
 
     graph.outgoing(n("B")).toList should be(List(
       DefaultDirectedEdge(None, n("B"), n("C")),
-      DefaultDirectedEdge(None, n("B"), n("D"))
-    ))
+      DefaultDirectedEdge(None, n("B"), n("D"))))
 
     graph.outgoing(n("C")).toList should be(List(
-      DefaultDirectedEdge(None, n("C"), n("D"))
-    ))
+      DefaultDirectedEdge(None, n("C"), n("D"))))
 
     graph.outgoing(n("D")).toList should be(List(
-      DefaultDirectedEdge(None, n("D"), n("A"))
-    ))
+      DefaultDirectedEdge(None, n("D"), n("A"))))
   }
 
   "Graph" should "provide incoming and outgoing edges for undirected edges" in {
@@ -63,17 +55,14 @@ class GraphSpec extends FlatSpec with Matchers {
 
     graph.incoming(n("A")).toList should be(List[Edge[DefaultNode]](
       DefaultUndirectedEdge(None, n("A"), n("B")),
-      DefaultDirectedEdge(None, n("D"), n("A"))
-    ))
+      DefaultDirectedEdge(None, n("D"), n("A"))))
 
     graph.outgoing(n("A")).toList should be(List(
-      DefaultUndirectedEdge(None, n("A"), n("B"))
-    ))
+      DefaultUndirectedEdge(None, n("A"), n("B"))))
 
     graph.incoming(n("B")).toList should be(List[Edge[DefaultNode]](
       DefaultUndirectedEdge(None, n("A"), n("B")),
-      DefaultDirectedEdge(None, n("C"), n("B"))
-    ))
+      DefaultDirectedEdge(None, n("C"), n("B"))))
   }
 
 }

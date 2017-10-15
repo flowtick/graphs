@@ -6,10 +6,9 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 class AdjacentNodesTraversal[N <: Node, E <: Edge[N]](
-    startNode: Option[N] = None,
-    graph: Graph[N, E],
-    traversalBuffer: () => TraversalBuffer[N]
-) extends Traversal[N] {
+  startNode: Option[N] = None,
+  graph: Graph[N, E],
+  traversalBuffer: () => TraversalBuffer[N]) extends Traversal[N] {
   val visitCallbacks: ListBuffer[N => Any] = ListBuffer.empty
   val completeCallbacks: ListBuffer[N => Any] = ListBuffer.empty
   val backtrackCallbacks: ListBuffer[N => Any] = ListBuffer.empty

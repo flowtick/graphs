@@ -8,7 +8,7 @@ package object graphml {
   }
 
   implicit class GraphMLNodeOps(n: GraphMLNode) extends NodeOps[GraphMLNode, GraphMLEdge]
-      with DirectedNodeOps[GraphMLNode, GraphMLEdge] {
+    with DirectedNodeOps[GraphMLNode, GraphMLEdge] {
     val node: GraphMLNode = n
 
     override def ~>(target: GraphMLNode)(implicit graphBuilder: GraphBuilder[GraphMLNode, GraphMLEdge]): GraphMLNode = {

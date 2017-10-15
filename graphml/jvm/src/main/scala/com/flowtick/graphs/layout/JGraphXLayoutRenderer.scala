@@ -19,8 +19,7 @@ object JGraphXLayoutRenderer {
     output: OutputStream,
     format: String = "PNG",
     scale: Double = 1.0,
-    padding: Int = 10
-  ): Try[OutputStream] = {
+    padding: Int = 10): Try[OutputStream] = {
     Try {
       format.toUpperCase() match {
         case "SVG" => saveVectorImage(graph, output, scale, padding)
@@ -36,8 +35,7 @@ object JGraphXLayoutRenderer {
       graph.getChildCells(graph.getModel.getRoot),
       scale,
       null,
-      getScaledGraphBounds(graph, scale, padding)
-    )
+      getScaledGraphBounds(graph, scale, padding))
 
     val transformer = TransformerFactory.newInstance().newTransformer()
     val source = new DOMSource(document)
@@ -57,8 +55,7 @@ object JGraphXLayoutRenderer {
       scale,
       null,
       false,
-      getScaledGraphBounds(graph, scale, padding)
-    )
+      getScaledGraphBounds(graph, scale, padding))
 
     ImageIO.write(image, format, output)
     output

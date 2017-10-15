@@ -22,7 +22,6 @@ class DijkstraShortestPathSpec extends FlatSpec with Matchers {
     }
 
     g.shortestPath(n("Frankfurt"), n("Muenchen")).getOrElse(List()).map(_.id) should be(
-      List("Frankfurt", "Wuerzburg", "Nuernberg", "Muenchen")
-    )
+      List("Frankfurt", "Wuerzburg", "Nuernberg", "Muenchen"))
   }
 }

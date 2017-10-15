@@ -74,8 +74,7 @@ abstract class WeightedEdge[T: Numeric, N <: Node](
   val weight: T,
   val label: Option[String] = None,
   val source: N,
-  val target: N
-) extends Edge[N]
+  val target: N) extends Edge[N]
 
 /**
  * The base type for directed weighted edges.
@@ -84,8 +83,7 @@ abstract class WeightedDirectedEdge[T: Numeric, N <: Node](
   override val weight: T,
   override val label: Option[String] = None,
   override val source: N,
-  override val target: N
-) extends WeightedEdge[T, N](weight, label, source, target)
+  override val target: N) extends WeightedEdge[T, N](weight, label, source, target)
 
 /**
  * The base type for undirected weighted edges.
@@ -94,8 +92,7 @@ abstract class WeightedUndirectedEdge[T: Numeric, N <: Node](
   override val weight: T,
   override val label: Option[String] = None,
   override val source: N,
-  override val target: N
-) extends WeightedEdge[T, N](weight, label, source, target)
+  override val target: N) extends WeightedEdge[T, N](weight, label, source, target)
 
 /**
  * Wikipedia (https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)):

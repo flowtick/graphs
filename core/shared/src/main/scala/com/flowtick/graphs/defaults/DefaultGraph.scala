@@ -11,8 +11,7 @@ case class DefaultWeightedEdge[T: Numeric, N <: Node](
   value: T,
   override val label: Option[String] = None,
   override val source: N,
-  override val target: N
-) extends WeightedUndirectedEdge[T, N](value, label, source, target)
+  override val target: N) extends WeightedUndirectedEdge[T, N](value, label, source, target)
 
 case class DefaultGraph[N <: Node, E <: Edge[N]](graphBuilder: GraphBuilder[N, E]) extends AbstractGraph[N, E](graphBuilder)
 // #default_graph

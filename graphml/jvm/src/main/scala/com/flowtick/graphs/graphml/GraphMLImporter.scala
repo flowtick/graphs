@@ -46,8 +46,7 @@ class GraphMLImporter {
             edgeId,
             None,
             sourceNode,
-            targetNode
-          )
+            targetNode)
           g.addEdge(graphEdge)
         }
       }

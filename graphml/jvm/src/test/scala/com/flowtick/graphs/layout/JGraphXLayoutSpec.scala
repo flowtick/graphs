@@ -42,8 +42,7 @@ class JGraphXLayoutSpec extends FlatSpec {
 
     val layoutedGraph = new JGraphXLayout[DefaultNode, WeightedEdge[Int, DefaultNode]].layout(
       cities,
-      _ => Some(ShapeDefinition(50, 70, rounded = true, color = "#FF0000", shapeType = "ellipse"))
-    )
+      _ => Some(ShapeDefinition(50, 70, rounded = true, color = "#FF0000", shapeType = "ellipse")))
 
     saveLayoutedGraph("cities", layoutedGraph)
   }

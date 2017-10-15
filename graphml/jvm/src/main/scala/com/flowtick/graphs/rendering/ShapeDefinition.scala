@@ -5,5 +5,4 @@ case class ShapeDefinition(
   height: Int = 30,
   shapeType: String = "rectangle",
   color: String = "#FFFFFF",
-  rounded: Boolean = false
-)
+  rounded: Boolean = false)
