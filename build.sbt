@@ -1,3 +1,5 @@
+import ReleaseTransformations._
+
 val mainScalaVersion = "2.12.3"
 
 lazy val commonSettings = Seq(
@@ -5,6 +7,20 @@ lazy val commonSettings = Seq(
   scalaVersion := mainScalaVersion,
   crossScalaVersions := Seq(mainScalaVersion, "2.11.11"),
   releaseCrossBuild := true,
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    runTest,
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    releaseStepCommand("publishSigned"),
+    setNextVersion,
+    commitNextVersion,
+    releaseStepCommand("sonatypeReleaseAll"),
+    pushChanges
+  ),
   libraryDependencies ++=
     "org.scalatest" %%% "scalatest" % "3.0.4" % Test ::
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test ::
