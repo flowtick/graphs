@@ -1,4 +1,4 @@
-val mainScalaVersion = "2.12.2"
+val mainScalaVersion = "2.12.3"
 
 lazy val commonSettings = Seq(
   organization := "com.flowtick",
@@ -6,8 +6,8 @@ lazy val commonSettings = Seq(
   crossScalaVersions := Seq(mainScalaVersion, "2.11.11"),
   releaseCrossBuild := true,
   libraryDependencies ++=
-    "org.scalatest" %%% "scalatest" % "3.0.1" % Test ::
-    "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % Test ::
+    "org.scalatest" %%% "scalatest" % "3.0.4" % Test ::
+    "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test ::
     Nil,
   wartremoverErrors ++= Warts.unsafe.filterNot(Seq(
     Wart.NonUnitStatements,
@@ -67,6 +67,8 @@ lazy val graphs = (project in file("."))
 lazy val updateDocs = taskKey[Unit]("push docs to https://flowtick.bitbucket.io")
 
 updateDocs := {
+  import scala.sys.process._
+
   val tempSite = file("target") / "flowtick-site"
   IO.delete(tempSite)
   s"git clone git@bitbucket.org:flowtick/flowtick.bitbucket.io.git ${tempSite.absolutePath}".!
