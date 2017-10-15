@@ -14,9 +14,24 @@ lazy val commonSettings = Seq(
     Wart.DefaultArguments,
     Wart.Any
   ).contains(_)),
-  bintrayOrganization := Some("flowtick"),
-  bintrayRepository := "graphs",
-  licenses += ("Apache-2.0", url("https://opensource.org/licenses/apache-2.0"))
+  publishTo := Some(
+    if (isSnapshot.value)
+      Opts.resolver.sonatypeSnapshots
+    else
+      Opts.resolver.sonatypeStaging
+  ),
+  publishMavenStyle := true,
+  licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+  homepage := Some(url("https://flowtick.bitbucket.io/graphs")),
+  scmInfo := Some(
+    ScmInfo(
+      url("https://bitbucket.org/flowtick/graphs.git"),
+      "scm:git@bitbucket.org:flowtick/graphs.git"
+    )
+  ),
+  developers := List(
+    Developer(id="adrobisch", name="Andreas D.", email="github@drobisch.com", url=url("http://drobisch.com/"))
+  )
 )
 
 lazy val core = (crossProject in file(".") / "core")
