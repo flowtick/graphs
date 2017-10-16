@@ -1,7 +1,10 @@
 package com.flowtick.graphs
 
 package object graphml {
-  def node(id: String, properties: Map[String, Any] = Map.empty): GraphMLNode = GraphMLNode(id, properties)
+  def property(id: String, value: Any) = GraphMLProperty(GraphMLKey(id), value)
+
+  def node(id: String, properties: GraphMLProperty*): GraphMLNode =
+    GraphMLNode(id, None, properties.map(prop => (prop.key.id, prop)).toMap)
 
   implicit def identifiable: Identifiable[GraphMLNode] = new Identifiable[GraphMLNode] {
     override def id(node: GraphMLNode): String = node.id
@@ -16,4 +19,5 @@ package object graphml {
       target
     }
   }
+
 }

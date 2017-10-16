@@ -12,20 +12,20 @@ class GraphMLRenderer {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   def render[N <: Node, E <: Edge[N]](g: Graph[N, E], shapeDefinition: N => Option[ShapeDefinition] = (node: N) => None)(implicit identifiable: Identifiable[N]): Elem = {
     def dataKeys: Set[Elem] = g.nodes.flatMap {
-      case GraphMLNode(id, properties) => properties.keySet
+      case GraphMLNode(_, _, properties) => properties.keySet
       case _ => Set.empty[String]
     }.zipWithIndex.map {
       case (key, index) => <key id={ key } for="node" attr.type="string"/>
     }
 
     def dataValues(node: Node) = (node match {
-      case GraphMLNode(id, properties) => properties
-      case _ => Map.empty[String, Any]
+      case GraphMLNode(_, _, properties) => properties
+      case _ => Map.empty[String, GraphMLProperty]
     }).map {
-      case (key, value) => <data key={ key }>{ value }</data>
+      case (key, property) => <data key={ key }>{ property.value }</data>
     }
 
-    val layouted = new JGraphXLayout[N, E]().layout(g, shapeDefinition)
+    val withLayout = new JGraphXLayout[N, E]().layout(g, shapeDefinition)
     // format: OFF
     <graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:java="http://www.yworks.com/xml/yfiles-common/1.0/java" xmlns:sys="http://www.yworks.com/xml/yfiles-common/markup/primitives/2.0" xmlns:x="http://www.yworks.com/xml/yfiles-common/markup/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:y="http://www.yworks.com/xml/graphml" xmlns:yed="http://www.yworks.com/xml/yed/3" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd">
       <!-- Created by https://bitbucket.org/flowtick/graphs GraphML renderer -->
@@ -35,7 +35,7 @@ class GraphMLRenderer {
         {
           g.nodes.map { node =>
             val geometry = Try {
-              layouted
+              withLayout
                 .getModel.asInstanceOf[mxGraphModel]
                 .getCell(identifiable.id(node)).asInstanceOf[mxCell]
                 .getGeometry
