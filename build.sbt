@@ -78,6 +78,9 @@ lazy val graphmlJVM = graphml.jvm
 
 lazy val examples = (project in file("examples"))
       .settings(commonSettings)
+      .settings(
+        name := "graphs-examples"
+      )
       .dependsOn(coreJVM, graphmlJVM)
 
 lazy val graphs = (project in file("."))
