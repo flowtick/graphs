@@ -11,10 +11,10 @@ import scala.xml.{ Elem, Text }
 class GraphMLRenderer {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   def render[N <: Node, E <: Edge[N]](g: Graph[N, E], shapeDefinition: N => Option[ShapeDefinition] = (node: N) => None)(implicit identifiable: Identifiable[N]): Elem = {
-    def nodeProperties(n: N): Map[String, GraphMLProperty] = (n match {
+    def nodeProperties(aNode: N): Map[String, GraphMLProperty] = (aNode match {
       case GraphMLNode(_, _, properties) => properties
       case _ => Map.empty[String, GraphMLProperty]
-    }) + ("graphics" -> graphicsProperty(identifiable.id(n), shapeDefinition(n)))
+    }) + ("graphics" -> nodeGraphicsProperty(identifiable.id(aNode), shapeDefinition(aNode)))
 
     def dataKeys: Set[Elem] = g.nodes.flatMap(nodeProperties(_).values).map { property: GraphMLProperty =>
       <key id={ property.key.id } for={ property.key.targetHint.map(Text(_)) } yfiles.type={ property.key.yfilesType.map(Text(_)) } attr.type={ property.key.typeHint.map(Text(_)) }/>
@@ -24,7 +24,7 @@ class GraphMLRenderer {
       case (key, property) => <data key={ key }>{ property.value }</data>
     }
 
-    def graphicsProperty(
+    def nodeGraphicsProperty(
       label: String,
       shape: Option[ShapeDefinition]): GraphMLProperty = {
       val geometry = Try {
