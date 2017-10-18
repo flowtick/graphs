@@ -5,14 +5,14 @@ import org.scalatest.{ FlatSpec, Matchers }
 class GraphMLImporterSpec extends FlatSpec with Matchers {
   "GraphML Importer" should "import rendered XML" in {
     val graph = GraphMLGraph.create("test-graph") { implicit graph =>
-      node("A", property("foo", "bar")) ~> node("B")
+      node("A", nodeProperty("foo", "bar", typeHint = Some("string"))) ~> node("B")
     }
 
     val graphml = new GraphMLRenderer().render(graph)
     val imported = new GraphMLImporter().fromXml(graphml.toString)
 
     imported.right.foreach { graph =>
-      val importedNodes = graph.nodes
+      val importedNodes = graph.nodes.toList.sortBy(_.id)
       importedNodes should have size 2
 
       importedNodes.headOption match {
@@ -23,7 +23,7 @@ class GraphMLImporterSpec extends FlatSpec with Matchers {
         case _ => fail()
       }
 
-      importedNodes.toList(1) match {
+      importedNodes(1) match {
         case bNode =>
           bNode.id should be("B")
           bNode.properties.get("graphics") should be(defined)

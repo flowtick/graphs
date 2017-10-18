@@ -1,7 +1,8 @@
 package com.flowtick.graphs
 
 package object graphml {
-  def property(id: String, value: Any) = GraphMLProperty(GraphMLKey(id), value)
+  def nodeProperty(id: String, value: Any, typeHint: Option[String] = None) =
+    GraphMLProperty(GraphMLKey(id, targetHint = Some("node"), typeHint = typeHint), value)
 
   def node(id: String, properties: GraphMLProperty*): GraphMLNode =
     GraphMLNode(id, None, properties.map(prop => (prop.key.id, prop)).toMap)
