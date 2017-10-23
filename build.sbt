@@ -2,6 +2,11 @@ import ReleaseTransformations._
 
 val mainScalaVersion = "2.12.3"
 
+resolvers ++= Seq(
+  Resolver.bintrayRepo("flowtick", "jgraphx"),
+  Resolver.bintrayRepo("flowtick", "scala-xml")
+)
+
 lazy val commonSettings = Seq(
   organization := "com.flowtick",
   scalaVersion := mainScalaVersion,
@@ -64,12 +69,16 @@ lazy val graphml = (crossProject in file(".") / "graphml")
   .enablePlugins(SiteScaladocPlugin)
   .settings(commonSettings)
   .settings(
-    name := "graphs-graphml"
+    name := "graphs-graphml",
+
   ).jvmSettings(
-    resolvers += Resolver.bintrayRepo("flowtick", "jgraphx"),
     libraryDependencies ++= Seq(
       "com.mxgraph" % "jgraphx" % "3.7.4",
       "org.scala-lang.modules" %% "scala-xml" % "1.0.6"
+    )
+  ).jsSettings(
+    libraryDependencies ++= Seq(
+      "com.flowtick" %%% "scala-xml" % "1.1.0-ft"
     )
   ).dependsOn(core)
 
