@@ -1,8 +1,8 @@
 package com.flowtick.graphs.graphml
 
+import scala.collection.mutable
 import scala.util._
 import scala.xml.{ Node, Text, XML }
-import scala.collection.mutable
 
 class GraphMLImporter {
   def fromXml(graphml: String): Either[Throwable, GraphMLGraph] =
@@ -34,7 +34,7 @@ class GraphMLImporter {
     }
   }
 
-  def extractEdgeLabel(properties: Map[String, GraphMLProperty]): Option[String] = {
+  protected def extractEdgeLabel(properties: Map[String, GraphMLProperty]): Option[String] = {
     properties.values.find(_.key.yfilesType.exists(_ == "edgegraphics")).flatMap { edgeGraphics =>
       edgeGraphics.value match {
         case xml: Seq[scala.xml.Node] =>

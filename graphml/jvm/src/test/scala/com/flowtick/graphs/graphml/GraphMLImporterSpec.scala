@@ -1,5 +1,6 @@
 package com.flowtick.graphs.graphml
 
+import com.flowtick.graphs.layout.JGraphXLayouter
 import org.scalatest.{ FlatSpec, Matchers }
 
 class GraphMLImporterSpec extends FlatSpec with Matchers {
@@ -8,7 +9,7 @@ class GraphMLImporterSpec extends FlatSpec with Matchers {
       node("A", nodeProperty("foo", "bar", typeHint = Some("string"))) ~> node("B")
     }
 
-    val graphml = new GraphMLRenderer().render(graph)
+    val graphml = new GraphMLRenderer().render(graph, JGraphXLayouter)
     val imported = new GraphMLImporter().fromXml(graphml.toString)
 
     imported.right.foreach { graph =>

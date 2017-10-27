@@ -1,4 +1,4 @@
-package com.flowtick.graphs.rendering
+package com.flowtick.graphs.layout
 
 case class ShapeDefinition(
   width: Int = 30,

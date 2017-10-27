@@ -2,12 +2,36 @@ package com.flowtick.graphs.layout
 
 import java.util
 
-import com.flowtick.graphs.rendering.ShapeDefinition
 import com.flowtick.graphs.{ Edge, Graph, Identifiable, Node }
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
+import com.mxgraph.model.{ mxCell, mxGeometry, mxGraphModel }
 import com.mxgraph.view.mxGraph
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
+
+object JGraphXLayouter extends GraphLayout {
+  @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
+  override def layout[N <: Node, E <: Edge[N]](g: Graph[N, E], shape: N => Option[ShapeDefinition])(implicit identifiable: Identifiable[N]): collection.Map[String, Cell] = {
+    new JGraphXLayout[N, E]().layout(g, shape)
+      .getModel.asInstanceOf[mxGraphModel]
+      .getCells.asScala.mapValues(cell => JGraphXCell(cell.asInstanceOf[mxCell]))
+  }
+}
+
+final case class JGraphGeometry(geometry: mxGeometry) extends Geometry {
+  override def x: Double = geometry.getX
+
+  override def y: Double = geometry.getY
+
+  override def width: Double = geometry.getWidth
+
+  override def height: Double = geometry.getHeight
+}
+
+final case class JGraphXCell(cell: mxCell) extends Cell {
+  override def geometry: Geometry = JGraphGeometry(cell.getGeometry)
+}
 
 class JGraphXLayout[N <: Node, E <: Edge[N]](implicit val identifiable: Identifiable[N]) {
 

@@ -4,7 +4,6 @@ import java.io.FileOutputStream
 
 import com.flowtick.graphs.{ Edge, WeightedEdge }
 import com.flowtick.graphs.defaults.{ DefaultGraph, DefaultNode, n }
-import com.flowtick.graphs.rendering.ShapeDefinition
 import com.mxgraph.view.mxGraph
 import org.scalatest.FlatSpec
 

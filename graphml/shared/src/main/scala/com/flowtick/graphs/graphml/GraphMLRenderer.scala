@@ -1,16 +1,17 @@
 package com.flowtick.graphs.graphml
 
-import com.flowtick.graphs.layout.JGraphXLayout
-import com.flowtick.graphs.rendering.ShapeDefinition
+import com.flowtick.graphs.layout.{ DefaultGeometry, GraphLayout, ShapeDefinition }
 import com.flowtick.graphs.{ Edge, Graph, Identifiable, Node }
-import com.mxgraph.model.{ mxCell, mxGeometry, mxGraphModel }
 
-import scala.util.Try
 import scala.xml.{ Elem, Text }
 
 class GraphMLRenderer {
-  @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
-  def render[N <: Node, E <: Edge[N]](g: Graph[N, E], shapeDefinition: N => Option[ShapeDefinition] = (node: N) => None)(implicit identifiable: Identifiable[N]): Elem = {
+  def render[N <: Node, E <: Edge[N]](
+    g: Graph[N, E],
+    layouter: GraphLayout,
+    shapeDefinition: N => Option[ShapeDefinition] = (_: N) => None)(implicit identifiable: Identifiable[N]): Elem = {
+    val layoutedCells = layouter.layout(g, shapeDefinition)
+
     def nodeProperties(aNode: N): Map[String, GraphMLProperty] = (aNode match {
       case GraphMLNode(_, _, properties) => properties
       case _ => Map.empty[String, GraphMLProperty]
@@ -27,20 +28,15 @@ class GraphMLRenderer {
     def nodeGraphicsProperty(
       label: String,
       shape: Option[ShapeDefinition]): GraphMLProperty = {
-      val geometry = Try {
-        new JGraphXLayout[N, E]().layout(g, shapeDefinition)
-          .getModel.asInstanceOf[mxGraphModel]
-          .getCell(label).asInstanceOf[mxCell]
-          .getGeometry
-      }.getOrElse(new mxGeometry(0, 0, 30, 30))
+      val geometry = layoutedCells.get(label).map(_.geometry).getOrElse(DefaultGeometry(0, 0, 30, 30))
 
       val shapeNodeElem =
         // format: OFF
         <y:ShapeNode>
-          <y:Geometry height={geometry.getHeight.toString}
-                      width={geometry.getWidth.toString}
-                      x={geometry.getX.toString}
-                      y={geometry.getY.toString}/>
+          <y:Geometry height={geometry.height.toString}
+                      width={geometry.width.toString}
+                      x={geometry.x.toString}
+                      y={geometry.y.toString}/>
           <y:Fill color={shape.map(_.color).getOrElse("#FFFFFF")} transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
           <y:NodeLabel alignment="center"
