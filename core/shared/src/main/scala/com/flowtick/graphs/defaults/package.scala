@@ -1,10 +1,19 @@
 package com.flowtick.graphs
 
+import com.flowtick.graphs
+import com.flowtick.graphs.layout.{Cell, GraphLayout, ShapeDefinition}
+
 package object defaults {
   def n(id: String) = DefaultNode(id)
 
   implicit def identifiable: Identifiable[DefaultNode] = new Identifiable[DefaultNode] {
     override def id(node: DefaultNode): String = node.id
+  }
+
+  implicit class DefaultLayout[N <: Node, Edge[N]](graph: Graph[N, Edge]) {
+    def layout: GraphLayout = new GraphLayout {
+      override def layout[N <: Node, E <: graphs.Edge[N]](g: Graph[N, E], shape: N => Option[ShapeDefinition])(implicit identifiable: Identifiable[N]): collection.Map[String, Cell] = ???
+    }
   }
 
   implicit class DefaultNodeOps[N <: Node](n: N) extends NodeOps[N, Edge[N]]
