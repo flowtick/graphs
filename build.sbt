@@ -10,6 +10,7 @@ lazy val commonSettings = Seq(
   organization := "com.flowtick",
   scalaVersion := mainScalaVersion,
   crossScalaVersions := Seq(mainScalaVersion, "2.11.11"),
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   releaseCrossBuild := true,
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
@@ -19,7 +20,7 @@ lazy val commonSettings = Seq(
     setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
-    releaseStepCommand("publishSigned"),
+    publishArtifacts,
     setNextVersion,
     commitNextVersion,
     releaseStepCommand("sonatypeReleaseAll"),
