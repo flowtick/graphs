@@ -38,18 +38,25 @@ class GraphMLImporterSpec extends FlatSpec with Matchers {
     }
   }
 
-  it should "import xml exported with yed and edge properties" in {
+  it should "import xml created by yed with node and edge properties" in {
     val cities = io.Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("yed-cities.graphml"))
     val imported = new GraphMLImporter().fromXml(cities.getLines().mkString)
     imported.right.toOption match {
       case Some(graph) =>
+        graph.nodes.find(_.id == "n0") match {
+          case Some(n0) =>
+            n0.id should be("n0")
+            n0.label should be(Some("Karlsruhe"))
+          case _ => fail("unable to find node n0")
+        }
+
         graph.edges.find(_.id == "e1") match {
           case Some(e1) =>
             e1.properties should contain("d7" -> GraphMLProperty(GraphMLKey("d7", Some("Property 1"), Some("string"), Some("edge"), None), "test"))
             e1.label should be(Some("42"))
-          case _ => fail()
+          case _ => fail("unable to find edge e1")
         }
-      case _ => fail()
+      case _ => fail("no graph imported")
     }
   }
 }

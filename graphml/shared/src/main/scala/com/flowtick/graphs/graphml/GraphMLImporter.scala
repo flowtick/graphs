@@ -34,6 +34,16 @@ class GraphMLImporter {
     }
   }
 
+  protected def extractNodeLabel(properties: Map[String, GraphMLProperty]): Option[String] = {
+    properties.values.find(_.key.yfilesType.exists(_ == "nodegraphics")).flatMap { nodeGraphics =>
+      nodeGraphics.value match {
+        case xml: Seq[scala.xml.Node] =>
+          val nodeLabel: Option[Node] = xml.foldLeft(Seq.empty[scala.xml.Node])((a, b) => a ++ b.nonEmptyChildren).find(_.label == "NodeLabel")
+          nodeLabel.map(_.text.trim)
+      }
+    }
+  }
+
   protected def extractEdgeLabel(properties: Map[String, GraphMLProperty]): Option[String] = {
     properties.values.find(_.key.yfilesType.exists(_ == "edgegraphics")).flatMap { edgeGraphics =>
       edgeGraphics.value match {
@@ -44,21 +54,10 @@ class GraphMLImporter {
     }
   }
 
-  protected def parseGraphNode(graphNode: scala.xml.Node, keys: Seq[GraphMLKey]): GraphMLGraph = {
+  protected def parseGraphNode(graphNode: scala.xml.Node, keys: Seq[GraphMLKey]): GraphMLGraph =
     GraphMLGraph.create(singleAttributeValue("id", graphNode).getOrElse("graph")) { implicit g =>
-      val nodes = new mutable.HashMap[String, GraphMLNode]()
       val edgeXmlNodes = new mutable.ListBuffer[scala.xml.Node]()
-
-      graphNode.child.zipWithIndex.foreach {
-        case (node: scala.xml.Node, index: Int) if node.label == "node" =>
-          val id = singleAttributeValue("id", node).getOrElse(node.label)
-          val graphNode = GraphMLNode(id, None, parseProperties(node, keys))
-          nodes.put(id, graphNode)
-          g.addNode(graphNode)
-        case (edge: scala.xml.Node, index: Int) if edge.label == "edge" =>
-          edgeXmlNodes.append(edge)
-        case _ =>
-      }
+      val nodes = parseGraphNodes(graphNode, keys, g, edgeXmlNodes)
 
       edgeXmlNodes.foreach { edgeNode =>
         val edgeId = singleAttributeValue("id", edgeNode).getOrElse("edge")
@@ -80,6 +79,32 @@ class GraphMLImporter {
         }
       }
     }
+
+  protected def parseGraphNodes(
+    graphNode: scala.xml.Node,
+    keys: Seq[GraphMLKey],
+    g: GraphMLGraphBuilder,
+    edgeXmlNodes: mutable.ListBuffer[scala.xml.Node]): mutable.HashMap[String, GraphMLNode] = {
+    val nodes = new mutable.HashMap[String, GraphMLNode]()
+
+    graphNode.child.zipWithIndex.foreach {
+      case (node: scala.xml.Node, index: Int) if node.label == "node" =>
+        val id = singleAttributeValue("id", node).getOrElse(node.label)
+        val nodeProperties = parseProperties(node, keys)
+        val graphNode = GraphMLNode(id, extractNodeLabel(nodeProperties), nodeProperties)
+        nodes.put(id, graphNode)
+        g.addNode(graphNode)
+
+        node.child.foreach {
+          case child if child.label == "graph" => nodes ++= parseGraphNodes(child, keys, g, edgeXmlNodes)
+          case _ =>
+        }
+
+      case (edge: scala.xml.Node, index: Int) if edge.label == "edge" =>
+        edgeXmlNodes.append(edge)
+      case _ =>
+    }
+    nodes
   }
 
   private def parseProperties(node: Node, keys: Seq[GraphMLKey]): Map[String, GraphMLProperty] = {
