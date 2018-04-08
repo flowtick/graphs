@@ -1,3 +1,4 @@
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/flowtick/graphs.png?columns=all)](https://waffle.io/flowtick/graphs?utm_source=badge)
 graphs
 ======
 
