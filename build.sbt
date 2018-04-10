@@ -1,6 +1,6 @@
 import ReleaseTransformations._
 
-val mainScalaVersion = "2.12.5"
+val mainScalaVersion = "2.12.6"
 
 lazy val commonSettings = Seq(
   resolvers ++= Seq(
@@ -8,7 +8,7 @@ lazy val commonSettings = Seq(
   ),
   organization := "com.flowtick",
   scalaVersion := mainScalaVersion,
-  crossScalaVersions := Seq(mainScalaVersion, "2.11.11"),
+  crossScalaVersions := Seq(mainScalaVersion, "2.11.12"),
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   releaseCrossBuild := true,
   releaseProcess := Seq[ReleaseStep](
