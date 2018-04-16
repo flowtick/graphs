@@ -92,7 +92,7 @@ lazy val examples = (project in file("examples"))
       .dependsOn(coreJVM, graphmlJVM)
 
 lazy val graphs = (project in file("."))
-  .enablePlugins(ParadoxSitePlugin)
+  .enablePlugins(ParadoxSitePlugin, GhpagesPlugin)
   .settings(commonSettings)
   .settings(
     publishLocal := {},
@@ -103,7 +103,8 @@ lazy val graphs = (project in file("."))
     paradoxProperties += ("version" -> version.value),
     mappings in makeSite ++= Seq(
       file("LICENSE") -> "LICENSE"
-    )
+    ),
+    git.remoteRepo := "git@github.com:flowtick/graphs.git"
   ).aggregate(coreJS, coreJVM, examples, graphmlJS, graphmlJVM)
 
 lazy val updateDocs = taskKey[Unit]("push docs to https://flowtick.bitbucket.io")
