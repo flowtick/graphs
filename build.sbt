@@ -43,20 +43,21 @@ lazy val commonSettings = Seq(
   ),
   publishMavenStyle := true,
   licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-  homepage := Some(url("https://flowtick.bitbucket.io/graphs")),
+  homepage := Some(url("https://flowtick.github.io/graphs")),
   scmInfo := Some(
     ScmInfo(
-      url("https://bitbucket.org/flowtick/graphs.git"),
-      "scm:git@bitbucket.org:flowtick/graphs.git"
+      url("https://github.com/flowtick/graphs.git"),
+      "scm:git@github.com:flowtick/graphs.git"
     )
   ),
   developers := List(
     Developer(id="adrobisch", name="Andreas D.", email="github@drobisch.com", url=url("http://drobisch.com/"))
-  )
+  ),
+  autoAPIMappings := true,
+  siteSubdirName in ScalaUnidoc := "latest/api"
 )
 
 lazy val core = (crossProject in file(".") / "core")
-  .enablePlugins(SiteScaladocPlugin)
   .settings(commonSettings)
   .settings(
     name := "graphs-core"
@@ -66,7 +67,6 @@ lazy val coreJS = core.js
 lazy val coreJVM = core.jvm
 
 lazy val graphml = (crossProject in file(".") / "graphml")
-  .enablePlugins(SiteScaladocPlugin)
   .settings(commonSettings)
   .settings(
     name := "graphs-graphml",
@@ -92,7 +92,7 @@ lazy val examples = (project in file("examples"))
       .dependsOn(coreJVM, graphmlJVM)
 
 lazy val graphs = (project in file("."))
-  .enablePlugins(ParadoxSitePlugin, GhpagesPlugin)
+  .enablePlugins(ParadoxSitePlugin, ScalaUnidocPlugin, GhpagesPlugin)
   .settings(commonSettings)
   .settings(
     publishLocal := {},
@@ -104,27 +104,9 @@ lazy val graphs = (project in file("."))
     mappings in makeSite ++= Seq(
       file("LICENSE") -> "LICENSE"
     ),
-    git.remoteRepo := "git@github.com:flowtick/graphs.git"
+    git.remoteRepo := "git@github.com:flowtick/graphs.git",
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(graphmlJS, coreJS),
+    addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc),
   ).aggregate(coreJS, coreJVM, examples, graphmlJS, graphmlJVM)
-
-lazy val updateDocs = taskKey[Unit]("push docs to https://flowtick.bitbucket.io")
-
-updateDocs := {
-  import scala.sys.process._
-
-  val tempSite = file("target") / "flowtick-site"
-  IO.delete(tempSite)
-  s"git clone git@bitbucket.org:flowtick/flowtick.bitbucket.io.git ${tempSite.absolutePath}".!
-
-  val siteDir = (makeSite in graphs).value
-  val scalaDocDir = (makeSite in coreJVM).value / "latest" / "api"
-
-  IO.copyDirectory(siteDir, tempSite / "graphs", overwrite = true)
-  IO.copyDirectory(scalaDocDir, tempSite / "graphs" / "api", overwrite = true)
-
-  Process("git add .", tempSite).!
-  Process(Seq("git", "commit", "-m", "'update docs'"), tempSite).!
-  Process(Seq("git", "push", "origin", "master", "--force"), tempSite).!
-}
 
 addCommandAlias("testWithCoverage", ";clean;coverage;test;coverageReport")
