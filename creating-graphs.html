@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+
+<head>
+<title>Creating graphs · graphs</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content='graphs'/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="js/page.js"></script>
+<script type="text/javascript" src="js/groups.js"></script>
+<link rel="stylesheet" type="text/css" href="lib/normalize.css/normalize.css"/>
+<link rel="stylesheet" type="text/css" href="lib/foundation/dist/foundation.min.css"/>
+<link rel="stylesheet" type="text/css" href="css/page.css"/>
+
+<!--
+<link rel="shortcut icon" href="images/favicon.ico" />
+-->
+</head>
+
+<body>
+<div class="off-canvas-wrapper">
+<div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+
+<div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
+<nav class="off-canvas-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>graphs
+</a>
+<div class="version-number">
+0.1.11*
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="setup.html" class="page">Setup</a></li>
+  <li><a href="creating-graphs.html" class="active page">Creating graphs</a></li>
+  <li><a href="algorithms.html" class="page">Algorithms</a></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="off-canvas-content" data-off-canvas-content>
+
+<header class="site-header expanded row">
+<div class="small-12 column">
+<a href="#" class="off-canvas-toggle hide-for-medium" data-toggle="off-canvas-menu"><svg class="svg-icon svg-icon-menu" version="1.1" id="Menu" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve"> <path class="svg-icon-menu-path" fill="#53CDEC" d="M16.4,9H3.6C3.048,9,3,9.447,3,10c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,9.447,16.952,9,16.4,9z M16.4,13
+H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
+C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
+</a>
+<div class="title"><a href="index.html">graphs</a></div>
+
+<!--
+<a href="https://www.example.com" class="logo show-for-medium">logo</a>
+-->
+</div>
+</header>
+
+<div class="expanded row">
+
+<div class="medium-3 large-2 show-for-medium column">
+<nav class="site-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>graphs
+</a>
+<div class="version-number">
+0.1.11*
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="setup.html" class="page">Setup</a></li>
+  <li><a href="creating-graphs.html" class="active page">Creating graphs</a></li>
+  <li><a href="algorithms.html" class="page">Algorithms</a></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="small-12 medium-9 large-10 column">
+<section class="site-content">
+
+<div class="page-header row">
+<div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="index.html">graphs</a></li>
+  <li>Creating graphs</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="page-content row">
+<div class="small-12 large-9 column" id="docs">
+<h1><a href="#creating-graphs" name="creating-graphs" class="anchor"><span class="anchor-link"></span></a>Creating graphs</h1>
+<p>A <em>graph</em> consists of <em>nodes</em> which represent some objects or values and <em>edges</em> which express a relation between this objects and values. In <code>graphs</code> the base type for a graph is therefore a trait with the type parameters for node and the edge type:</p>
+<pre class="prettyprint"><code class="language-scala">trait Graph[N &lt;: Node, E &lt;: Edge[N]] {
+  def nodes: Set[N]
+  def edges: Set[E]
+
+  def incoming(node: N): Iterable[E]
+  def outgoing(node: N): Iterable[E]
+}</code></pre>
+<p>There is default implementation of a graph which has just one property for its nodes, which is an <code>id</code> to identify the node. Using this default implementation, you can instantly start creating graph instances:</p>
+<pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.defaults._
+
+object SimpleGraphApp extends App {
+  val graph = DefaultGraph.create { implicit graph =&gt;
+    n(&quot;A&quot;) ~&gt; n(&quot;B&quot;)
+    n(&quot;B&quot;) ~&gt; n(&quot;C&quot;)
+    n(&quot;D&quot;) ~&gt; n(&quot;A&quot;)
+  }
+
+  println(graph.edges)
+  // Set(DefaultDirectedEdge(None,DefaultNode(B),DefaultNode(C)), DefaultDirectedEdge(None,DefaultNode(D),DefaultNode(A)), DefaultDirectedEdge(None,DefaultNode(A),DefaultNode(B)))
+}</code></pre>
+<h2><a href="#custom-graph-types" name="custom-graph-types" class="anchor"><span class="anchor-link"></span></a>Custom Graph Types</h2>
+<p>Creating a custom graph type is just a matter of extending the core interfaces <code>Node</code>, <code>Graph</code>, <code>Edge</code> with custom implementations and a graph builder to create instances:</p>
+<pre class="prettyprint"><code class="language-scala">case class MyNode(someCustomProperty: String) extends Node
+case class MyEdge(label: Option[String] = None, source: MyNode, target: MyNode) extends DirectedEdge[MyNode]
+case class MyGraph(graphBuilder: GraphBuilder[MyNode, MyEdge]) extends AbstractGraph[MyNode, MyEdge](graphBuilder)
+
+class MyGraphBuilder extends GraphBuilder[MyNode, MyEdge] {
+  override def build: MyGraph = new MyGraph(this)
+}
+
+object MyGraph {
+  def create(block: MyGraphBuilder =&gt; Any): MyGraph = {
+    val builder = new MyGraphBuilder
+    block.apply(builder)
+    builder.build
+  }
+}
+
+val graph = MyGraph.create { implicit graph =&gt;
+  graph.addEdge(MyEdge(label = None, MyNode(&quot;My first node&quot;), MyNode(&quot;My second node&quot;)))
+}
+
+println(graph.edges)
+// Set(MyEdge(None,MyNode(My first node),MyNode(My second node)))</code></pre>
+<h3><a href="#arrow-style-builder-methods" name="arrow-style-builder-methods" class="anchor"><span class="anchor-link"></span></a>Arrow-style builder methods</h3>
+<p>To add some sugar for the graph creation, have a look at tne <code>NodeOps</code>-types which allow to define arrow like builder methods on the node types:</p>
+<pre class="prettyprint"><code class="language-scala">implicit class MyNodeOps(n: MyNode) extends NodeOps[MyNode, MyEdge]
+  with DirectedNodeOps[MyNode, MyEdge] {
+  val node: MyNode = n
+
+  override def ~&gt;(target: MyNode)(implicit graphBuilder: GraphBuilder[MyNode, MyEdge]): MyNode = {
+    graphBuilder.addEdge(MyEdge(None, node, target))
+    target
+  }
+}
+
+// allows
+
+MyGraph.create { implicit graph =&gt;
+  MyNode(&quot;My first node&quot;) ~&gt; MyNode(&quot;My second node&quot;)
+}</code></pre>
+<h3><a href="#default-graph" name="default-graph" class="anchor"><span class="anchor-link"></span></a>Default Graph</h3>
+<p>The default graph implementation shows another example on how to define a simple node type and a bunch of builders for the different edge types:</p>
+<pre class="prettyprint"><code class="language-scala">package com.flowtick.graphs.defaults
+
+import com.flowtick.graphs._
+
+case class DefaultNode(id: String) extends Node
+case class DefaultDirectedEdge[N &lt;: Node](label: Option[String] = None, source: N, target: N) extends DirectedEdge[N]
+case class DefaultUndirectedEdge[N &lt;: Node](label: Option[String] = None, source: N, target: N) extends UndirectedEdge[N]
+
+case class DefaultWeightedEdge[T: Numeric, N &lt;: Node](
+  value: T,
+  override val label: Option[String] = None,
+  override val source: N,
+  override val target: N) extends WeightedUndirectedEdge[T, N](value, label, source, target)
+
+case class DefaultGraph[N &lt;: Node, E &lt;: Edge[N]](graphBuilder: GraphBuilder[N, E]) extends AbstractGraph[N, E](graphBuilder)
+
+object DefaultGraph {
+  class DefaultGraphBuilder extends GraphBuilder[DefaultNode, Edge[DefaultNode]] {
+    override def build: DefaultGraph[DefaultNode, Edge[DefaultNode]] = DefaultGraph(this)
+  }
+
+  class DirectedGraphBuilder extends GraphBuilder[DefaultNode, DirectedEdge[DefaultNode]] {
+    override def build: DefaultGraph[DefaultNode, DirectedEdge[DefaultNode]] = DefaultGraph(this)
+  }
+
+  class UndirectedGraphBuilder extends GraphBuilder[DefaultNode, UndirectedEdge[DefaultNode]] {
+    override def build: DefaultGraph[DefaultNode, UndirectedEdge[DefaultNode]] = DefaultGraph(this)
+  }
+
+  class WeightedGraphBuilder extends GraphBuilder[DefaultNode, WeightedEdge[Int, DefaultNode]] {
+    override def build: DefaultGraph[DefaultNode, WeightedEdge[Int, DefaultNode]] = DefaultGraph(this)
+  }
+
+  def create(block: DefaultGraphBuilder =&gt; Any): DefaultGraph[DefaultNode, Edge[DefaultNode]] = {
+    val builder = new DefaultGraphBuilder
+    block.apply(builder)
+    builder.build
+  }
+
+  def directed(block: DirectedGraphBuilder =&gt; Any): DefaultGraph[DefaultNode, DirectedEdge[DefaultNode]] = {
+    val builder = new DirectedGraphBuilder
+    block.apply(builder)
+    builder.build
+  }
+
+  def undirected(block: UndirectedGraphBuilder =&gt; Any): DefaultGraph[DefaultNode, UndirectedEdge[DefaultNode]] = {
+    val builder = new UndirectedGraphBuilder
+    block.apply(builder)
+    builder.build
+  }
+
+  def weighted(block: WeightedGraphBuilder =&gt; Any): DefaultGraph[DefaultNode, WeightedEdge[Int, DefaultNode]] = {
+    val builder = new WeightedGraphBuilder
+    block.apply(builder)
+    builder.build
+  }
+}</code></pre>
+<div class="nav-next">
+<p><strong>Next:</strong> <a href="algorithms.html">Algorithms</a></p>
+</div>
+</div>
+<div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="creating-graphs.html#creating-graphs" class="header">Creating graphs</a>
+  <ul>
+    <li><a href="creating-graphs.html#custom-graph-types" class="header">Custom Graph Types</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
+</div>
+</div>
+
+</section>
+</div>
+
+</div>
+
+<footer class="site-footer">
+
+<section class="site-footer-nav">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 medium-4 large-3 text-center column">
+<div class="nav-links">
+<ul>
+<!-- <li><a href="https://www.example.com/products/">Products</a> -->
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<section class="site-footer-base">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 text-center large-9 column">
+
+<!--
+<div class="copyright">
+<span class="text">&copy; 2018</span>
+<a href="https://www.example.com" class="logo">logo</a>
+</div>
+-->
+</div>
+
+</div>
+</div>
+</div>
+</section>
+</footer>
+
+</div>
+</div>
+</div>
+</body>
+
+<script type="text/javascript" src="lib/foundation/dist/foundation.min.js"></script>
+<script type="text/javascript">jQuery(document).foundation();</script>
+<script type="text/javascript" src="js/magellan.js"></script>
+
+<style type="text/css">@import "lib/prettify/prettify.css";</style>
+<script type="text/javascript" src="lib/prettify/prettify.js"></script>
+<script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
+<script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
+
+</html>
