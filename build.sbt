@@ -1,6 +1,6 @@
 import ReleaseTransformations._
 
-val mainScalaVersion = "2.12.4"
+val mainScalaVersion = "2.12.5"
 
 lazy val commonSettings = Seq(
   resolvers ++= Seq(
