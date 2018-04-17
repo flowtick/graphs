@@ -19,3 +19,14 @@ credentials += Credentials("Sonatype Nexus Repository Manager",
         "(Sonatype user name)",
         "(Sonatype password)")
 ```
+
+The cross release will sometimes enter a loop, just exist after the push.
+
+Update Docs
+===========
+
+```
+git checkout v<released_version>
+sbt ghpagesPushSite
+```
+
