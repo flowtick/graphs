@@ -46,12 +46,12 @@ lazy val commonSettings = Seq(
   homepage := Some(url("https://flowtick.github.io/graphs")),
   scmInfo := Some(
     ScmInfo(
-      url("https://github.com/flowtick/graphs.git"),
+      url("https://github.com/flowtick/graphs"),
       "scm:git@github.com:flowtick/graphs.git"
     )
   ),
   developers := List(
-    Developer(id="adrobisch", name="Andreas D.", email="github@drobisch.com", url=url("http://drobisch.com/"))
+    Developer(id = "adrobisch", name = "Andreas Drobisch", email = "github@drobisch.com", url = url("http://drobisch.com"))
   ),
   autoAPIMappings := true,
   siteSubdirName in ScalaUnidoc := "latest/api"
