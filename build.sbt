@@ -4,8 +4,7 @@ val mainScalaVersion = "2.12.5"
 
 lazy val commonSettings = Seq(
   resolvers ++= Seq(
-    Resolver.bintrayRepo("flowtick", "jgraphx"),
-    Resolver.bintrayRepo("flowtick", "scala-xml")
+    Resolver.bintrayRepo("flowtick", "jgraphx")
   ),
   organization := "com.flowtick",
   scalaVersion := mainScalaVersion,
@@ -73,11 +72,11 @@ lazy val graphml = (crossProject in file(".") / "graphml")
   ).jvmSettings(
     libraryDependencies ++= Seq(
       "com.mxgraph" % "jgraphx" % "3.7.4",
-      "org.scala-lang.modules" %% "scala-xml" % "1.0.6"
+      "org.scala-lang.modules" %% "scala-xml" % "1.1.0"
     )
   ).jsSettings(
     libraryDependencies ++= Seq(
-      "com.flowtick" %%% "scala-xml" % "1.1.0-ft"
+      "org.scala-lang.modules" %%% "scala-xml" % "1.1.0"
     )
   ).dependsOn(core)
 
