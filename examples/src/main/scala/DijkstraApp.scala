@@ -1,21 +1,21 @@
 import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.defaults.undirected._
 
 object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
-  val cities = DefaultGraph.weighted { implicit g =>
-    n("Frankfurt") ~ (85, n("Mannheim"))
-    n("Frankfurt") ~ (217, n("Wuerzburg"))
-    n("Frankfurt") ~ (173, n("Kassel"))
-    n("Mannheim") ~ (80, n("Karlsruhe"))
-    n("Wuerzburg") ~ (186, n("Erfurt"))
-    n("Wuerzburg") ~ (103, n("Nuernberg"))
-    n("Stuttgart") ~ (183, n("Nuernberg"))
-    n("Kassel") ~ (502, n("Muenchen"))
-    n("Nuernberg") ~ (167, n("Muenchen"))
-    n("Karlsruhe") ~ (250, n("Augsburg"))
-    n("Augsburg") ~ (84, n("Muenchen"))
-  }
+  val cities = DefaultGraph.weighted[DefaultEdge[DefaultNode], DefaultNode, Int](Seq(
+    (85, n("Frankfurt") -> n("Mannheim")),
+    (217, n("Frankfurt") -> n("Wuerzburg")),
+    (173, n("Frankfurt") -> n("Kassel")),
+    (80, n("Mannheim") -> n("Karlsruhe")),
+    (186, n("Wuerzburg") -> n("Erfurt")),
+    (103, n("Wuerzburg") -> n("Nuernberg")),
+    (183, n("Stuttgart") -> n("Nuernberg")),
+    (502, n("Kassel") -> n("Muenchen")),
+    (167, n("Nuernberg") -> n("Muenchen")),
+    (250, n("Karlsruhe") -> n("Augsburg")),
+    (84, n("Augsburg") -> n("Muenchen"))))
 }
 
 object DijkstraApp extends App {

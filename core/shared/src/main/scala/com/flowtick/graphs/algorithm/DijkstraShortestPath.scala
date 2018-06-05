@@ -5,7 +5,7 @@ import com.flowtick.graphs._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class DijkstraShortestPath[T: Numeric, N <: Node, E <: WeightedEdge[T, N]](graph: Graph[N, WeightedEdge[T, N]]) {
+class DijkstraShortestPath[T, N, E](graph: Graph[N, E]) {
   /**
    * determine the shortest path from start to end,
    * works only for positive weight values
@@ -14,12 +14,11 @@ class DijkstraShortestPath[T: Numeric, N <: Node, E <: WeightedEdge[T, N]](graph
    * @param end the end node
    * @return Some list of node ids with the shortest path, None if there is no path from start to end
    */
-  def shortestPath(start: N, end: N): Option[List[N]] = {
-    val numeric: Numeric[T] = implicitly[Numeric[T]]
+  def shortestPath(start: N, end: N)(implicit weight: Weighted[E, T], numeric: Numeric[T]): Option[List[N]] = {
     val distanceMap = mutable.Map.empty[N, Double]
     val predecessorMap = mutable.Map.empty[N, N]
 
-    implicit val nodePriority = new Ordering[N] {
+    implicit val nodePriority: Ordering[N] = new Ordering[N] {
       override def compare(x: N, y: N): Int = -distanceMap(x).compare(distanceMap(y))
     }
 
@@ -38,10 +37,13 @@ class DijkstraShortestPath[T: Numeric, N <: Node, E <: WeightedEdge[T, N]](graph
       val current = queue.dequeue()
       graph.outgoing(current).foreach { edge =>
         val currentDistance: Double = distanceMap(current)
-        val newDist = currentDistance + numeric.toDouble(edge.weight)
-        if (newDist < distanceMap(edge.target)) {
-          distanceMap.put(edge.target, newDist)
-          predecessorMap.put(edge.target, current)
+        val newDist = currentDistance + numeric.toDouble(weight.value(edge))
+        val targetNode = graph.second(edge)
+        if (targetNode.exists(newDist < distanceMap(_))) {
+          targetNode.foreach { node =>
+            distanceMap.put(node, newDist)
+            predecessorMap.put(node, current)
+          }
         }
       }
     }

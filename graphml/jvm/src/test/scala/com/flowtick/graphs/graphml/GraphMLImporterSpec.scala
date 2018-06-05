@@ -5,10 +5,8 @@ import org.scalatest.{ FlatSpec, Matchers }
 
 class GraphMLImporterSpec extends FlatSpec with Matchers {
   "GraphML Importer" should "import rendered XML" in {
-    val graph = GraphMLGraph.create("test-graph") { implicit graph =>
-      node("A", nodeProperty("foo", "bar", typeHint = Some("string"))) ~> node("B")
-    }
-
+    val testEdge = (node("A", nodeProperty("foo", "bar", typeHint = Some("string"))) -> node("B"), Some("test-edge"))
+    val graph = GraphMLGraph.create(Seq(testEdge))("test-graph")
     val graphml = new GraphMLRenderer().render(graph, JGraphXLayouter)
     val imported = new GraphMLImporter().fromXml(graphml.toString)
 
@@ -32,9 +30,13 @@ class GraphMLImporterSpec extends FlatSpec with Matchers {
 
       val importedEdges = graph.edges
       importedEdges should have size 1
-      importedEdges.headOption.foreach(_.id should be("A-B"))
-      importedEdges.headOption.foreach(_.source.id should be("A"))
-      importedEdges.headOption.foreach(_.target.id should be("B"))
+      importedEdges.headOption match {
+        case Some(edge) =>
+          edge.id should be("A-B")
+          edge.source.id should be("A")
+          val Some(target) = edge.target
+          target.id should be("B")
+      }
     }
   }
 
