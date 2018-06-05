@@ -1,15 +1,15 @@
 package com.flowtick.graphs.graphml
 
 import com.flowtick.graphs.layout.{ DefaultGeometry, GraphLayout, ShapeDefinition }
-import com.flowtick.graphs.{ Edge, Graph, Identifiable, Node }
+import com.flowtick.graphs.{ Graph, Identifiable, Labeled }
 
 import scala.xml.{ Elem, Text }
 
 class GraphMLRenderer {
-  def render[N <: Node, E <: Edge[N]](
+  def render[N, E](
     g: Graph[N, E],
     layouter: GraphLayout,
-    shapeDefinition: N => Option[ShapeDefinition] = (_: N) => None)(implicit identifiable: Identifiable[N]): Elem = {
+    shapeDefinition: N => Option[ShapeDefinition] = (_: N) => None)(implicit identifiable: Identifiable[N], edgeLabel: Labeled[E, String]): Elem = {
     val layoutedCells = layouter.layout(g, shapeDefinition)
 
     def nodeProperties(aNode: N): Map[String, GraphMLProperty] = (aNode match {
@@ -69,8 +69,10 @@ class GraphMLRenderer {
     }
 
     def edgesXml =
-      g.edges.map { edge =>
-        <edge id={ identifiable.id(edge.source) + "-" + identifiable.id(edge.target) } source={ identifiable.id(edge.source) } target={ identifiable.id(edge.target) }/>
+      g.edges.flatMap { edge =>
+        g.second(edge).map { targetNode =>
+          <edge id={ identifiable.id(g.first(edge)) + "-" + identifiable.id(targetNode) } source={ identifiable.id(g.first(edge)) } target={ identifiable.id(targetNode) }/>
+        }
       }
 
     def nodesXml =
@@ -82,7 +84,7 @@ class GraphMLRenderer {
 
     // format: OFF
     <graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:java="http://www.yworks.com/xml/yfiles-common/1.0/java" xmlns:sys="http://www.yworks.com/xml/yfiles-common/markup/primitives/2.0" xmlns:x="http://www.yworks.com/xml/yfiles-common/markup/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:y="http://www.yworks.com/xml/graphml" xmlns:yed="http://www.yworks.com/xml/yed/3" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd">
-      <!-- Created by https://bitbucket.org/flowtick/graphs GraphML renderer -->
+      <!-- Created by https://github.com/flowtick/graphs GraphML renderer -->
       { dataKeys }
       <graph id="G" edgedefault="directed">
         { nodesXml }

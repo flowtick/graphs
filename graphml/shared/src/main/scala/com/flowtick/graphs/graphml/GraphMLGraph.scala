@@ -14,25 +14,21 @@ final case class GraphMLProperty(key: GraphMLKey, value: Any)
 final case class GraphMLNode(
   id: String,
   label: Option[String] = None,
-  properties: Map[String, GraphMLProperty] = Map.empty) extends Node
+  properties: Map[String, GraphMLProperty] = Map.empty)
 
-final case class GraphMLEdge(
+final case class GraphMLEdge[N](
   id: String,
   label: Option[String] = None,
-  source: GraphMLNode,
-  target: GraphMLNode,
-  properties: Map[String, GraphMLProperty] = Map.empty) extends DirectedEdge[GraphMLNode]
+  source: N,
+  target: Option[N],
+  properties: Map[String, GraphMLProperty] = Map.empty)
 
-final case class GraphMLGraph(id: String, graphBuilder: GraphBuilder[GraphMLNode, GraphMLEdge]) extends AbstractGraph[GraphMLNode, GraphMLEdge](graphBuilder)
-
-class GraphMLGraphBuilder(id: String) extends GraphBuilder[GraphMLNode, GraphMLEdge] {
-  override def build: GraphMLGraph = GraphMLGraph(id, this)
-}
+final case class GraphMLGraph[N, E](
+  id: String,
+  override val nodes: Set[N],
+  edges: Set[E])(implicit edge: Edge[E, N]) extends AbstractGraph[N, E]
 
 object GraphMLGraph {
-  def create(id: String)(block: GraphMLGraphBuilder => Any): GraphMLGraph = {
-    val builder = new GraphMLGraphBuilder(id)
-    block.apply(builder)
-    builder.build
-  }
+  def create: Seq[((GraphMLNode, GraphMLNode), Option[String])] => String => GraphMLGraph[GraphMLNode, GraphMLEdge[GraphMLNode]] =
+    Graph.create[GraphMLNode, GraphMLEdge[GraphMLNode], GraphMLGraph[GraphMLNode, GraphMLEdge[GraphMLNode]], ((GraphMLNode, GraphMLNode), Option[String]), String]
 }

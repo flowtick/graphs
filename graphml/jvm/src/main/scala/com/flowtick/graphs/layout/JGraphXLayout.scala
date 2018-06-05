@@ -2,7 +2,7 @@ package com.flowtick.graphs.layout
 
 import java.util
 
-import com.flowtick.graphs.{ Edge, Graph, Identifiable, Node }
+import com.flowtick.graphs.{ Edge, Graph, Identifiable, Labeled }
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
 import com.mxgraph.model.{ mxCell, mxGeometry, mxGraphModel }
 import com.mxgraph.view.mxGraph
@@ -12,7 +12,9 @@ import scala.collection.mutable
 
 object JGraphXLayouter extends GraphLayout {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
-  override def layout[N <: Node, E <: Edge[N]](g: Graph[N, E], shape: N => Option[ShapeDefinition])(implicit identifiable: Identifiable[N]): collection.Map[String, Cell] = {
+  override def layout[N, E](g: Graph[N, E], shape: N => Option[ShapeDefinition])(implicit
+    identifiable: Identifiable[N],
+    edgeLabel: Labeled[E, String]): collection.Map[String, Cell] = {
     new JGraphXLayout[N, E]().layout(g, shape)
       .getModel.asInstanceOf[mxGraphModel]
       .getCells.asScala.mapValues(cell => JGraphXCell(cell.asInstanceOf[mxCell]))
@@ -33,7 +35,9 @@ final case class JGraphXCell(cell: mxCell) extends Cell {
   override def geometry: Geometry = JGraphGeometry(cell.getGeometry)
 }
 
-class JGraphXLayout[N <: Node, E <: Edge[N]](implicit val identifiable: Identifiable[N]) {
+class JGraphXLayout[N, E](implicit
+  identifiable: Identifiable[N],
+  edgeLabel: Labeled[E, String]) {
 
   def layout(graph: Graph[N, E], shapeDefinition: N => Option[ShapeDefinition]): mxGraph = {
     val layoutGraph = graphToMxGraph(graph, shapeDefinition)
@@ -81,17 +85,20 @@ class JGraphXLayout[N <: Node, E <: Edge[N]](implicit val identifiable: Identifi
       mxGraph.setCellStyle(id, Array[AnyRef](vertex))
     }
 
-    graph.edges.foreach { edge =>
-      val sourceId = identifiable.id(edge.source)
-      val targetId = identifiable.id(edge.target)
-      val edgeId = s"$sourceId-$targetId"
+    graph.edges.foreach { edge: E =>
+      val sourceId = identifiable.id(graph.first(edge))
 
-      mxGraph.insertEdge(
-        mxGraph.getDefaultParent,
-        null,
-        edge.label.getOrElse(""),
-        vertices.get(sourceId).orNull,
-        vertices.get(targetId).orNull)
+      graph.second(edge).foreach { targetNode =>
+        val targetId = identifiable.id(targetNode)
+        val edgeId = s"$sourceId-$targetId"
+
+        mxGraph.insertEdge(
+          mxGraph.getDefaultParent,
+          null,
+          edgeLabel.label(edge).getOrElse(""),
+          vertices.get(sourceId).orNull,
+          vertices.get(targetId).orNull)
+      }
     }
 
     mxGraph.getModel.endUpdate()
