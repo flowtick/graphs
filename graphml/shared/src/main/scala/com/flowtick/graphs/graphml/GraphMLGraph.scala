@@ -21,14 +21,17 @@ final case class GraphMLEdge[N](
   label: Option[String] = None,
   source: N,
   target: Option[N],
-  properties: Map[String, GraphMLProperty] = Map.empty)
+  properties: Map[String, GraphMLProperty] = Map.empty) extends Edge[GraphMLEdge[N], N] {
+  override def value: GraphMLEdge[N] = this
+  override def predecessors: Set[N] = Set(source)
+  override def successors: Set[N] = Set(target).flatten
+}
 
 final case class GraphMLGraph[N, E](
-  id: String,
-  override val nodes: Set[N],
-  edges: Set[E])(implicit edge: Edge[E, N]) extends AbstractGraph[N, E]
+  id: Option[String],
+  graph: Graph[N, E])
 
 object GraphMLGraph {
-  def create: Seq[((GraphMLNode, GraphMLNode), Option[String])] => String => GraphMLGraph[GraphMLNode, GraphMLEdge[GraphMLNode]] =
-    Graph.create[GraphMLNode, GraphMLEdge[GraphMLNode], GraphMLGraph[GraphMLNode, GraphMLEdge[GraphMLNode]], ((GraphMLNode, GraphMLNode), Option[String]), String]
+  def create: Seq[((GraphMLNode, GraphMLNode), Option[String])] => Graph[GraphMLNode, GraphMLEdge[GraphMLNode]] =
+    Graph.create[GraphMLNode, GraphMLEdge[GraphMLNode], ((GraphMLNode, GraphMLNode), Option[String])]
 }

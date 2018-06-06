@@ -85,17 +85,19 @@ class JGraphXLayout[N, E](implicit
       mxGraph.setCellStyle(id, Array[AnyRef](vertex))
     }
 
-    graph.edges.foreach { edge: E =>
-      val sourceId = identifiable.id(graph.first(edge))
-
-      graph.second(edge).foreach { targetNode =>
-        val targetId = identifiable.id(targetNode)
+    graph.edges.foreach { edge: Edge[E, N] =>
+      for {
+        source <- edge.predecessors.headOption
+        target <- edge.successors.headOption
+      } {
+        val sourceId = identifiable.id(source)
+        val targetId = identifiable.id(target)
         val edgeId = s"$sourceId-$targetId"
 
         mxGraph.insertEdge(
           mxGraph.getDefaultParent,
           null,
-          edgeLabel.label(edge).getOrElse(""),
+          edgeLabel.label(edge.value).getOrElse(""),
           vertices.get(sourceId).orNull,
           vertices.get(targetId).orNull)
       }

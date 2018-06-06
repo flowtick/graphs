@@ -5,25 +5,29 @@ import com.flowtick.graphs.layout.{ Cell, GraphLayout, ShapeDefinition }
 package object defaults extends {
   // #default_graph
   case class DefaultNode(id: String)
-  case class DefaultEdge[N](source: N, target: Option[N])
-  case class WeightedEdge[E, V](edge: E, weight: V)
+  case class DefaultEdge[N](source: N, target: Option[N], directed: Boolean = true) extends Edge[DefaultEdge[N], N] {
+    override def value: DefaultEdge[N] = this
 
-  case class DefaultGraph[N, E](edges: Set[E])(implicit val edgeType: Edge[E, N]) extends AbstractGraph[N, E]
+    override def predecessors: Set[N] = if (directed) Set(source) else Set(source) ++ Set(target).flatten
+    override def successors: Set[N] = if (directed) Set(target).flatten else Set(target).flatten ++ Set(source)
+  }
+
+  case class WeightedEdge[E, N, V](edge: Edge[E, N], weight: V) extends Edge[WeightedEdge[E, N, V], N] {
+    override def value: WeightedEdge[E, N, V] = this
+    override def predecessors: Set[N] = edge.predecessors
+    override def successors: Set[N] = edge.successors
+  }
 
   object DefaultGraph {
     def create[N](tuples: Seq[(N, N)])(implicit
       identifiable: Identifiable[N],
-      edge: Edge[DefaultEdge[N], N],
-      edgeBuilder: EdgeBuilder[N, DefaultEdge[N], (N, N)],
-      graphBuilder: GraphBuilder[N, DefaultEdge[N], DefaultGraph[N, DefaultEdge[N]], Unit]): DefaultGraph[N, DefaultEdge[N]] =
-      Graph.create[N, DefaultEdge[N], DefaultGraph[N, DefaultEdge[N]], (N, N), Unit](tuples: _*)()
+      edgeBuilder: EdgeBuilder[N, DefaultEdge[N], (N, N)]): Graph[N, DefaultEdge[N]] =
+      Graph.create[N, DefaultEdge[N], (N, N)](tuples: _*)
 
     def weighted[E, N, V](tuples: Seq[(V, (N, N))])(implicit
       identifiable: Identifiable[N],
-      edge: Edge[WeightedEdge[E, V], N],
-      edgeBuilder: EdgeBuilder[N, WeightedEdge[E, V], (V, (N, N))],
-      graphBuilder: GraphBuilder[N, WeightedEdge[E, V], DefaultGraph[N, WeightedEdge[E, V]], Unit]): DefaultGraph[N, WeightedEdge[E, V]] =
-      Graph.create[N, WeightedEdge[E, V], DefaultGraph[N, WeightedEdge[E, V]], (V, (N, N)), Unit](tuples: _*)()
+      edgeBuilder: EdgeBuilder[N, WeightedEdge[E, N, V], (V, (N, N))]): Graph[N, WeightedEdge[E, N, V]] =
+      Graph.create[N, WeightedEdge[E, N, V], (V, (N, N))](tuples: _*)
   }
   // #default_graph
 
@@ -39,41 +43,20 @@ package object defaults extends {
       edgeLabel: Labeled[E, String]): collection.Map[String, Cell] = Map.empty
   }
 
+  implicit def weight[E, N, V: Numeric]: Weighted[WeightedEdge[E, N, V], V] = new Weighted[WeightedEdge[E, N, V], V] {
+    override def value(weighted: WeightedEdge[E, N, V]): V = weighted.weight
+  }
+
   object directed {
-    implicit def directedEdge[N]: Edge[DefaultEdge[N], N] = new Edge[DefaultEdge[N], N] {
-      override def first(edge: DefaultEdge[N]): N = edge.source
-      override def second(edge: DefaultEdge[N]): Option[N] = edge.target
+    implicit def edgeBuilder[N]: EdgeBuilder[N, DefaultEdge[N], (N, N)] = new EdgeBuilder[N, DefaultEdge[N], (N, N)] {
+      override def create(from: (N, N))(implicit identifiable: Identifiable[N]): DefaultEdge[N] = DefaultEdge(from._1, Some(from._2))
     }
   }
 
   object undirected {
-    implicit def undirectedEdge[N]: Edge[DefaultEdge[N], N] = new Edge[DefaultEdge[N], N] {
-      override def first(edge: DefaultEdge[N]): N = edge.source
-      override def second(edge: DefaultEdge[N]): Option[N] = edge.target
-
-      override def incoming(node: N, graph: Graph[N, DefaultEdge[N]]): Iterable[DefaultEdge[N]] =
-        super.incoming(node, graph) ++ super.outgoing(node, graph)
-
-      override def outgoing(node: N, graph: Graph[N, DefaultEdge[N]]): Iterable[DefaultEdge[N]] =
-        super.incoming(node, graph) ++ super.outgoing(node, graph)
+    implicit def edgeBuilder[N]: EdgeBuilder[N, DefaultEdge[N], (N, N)] = new EdgeBuilder[N, DefaultEdge[N], (N, N)] {
+      override def create(from: (N, N))(implicit identifiable: Identifiable[N]): DefaultEdge[N] = DefaultEdge(from._1, Some(from._2), directed = false)
     }
-  }
-
-  implicit def weightedEdge[E, N, V](implicit edgeType: Edge[E, N]): Edge[WeightedEdge[E, V], N] = new Edge[WeightedEdge[E, V], N] {
-    override def first(weightedEdge: WeightedEdge[E, V]): N = edgeType.first(weightedEdge.edge)
-    override def second(weightedEdge: WeightedEdge[E, V]): Option[N] = edgeType.second(weightedEdge.edge)
-  }
-
-  implicit def weight[N, V: Numeric]: Weighted[WeightedEdge[N, V], V] = new Weighted[WeightedEdge[N, V], V] {
-    override def value(weighted: WeightedEdge[N, V]): V = weighted.weight
-  }
-
-  implicit def graphBuilder[N, E](implicit edge: Edge[E, N]): GraphBuilder[N, E, DefaultGraph[N, E], Unit] = new GraphBuilder[N, E, DefaultGraph[N, E], Unit] {
-    override def create(edges: Set[E], nodes: Set[N], param: Unit): DefaultGraph[N, E] = DefaultGraph[N, E](edges)
-  }
-
-  implicit def edgeBuilder[N]: EdgeBuilder[N, DefaultEdge[N], (N, N)] = new EdgeBuilder[N, DefaultEdge[N], (N, N)] {
-    override def create(from: (N, N))(implicit identifiable: Identifiable[N]): DefaultEdge[N] = DefaultEdge(from._1, Some(from._2))
   }
 
   implicit def singleNodeEdgeBuilder[N]: EdgeBuilder[N, DefaultEdge[N], N] = new EdgeBuilder[N, DefaultEdge[N], N] {
@@ -84,12 +67,12 @@ package object defaults extends {
     override def label(edge: DefaultEdge[N]): Option[String] = None
   }
 
-  implicit def weightedEdgeBuilder[E, N, V, B](implicit edgeBuilder: EdgeBuilder[N, E, B]): EdgeBuilder[N, WeightedEdge[E, V], (V, B)] = new EdgeBuilder[N, WeightedEdge[E, V], (V, B)] {
-    override def create(from: (V, B))(implicit identifiable: Identifiable[N]): WeightedEdge[E, V] =
+  implicit def weightedEdgeBuilder[E, N, V, B](implicit edgeBuilder: EdgeBuilder[N, E, B]): EdgeBuilder[N, WeightedEdge[E, N, V], (V, B)] = new EdgeBuilder[N, WeightedEdge[E, N, V], (V, B)] {
+    override def create(from: (V, B))(implicit identifiable: Identifiable[N]): Edge[WeightedEdge[E, N, V], N] =
       WeightedEdge(edgeBuilder.create(from._2), from._1)
   }
 
-  implicit def weightedEdgeLabel[N, V]: Labeled[WeightedEdge[N, V], String] = new Labeled[WeightedEdge[N, V], String] {
-    override def label(edge: WeightedEdge[N, V]): Option[String] = Some(edge.weight.toString)
+  implicit def weightedEdgeLabel[E, N, V]: Labeled[WeightedEdge[E, N, V], String] = new Labeled[WeightedEdge[E, N, V], String] {
+    override def label(edge: WeightedEdge[E, N, V]): Option[String] = Some(edge.weight.toString)
   }
 }
