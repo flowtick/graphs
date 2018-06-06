@@ -1,8 +1,7 @@
 package com.flowtick.graphs.graphml
 
-import com.flowtick.graphs.Graph
-import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
+import com.flowtick.graphs.defaults
+import com.flowtick.graphs.defaults.{ DefaultGraph, directed, n }
 import com.flowtick.graphs.layout.JGraphXLayouter
 import org.scalatest.{ FlatSpec, Matchers }
 
@@ -10,7 +9,7 @@ import scala.xml.Elem
 
 class GraphMLRendererSpec extends FlatSpec with Matchers {
   "GraphRenderer" should "render default graph" in new GraphMLRenderer {
-    val newGraph: Graph[DefaultNode, DefaultEdge[DefaultNode]] = DefaultGraph.create(Seq(n("A") -> n("B")))
+    val newGraph = DefaultGraph.create(Seq(n("A") -> n("B")))(defaults.identifiable, directed.edgeBuilder)
     val xml: Elem = render(newGraph, JGraphXLayouter)
 
     xml.headOption shouldBe defined

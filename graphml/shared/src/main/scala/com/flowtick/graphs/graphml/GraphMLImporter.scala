@@ -1,5 +1,7 @@
 package com.flowtick.graphs.graphml
 
+import com.flowtick.graphs.{ Edge, Graph }
+
 import scala.collection.mutable
 import scala.util._
 import scala.xml.{ Node, Text, XML }
@@ -37,7 +39,7 @@ class GraphMLImporter {
   protected def extractNodeLabel(properties: Map[String, GraphMLProperty]): Option[String] = {
     properties.values.find(_.key.yfilesType.exists(_ == "nodegraphics")).flatMap { nodeGraphics =>
       nodeGraphics.value match {
-        case xml: Seq[scala.xml.Node] =>
+        case xml: Seq[scala.xml.Node @unchecked] =>
           val nodeLabel: Option[Node] = xml.foldLeft(Seq.empty[scala.xml.Node])((a, b) => a ++ b.nonEmptyChildren).find(_.label == "NodeLabel")
           nodeLabel.map(_.text.trim)
       }
@@ -47,7 +49,7 @@ class GraphMLImporter {
   protected def extractEdgeLabel(properties: Map[String, GraphMLProperty]): Option[String] = {
     properties.values.find(_.key.yfilesType.exists(_ == "edgegraphics")).flatMap { edgeGraphics =>
       edgeGraphics.value match {
-        case xml: Seq[scala.xml.Node] =>
+        case xml: Seq[scala.xml.Node @unchecked] =>
           val edgeLabel: Option[Node] = xml.foldLeft(Seq.empty[scala.xml.Node])((a, b) => a ++ b.nonEmptyChildren).find(_.label == "EdgeLabel")
           edgeLabel.map(_.text.trim)
       }
@@ -58,7 +60,7 @@ class GraphMLImporter {
     val edgeXmlNodes = new mutable.ListBuffer[scala.xml.Node]()
     val nodes: mutable.Map[String, GraphMLNode] = parseGraphNodes(graphNode, keys, edgeXmlNodes)
 
-    val edges: mutable.Seq[GraphMLEdge[GraphMLNode]] = edgeXmlNodes.flatMap { edgeNode =>
+    val edges: mutable.Seq[Edge[GraphMLEdge[GraphMLNode], GraphMLNode]] = edgeXmlNodes.flatMap { edgeNode =>
       val edgeId = singleAttributeValue("id", edgeNode).getOrElse("edge")
 
       for {
@@ -77,7 +79,9 @@ class GraphMLImporter {
       }
     }
 
-    GraphMLGraph[GraphMLNode, GraphMLEdge[GraphMLNode]](singleAttributeValue("id", graphNode).getOrElse("graph"), nodes.values.toSet, edges.toSet)
+    GraphMLGraph[GraphMLNode, GraphMLEdge[GraphMLNode]](
+      singleAttributeValue("id", graphNode),
+      Graph[GraphMLNode, GraphMLEdge[GraphMLNode]](nodes.values.toSet, edges.toSet))
   }
 
   protected def parseGraphNodes(

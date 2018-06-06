@@ -1,9 +1,9 @@
 package com.flowtick.graphs
 
 /**
- * Type class to define id as string for a node type.
+ * Type class to define an identifier for a node type as string.
  *
- * Mainly useful for serialisation purposes
+ * Mainly used for serialisation purposes
  *
  * @tparam T the node type
  */
@@ -11,36 +11,62 @@ trait Identifiable[T] {
   def id(node: T): String
 }
 
+/**
+ * Type class to define an optional label for a node type as string.
+ *
+ * @tparam E edge value type
+ * @tparam L label type
+ */
 trait Labeled[E, L] {
   def label(edge: E): Option[L]
 }
 
+/**
+ * Type class to define an weight for a type, in this context, mainly used for edges.
+ *
+ * @tparam W type of the value to be weighted
+ * @tparam V weight value type
+ */
 trait Weighted[W, V] {
   def value(weighted: W): V
 }
 
 /**
- * The base type for edge in a graph, which connects two nodes of the same type with each other
+ * The base type for edge in a graph, which connects incoming nodes to outgoing nodes of the same type.
  *
+ * @tparam E the edge value type
  * @tparam N the base type of the nodes to connect
  */
-trait Edge[E, N] {
-  def first(edge: E): N
-  def second(edge: E): Option[N]
+trait Edge[+E, N] {
+  def value: E
 
-  def incoming(node: N, graph: Graph[N, E]): Iterable[E] =
-    graph.edges.flatMap(e => if (second(e).contains(node)) Some(e) else None)
+  def map[B](f: E => B): Edge[B, N] = SomeEdge(f(value), predecessors, successors)
 
-  def outgoing(node: N, graph: Graph[N, E]): Iterable[E] =
-    graph.edges.flatMap(e => if (first(e) == node) Some(e) else None)
+  /**
+   * @return the set of predecessors for an edge, this is a set to allow multi graphs and hyper edges.
+   *         In the more common directed and undirected edge types, this will be a single value or empty set.
+   *         Empty means no successor and is useful to model graphs that allow unconnected nodes.
+   */
+  def predecessors: Set[N]
+
+  /**
+   * @return complement of predecessors, see corresponding docs
+   */
+  def successors: Set[N]
 }
 
+final case class SomeEdge[+E, N](value: E, predecessors: Set[N], successors: Set[N]) extends Edge[E, N]
+
+/**
+ * an edge builder allows to create an edge from another type. typically this will be some kind of tuple type
+ * like (N, N), but this might vary depending on the edge type. See weighted edges in the defaults package for reference.
+ *
+ * @tparam N node tyoe
+ * @tparam E edge type
+ * @tparam B the builder type
+ */
 trait EdgeBuilder[N, E, B] {
-  def create(from: B)(implicit identifiable: Identifiable[N]): E
-}
-
-trait GraphBuilder[N, E, G, P] {
-  def create(edges: Set[E], nodes: Set[N], graphParams: P): G
+  def create(from: B)(implicit identifiable: Identifiable[N]): Edge[E, N]
 }
 
 /**
@@ -55,40 +81,33 @@ trait GraphBuilder[N, E, G, P] {
  */
 // #graph
 trait Graph[N, E] {
-  def first(edge: E): N
-  def second(edge: E): Option[N]
-
   def nodes: Set[N]
-  def edges: Set[E]
+  def edges: Set[Edge[E, N]]
 
-  def incoming(node: N): Iterable[E]
-  def outgoing(node: N): Iterable[E]
+  def incoming(node: N): Iterable[Edge[E, N]] = edges.flatMap(edge => if (edge.successors.contains(node)) Some(edge) else None)
+  def outgoing(node: N): Iterable[Edge[E, N]] = edges.flatMap(edge => if (edge.predecessors.contains(node)) Some(edge) else None)
 }
 
-abstract class AbstractGraph[N, E](implicit edgeType: Edge[E, N]) extends Graph[N, E] {
-  def first(edge: E): N = edgeType.first(edge)
-  def second(edge: E): Option[N] = edgeType.second(edge)
-
-  def incoming(node: N): Iterable[E] = edgeType.incoming(node, this)
-  def outgoing(node: N): Iterable[E] = edgeType.outgoing(node, this)
-
-  private[graphs] lazy val lazyEdgeNodes: Set[N] = Graph.edgeNodes(edges)
-
-  override def nodes: Set[N] = lazyEdgeNodes
-}
+final case class SomeGraph[N, E](nodes: Set[N], edges: Set[Edge[E, N]]) extends Graph[N, E]
 
 object Graph {
-  def edgeNodes[E, N](edges: Set[E])(implicit edgeType: Edge[E, N]): Set[N] = edges.flatMap { edge =>
-    Set(Some(edgeType.first(edge)), edgeType.second(edge)).flatten
+  def apply[N, E](nodes: Set[N], edges: Set[Edge[E, N]]): Graph[N, E] = SomeGraph(nodes, edges)
+
+  case class empty[N, E]() extends Graph[N, E] {
+    override def nodes: Set[N] = Set.empty
+    override def edges: Set[Edge[E, N]] = Set.empty
+
+    override def incoming(node: N): Iterable[Edge[E, N]] = Iterable.empty
+    override def outgoing(node: N): Iterable[Edge[E, N]] = Iterable.empty
   }
 
-  def create[N, E, G, B, P](tuples: B*)(graphParams: P)(implicit
+  def edgeNodes[E, N](edges: Set[Edge[E, N]]): Set[N] = edges.flatMap(edge => edge.predecessors ++ edge.successors)
+
+  def create[N, E, B](tuples: B*)(implicit
     identifiable: Identifiable[N],
-    edgeType: Edge[E, N],
-    edgeBuilder: EdgeBuilder[N, E, B],
-    graphBuilder: GraphBuilder[N, E, G, P]): G = {
-    val edges: Set[E] = tuples.map(edgeBuilder.create).toSet
-    graphBuilder.create(edges, edgeNodes(edges), graphParams)
+    edgeBuilder: EdgeBuilder[N, E, B]): Graph[N, E] = {
+    val edges: Set[Edge[E, N]] = tuples.map(edgeBuilder.create).toSet
+    apply(edgeNodes(edges), edges)
   }
 }
 // #graph
