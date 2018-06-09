@@ -68,12 +68,14 @@ class GraphMLRenderer {
         value = shapeNodeElem)
     }
 
-    def edgesXml =
+    def edgesXml = {
       g.edges.flatMap { edge =>
-        g.second(edge).map { targetNode =>
-          <edge id={ identifiable.id(g.first(edge)) + "-" + identifiable.id(targetNode) } source={ identifiable.id(g.first(edge)) } target={ identifiable.id(targetNode) }/>
-        }
+        for {
+          source <- edge.predecessors.headOption
+          target <- edge.successors.headOption
+        } yield <edge id={ identifiable.id(source) + "-" + identifiable.id(target) } source={ identifiable.id(source) } target={ identifiable.id(target) }/>
       }
+    }
 
     def nodesXml =
       g.nodes.map { node =>

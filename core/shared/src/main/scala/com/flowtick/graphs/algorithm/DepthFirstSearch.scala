@@ -1,6 +1,6 @@
 package com.flowtick.graphs.algorithm
 
-import com.flowtick.graphs.Graph
+import com.flowtick.graphs.{ Edge, Graph }
 
 import scala.collection.mutable
 
@@ -21,9 +21,9 @@ class DepthFirstSearch[N, E](initialNodes: Iterable[N], graph: Graph[N, E]) exte
           // to recognize that we completed that node, this will trigger the completion callback branch
           stack.push((node, true))
 
-          def addAdjacent(edges: Iterable[E], extractNext: E => Option[N]): Unit =
+          def addAdjacent(edges: Iterable[Edge[E, N]]): Unit =
             edges.foreach { edge =>
-              extractNext(edge).foreach { next =>
+              edge.successors.foreach { next =>
                 if (!visited.getOrElse(next, false)) {
                   stack.push((next, false))
                 } else {
@@ -32,7 +32,7 @@ class DepthFirstSearch[N, E](initialNodes: Iterable[N], graph: Graph[N, E]) exte
               }
             }
 
-          addAdjacent(graph.outgoing(node), e => graph.second(e))
+          addAdjacent(graph.outgoing(node))
         } else if (completed) {
           completeCallbacks.foreach(_.apply(node))
         }

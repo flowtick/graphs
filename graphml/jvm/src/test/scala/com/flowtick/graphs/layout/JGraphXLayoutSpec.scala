@@ -28,7 +28,7 @@ class JGraphXLayoutSpec extends FlatSpec {
   it should "layout city graph" in {
     val cities = DefaultGraph.weighted[DefaultEdge[DefaultNode], DefaultNode, Int](Seq.empty)
 
-    val layoutedGraph = new JGraphXLayout[DefaultNode, WeightedEdge[DefaultEdge[DefaultNode], Int]].layout(
+    val layoutedGraph = new JGraphXLayout[DefaultNode, WeightedEdge[DefaultEdge[DefaultNode], DefaultNode, Int]].layout(
       cities,
       _ => Some(ShapeDefinition(50, 70, rounded = true, color = "#FF0000", shapeType = "ellipse")))
 
