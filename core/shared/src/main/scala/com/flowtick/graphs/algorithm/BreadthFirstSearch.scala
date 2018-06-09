@@ -1,6 +1,6 @@
 package com.flowtick.graphs.algorithm
 
-import com.flowtick.graphs.Graph
+import com.flowtick.graphs.{ Edge, Graph }
 
 import scala.collection.mutable
 
@@ -18,9 +18,9 @@ class BreadthFirstSearch[N, E](initialNodes: Iterable[N], graph: Graph[N, E]) ex
           visitCallbacks.foreach(_.apply(node))
           visitedList += node
 
-          def addAdjacent(edges: Iterable[E], extractNext: E => Option[N]): Unit = {
+          def addAdjacent(edges: Iterable[Edge[E, N]]): Unit = {
             for (edge <- edges) {
-              extractNext(edge).foreach { next =>
+              edge.successors.foreach { next =>
                 if (!visited.getOrElse(next, false)) {
                   queue.enqueue(next)
                 } else {
@@ -29,7 +29,7 @@ class BreadthFirstSearch[N, E](initialNodes: Iterable[N], graph: Graph[N, E]) ex
               }
             }
           }
-          addAdjacent(graph.outgoing(node), e => graph.second(e))
+          addAdjacent(graph.outgoing(node))
           queue.enqueue(node)
         } else if (alreadyVisited.getOrElse(false)) {
           completeCallbacks.foreach(_.apply(node))

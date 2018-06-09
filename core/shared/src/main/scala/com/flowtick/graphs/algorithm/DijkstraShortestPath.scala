@@ -37,13 +37,10 @@ class DijkstraShortestPath[T, N, E](graph: Graph[N, E]) {
       val current = queue.dequeue()
       graph.outgoing(current).foreach { edge =>
         val currentDistance: Double = distanceMap(current)
-        val newDist = currentDistance + numeric.toDouble(weight.value(edge))
-        val targetNode = graph.second(edge)
-        if (targetNode.exists(newDist < distanceMap(_))) {
-          targetNode.foreach { node =>
-            distanceMap.put(node, newDist)
-            predecessorMap.put(node, current)
-          }
+        val newDist = currentDistance + numeric.toDouble(weight.value(edge.value))
+        edge.successors.filter(newDist < distanceMap(_)).foreach { node =>
+          distanceMap.put(node, newDist)
+          predecessorMap.put(node, current)
         }
       }
     }

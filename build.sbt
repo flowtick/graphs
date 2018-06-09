@@ -53,7 +53,8 @@ lazy val commonSettings = Seq(
     Developer(id = "adrobisch", name = "Andreas Drobisch", email = "github@drobisch.com", url = url("http://drobisch.com"))
   ),
   autoAPIMappings := true,
-  siteSubdirName in ScalaUnidoc := "latest/api"
+  siteSubdirName in ScalaUnidoc := "latest/api",
+  scalacOptions += "-Ypartial-unification"
 )
 
 lazy val core = (crossProject in file(".") / "core")
@@ -83,6 +84,18 @@ lazy val graphml = (crossProject in file(".") / "graphml")
 lazy val graphmlJS = graphml.js
 lazy val graphmlJVM = graphml.jvm
 
+lazy val cats = (crossProject in file(".") / "cats")
+  .settings(commonSettings)
+  .settings(
+    name := "graphs-cats",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "cats-core" % "1.0.1"
+    )
+  ).dependsOn(core)
+
+lazy val catsJS = cats.js
+lazy val catsJVM = cats.jvm
+
 lazy val examples = (project in file("examples"))
       .settings(commonSettings)
       .settings(
@@ -106,6 +119,6 @@ lazy val graphs = (project in file("."))
     git.remoteRepo := "git@github.com:flowtick/graphs.git",
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(graphmlJS, coreJS),
     addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc),
-  ).aggregate(coreJS, coreJVM, examples, graphmlJS, graphmlJVM)
+  ).aggregate(coreJS, coreJVM, examples, graphmlJS, graphmlJVM, catsJVM, catsJS)
 
 addCommandAlias("testWithCoverage", ";clean;coverage;test;coverageReport")
