@@ -37,7 +37,7 @@ trait Weighted[W, V] {
  * @tparam E the edge value type
  * @tparam N the base type of the nodes to connect
  */
-trait Edge[+E, N] {
+trait Edge[E, N] {
   def value: E
 
   def map[B](f: E => B): Edge[B, N] = SomeEdge(f(value), predecessors, successors)
@@ -53,9 +53,12 @@ trait Edge[+E, N] {
    * @return complement of predecessors, see corresponding docs
    */
   def successors: Set[N]
+
+  def incoming(node: N, graph: Graph[N, E]): Iterable[Edge[E, N]] = graph.edges.flatMap(edge => if (edge.successors.contains(node)) Some(edge) else None)
+  def outgoing(node: N, graph: Graph[N, E]): Iterable[Edge[E, N]] = graph.edges.flatMap(edge => if (edge.predecessors.contains(node)) Some(edge) else None)
 }
 
-final case class SomeEdge[+E, N](value: E, predecessors: Set[N], successors: Set[N]) extends Edge[E, N]
+final case class SomeEdge[E, N](value: E, predecessors: Set[N], successors: Set[N]) extends Edge[E, N]
 
 /**
  * an edge builder allows to create an edge from another type. typically this will be some kind of tuple type
@@ -84,8 +87,8 @@ trait Graph[N, E] {
   def nodes: Set[N]
   def edges: Set[Edge[E, N]]
 
-  def incoming(node: N): Iterable[Edge[E, N]] = edges.flatMap(edge => if (edge.successors.contains(node)) Some(edge) else None)
-  def outgoing(node: N): Iterable[Edge[E, N]] = edges.flatMap(edge => if (edge.predecessors.contains(node)) Some(edge) else None)
+  def incoming(node: N): Iterable[Edge[E, N]] = edges.flatMap(_.incoming(node, this))
+  def outgoing(node: N): Iterable[Edge[E, N]] = edges.flatMap(_.outgoing(node, this))
 }
 
 final case class SomeGraph[N, E](nodes: Set[N], edges: Set[Edge[E, N]]) extends Graph[N, E]
