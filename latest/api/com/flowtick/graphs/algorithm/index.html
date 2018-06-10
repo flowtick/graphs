@@ -157,6 +157,10 @@
                         <span class="separator"></span>
                         <a class="class" href="TopologicalSort.html" title=""></a>
                         <a href="TopologicalSort.html" title="">TopologicalSort</a>
+                      </li><li class="current-entities indented4">
+                        <span class="separator"></span>
+                        <a class="trait" href="Traversal.html" title=""></a>
+                        <a href="Traversal.html" title="">Traversal</a>
                       </li><li name="com.flowtick.graphs.defaults" visbl="pub" class="indented4 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="defaults"></a><a id="defaults:defaults"></a>
       <span class="permalink">
@@ -205,22 +209,6 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="com.flowtick.graphs">graphs</a></dd></dl></div>
-    </li><li name="com.flowtick.graphs.traversal" visbl="pub" class="indented4 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="traversal"></a><a id="traversal:traversal"></a>
-      <span class="permalink">
-      <a href="../../../com/flowtick/graphs/index.html#traversal" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">package</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="../traversal/index.html"><span class="name">traversal</span></a>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="com.flowtick.graphs">graphs</a></dd></dl></div>
     </li>
               </ul>
             </div>
@@ -253,7 +241,7 @@
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.12.5/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.5/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></div>
+          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.12.6/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></div>
         </div></div>
         
 
@@ -266,9 +254,9 @@
         <div id="types" class="types members">
               <h3>Type Members</h3>
               <ol><li name="com.flowtick.graphs.algorithm.BreadthFirstSearch" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="BreadthFirstSearch[N&lt;:com.flowtick.graphs.Node,E&lt;:com.flowtick.graphs.Edge[N]]extendsAnyRef"></a><a id="BreadthFirstSearch[N&lt;:Node,E&lt;:Edge[N]]:BreadthFirstSearch[N,E]"></a>
+      <a id="BreadthFirstSearch[N,E]extendsTraversal[N]"></a><a id="BreadthFirstSearch[N,E]:BreadthFirstSearch[N,E]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/algorithm/index.html#BreadthFirstSearch[N&lt;:com.flowtick.graphs.Node,E&lt;:com.flowtick.graphs.Edge[N]]extendsAnyRef" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/index.html#BreadthFirstSearch[N,E]extendsTraversal[N]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -277,14 +265,14 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="BreadthFirstSearch.html"><span class="name">BreadthFirstSearch</span></a><span class="tparams">[<span name="N">N &lt;: <a href="../Node.html" class="extype" name="com.flowtick.graphs.Node">Node</a></span>, <span name="E">E &lt;: <a href="../Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a>[<span class="extype" name="com.flowtick.graphs.algorithm.BreadthFirstSearch.N">N</span>]</span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.5/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <a title="" href="BreadthFirstSearch.html"><span class="name">BreadthFirstSearch</span></a><span class="tparams">[<span name="N">N</span>, <span name="E">E</span>]</span><span class="result"> extends <a href="Traversal.html" class="extype" name="com.flowtick.graphs.algorithm.Traversal">Traversal</a>[<span class="extype" name="com.flowtick.graphs.algorithm.BreadthFirstSearch.N">N</span>]</span>
       </span>
       
       
     </li><li name="com.flowtick.graphs.algorithm.DepthFirstSearch" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="DepthFirstSearch[N&lt;:com.flowtick.graphs.Node,E&lt;:com.flowtick.graphs.Edge[N]]extendsAnyRef"></a><a id="DepthFirstSearch[N&lt;:Node,E&lt;:Edge[N]]:DepthFirstSearch[N,E]"></a>
+      <a id="DepthFirstSearch[N,E]extendsTraversal[N]"></a><a id="DepthFirstSearch[N,E]:DepthFirstSearch[N,E]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/algorithm/index.html#DepthFirstSearch[N&lt;:com.flowtick.graphs.Node,E&lt;:com.flowtick.graphs.Edge[N]]extendsAnyRef" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/index.html#DepthFirstSearch[N,E]extendsTraversal[N]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -293,14 +281,14 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="DepthFirstSearch.html"><span class="name">DepthFirstSearch</span></a><span class="tparams">[<span name="N">N &lt;: <a href="../Node.html" class="extype" name="com.flowtick.graphs.Node">Node</a></span>, <span name="E">E &lt;: <a href="../Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a>[<span class="extype" name="com.flowtick.graphs.algorithm.DepthFirstSearch.N">N</span>]</span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.5/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <a title="" href="DepthFirstSearch.html"><span class="name">DepthFirstSearch</span></a><span class="tparams">[<span name="N">N</span>, <span name="E">E</span>]</span><span class="result"> extends <a href="Traversal.html" class="extype" name="com.flowtick.graphs.algorithm.Traversal">Traversal</a>[<span class="extype" name="com.flowtick.graphs.algorithm.DepthFirstSearch.N">N</span>]</span>
       </span>
       
       
     </li><li name="com.flowtick.graphs.algorithm.Dijkstra" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="Dijkstra[T,N&lt;:com.flowtick.graphs.Node,E&lt;:com.flowtick.graphs.WeightedEdge[T,N]]extendsDijkstraShortestPath[T,N,E]"></a><a id="Dijkstra[T,N&lt;:Node,E&lt;:WeightedEdge[T,N]]:Dijkstra[T,N,E]"></a>
+      <a id="Dijkstra[T,N,E]extendsDijkstraShortestPath[T,N,E]"></a><a id="Dijkstra[T,N,E]:Dijkstra[T,N,E]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/algorithm/index.html#Dijkstra[T,N&lt;:com.flowtick.graphs.Node,E&lt;:com.flowtick.graphs.WeightedEdge[T,N]]extendsDijkstraShortestPath[T,N,E]" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/index.html#Dijkstra[T,N,E]extendsDijkstraShortestPath[T,N,E]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -309,14 +297,14 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="package$$Dijkstra.html"><span class="name">Dijkstra</span></a><span class="tparams">[<span name="T">T</span>, <span name="N">N &lt;: <a href="../Node.html" class="extype" name="com.flowtick.graphs.Node">Node</a></span>, <span name="E">E &lt;: <a href="../WeightedEdge.html" class="extype" name="com.flowtick.graphs.WeightedEdge">WeightedEdge</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.T">T</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>]</span>]</span><span class="result"> extends <a href="DijkstraShortestPath.html" class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath">DijkstraShortestPath</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.T">T</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>]</span>
+        <a title="" href="package$$Dijkstra.html"><span class="name">Dijkstra</span></a><span class="tparams">[<span name="T">T</span>, <span name="N">N</span>, <span name="E">E</span>]</span><span class="result"> extends <a href="DijkstraShortestPath.html" class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath">DijkstraShortestPath</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.T">T</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>]</span>
       </span>
       
       
     </li><li name="com.flowtick.graphs.algorithm.DijkstraShortestPath" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="DijkstraShortestPath[T,N&lt;:com.flowtick.graphs.Node,E&lt;:com.flowtick.graphs.WeightedEdge[T,N]]extendsAnyRef"></a><a id="DijkstraShortestPath[T,N&lt;:Node,E&lt;:WeightedEdge[T,N]]:DijkstraShortestPath[T,N,E]"></a>
+      <a id="DijkstraShortestPath[T,N,E]extendsAnyRef"></a><a id="DijkstraShortestPath[T,N,E]:DijkstraShortestPath[T,N,E]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/algorithm/index.html#DijkstraShortestPath[T,N&lt;:com.flowtick.graphs.Node,E&lt;:com.flowtick.graphs.WeightedEdge[T,N]]extendsAnyRef" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/index.html#DijkstraShortestPath[T,N,E]extendsAnyRef" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -325,14 +313,14 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="DijkstraShortestPath.html"><span class="name">DijkstraShortestPath</span></a><span class="tparams">[<span name="T">T</span>, <span name="N">N &lt;: <a href="../Node.html" class="extype" name="com.flowtick.graphs.Node">Node</a></span>, <span name="E">E &lt;: <a href="../WeightedEdge.html" class="extype" name="com.flowtick.graphs.WeightedEdge">WeightedEdge</a>[<span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.T">T</span>, <span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.N">N</span>]</span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.5/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <a title="" href="DijkstraShortestPath.html"><span class="name">DijkstraShortestPath</span></a><span class="tparams">[<span name="T">T</span>, <span name="N">N</span>, <span name="E">E</span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.6/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       
       
     </li><li name="com.flowtick.graphs.algorithm.GraphOps" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="GraphOps[N&lt;:com.flowtick.graphs.Node,E&lt;:com.flowtick.graphs.Edge[N]]extendsAnyRef"></a><a id="GraphOps[N&lt;:Node,E&lt;:Edge[N]]:GraphOps[N,E]"></a>
+      <a id="GraphOps[N,E]extendsAnyRef"></a><a id="GraphOps[N,E]:GraphOps[N,E]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/algorithm/index.html#GraphOps[N&lt;:com.flowtick.graphs.Node,E&lt;:com.flowtick.graphs.Edge[N]]extendsAnyRef" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/index.html#GraphOps[N,E]extendsAnyRef" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -341,14 +329,14 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="package$$GraphOps.html"><span class="name">GraphOps</span></a><span class="tparams">[<span name="N">N &lt;: <a href="../Node.html" class="extype" name="com.flowtick.graphs.Node">Node</a></span>, <span name="E">E &lt;: <a href="../Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a>[<span class="extype" name="com.flowtick.graphs.algorithm.GraphOps.N">N</span>]</span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.5/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <a title="" href="package$$GraphOps.html"><span class="name">GraphOps</span></a><span class="tparams">[<span name="N">N</span>, <span name="E">E</span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.6/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       
       
     </li><li name="com.flowtick.graphs.algorithm.TopologicalSort" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="TopologicalSort[N&lt;:com.flowtick.graphs.Node,E&lt;:com.flowtick.graphs.Edge[N]]extendsDepthFirstSearch[N,E]"></a><a id="TopologicalSort[N&lt;:Node,E&lt;:Edge[N]]:TopologicalSort[N,E]"></a>
+      <a id="TopologicalSort[N,E]extendsDepthFirstSearch[N,E]"></a><a id="TopologicalSort[N,E]:TopologicalSort[N,E]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/algorithm/index.html#TopologicalSort[N&lt;:com.flowtick.graphs.Node,E&lt;:com.flowtick.graphs.Edge[N]]extendsDepthFirstSearch[N,E]" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/index.html#TopologicalSort[N,E]extendsDepthFirstSearch[N,E]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -357,7 +345,23 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="TopologicalSort.html"><span class="name">TopologicalSort</span></a><span class="tparams">[<span name="N">N &lt;: <a href="../Node.html" class="extype" name="com.flowtick.graphs.Node">Node</a></span>, <span name="E">E &lt;: <a href="../Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>]</span>]</span><span class="result"> extends <a href="DepthFirstSearch.html" class="extype" name="com.flowtick.graphs.algorithm.DepthFirstSearch">DepthFirstSearch</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.E">E</span>]</span>
+        <a title="" href="TopologicalSort.html"><span class="name">TopologicalSort</span></a><span class="tparams">[<span name="N">N</span>, <span name="E">E</span>]</span><span class="result"> extends <a href="DepthFirstSearch.html" class="extype" name="com.flowtick.graphs.algorithm.DepthFirstSearch">DepthFirstSearch</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.E">E</span>]</span>
+      </span>
+      
+      
+    </li><li name="com.flowtick.graphs.algorithm.Traversal" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="Traversal[N]extendsAnyRef"></a><a id="Traversal[N]:Traversal[N]"></a>
+      <span class="permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/index.html#Traversal[N]extendsAnyRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="Traversal.html"><span class="name">Traversal</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.6/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       
       
@@ -375,9 +379,9 @@
 
         <div id="inheritedMembers">
         <div class="parent" name="scala.AnyRef">
-              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.5/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></h3>
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.6/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">
-              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.5/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></h3>
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></h3>
             </div>
         
         </div>

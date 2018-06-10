@@ -30,7 +30,7 @@
 <span class="home-icon">⌂</span>Example
 </a>
 <div class="version-number">
-0.1.11
+0.2.2*
 </div>
 </div>
 <div class="nav-toc">
@@ -66,7 +66,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <span class="home-icon">⌂</span>Example
 </a>
 <div class="version-number">
-0.1.11
+0.2.2*
 </div>
 </div>
 <div class="nav-toc">
@@ -90,13 +90,13 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <h1><a href="#example" name="example" class="anchor"><span class="anchor-link"></span></a>Example</h1>
 <p>Creating a simple graph and outputting its edges to the console:</p>
 <pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.defaults.directed._
 
 object SimpleGraphApp extends App {
-  val graph = DefaultGraph.create { implicit graph =&gt;
-    n(&quot;A&quot;) ~&gt; n(&quot;B&quot;)
-    n(&quot;B&quot;) ~&gt; n(&quot;C&quot;)
-    n(&quot;D&quot;) ~&gt; n(&quot;A&quot;)
-  }
+  val graph = DefaultGraph.create(Seq(
+    n(&quot;A&quot;) -&gt; n(&quot;B&quot;),
+    n(&quot;B&quot;) -&gt; n(&quot;C&quot;),
+    n(&quot;D&quot;) -&gt; n(&quot;A&quot;)))
 
   println(graph.edges)
   // Set(DefaultDirectedEdge(None,DefaultNode(B),DefaultNode(C)), DefaultDirectedEdge(None,DefaultNode(D),DefaultNode(A)), DefaultDirectedEdge(None,DefaultNode(A),DefaultNode(B)))

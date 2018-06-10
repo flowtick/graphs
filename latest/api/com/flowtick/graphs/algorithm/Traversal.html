@@ -117,10 +117,10 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="com.flowtick">flowtick</a></dd></dl></div>
-    </li><li name="com.flowtick.graphs.defaults" visbl="pub" class="indented4 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="defaults"></a><a id="defaults:defaults"></a>
+    </li><li name="com.flowtick.graphs.algorithm" visbl="pub" class="indented4 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="algorithm"></a><a id="algorithm:algorithm"></a>
       <span class="permalink">
-      <a href="../../../com/flowtick/graphs/index.html#defaults" title="Permalink">
+      <a href="../../../com/flowtick/graphs/index.html#algorithm" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -129,49 +129,49 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="" href="index.html"><span class="name">defaults</span></a>
+        <a title="" href="index.html"><span class="name">algorithm</span></a>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="com.flowtick.graphs">graphs</a></dd></dl></div>
     </li><li class="current-entities indented4">
                         <span class="separator"></span>
-                        <a class="class" href="DefaultDirectedEdge.html" title=""></a>
-                        <a href="DefaultDirectedEdge.html" title="">DefaultDirectedEdge</a>
-                      </li><li class="current-entities indented4">
-                        <a class="object" href="DefaultGraph$.html" title=""></a>
-                        <a class="class" href="DefaultGraph.html" title=""></a>
-                        <a href="DefaultGraph.html" title="">DefaultGraph</a>
+                        <a class="class" href="BreadthFirstSearch.html" title=""></a>
+                        <a href="BreadthFirstSearch.html" title="">BreadthFirstSearch</a>
                       </li><li class="current-entities indented4">
                         <span class="separator"></span>
-                        <a class="class" href="package$$DefaultLayout.html" title=""></a>
-                        <a href="package$$DefaultLayout.html" title="">DefaultLayout</a>
+                        <a class="class" href="DepthFirstSearch.html" title=""></a>
+                        <a href="DepthFirstSearch.html" title="">DepthFirstSearch</a>
                       </li><li class="current-entities indented4">
                         <span class="separator"></span>
-                        <a class="class" href="DefaultNode.html" title=""></a>
-                        <a href="DefaultNode.html" title="">DefaultNode</a>
+                        <a class="class" href="package$$Dijkstra.html" title=""></a>
+                        <a href="package$$Dijkstra.html" title="">Dijkstra</a>
                       </li><li class="current-entities indented4">
                         <span class="separator"></span>
-                        <a class="class" href="package$$DefaultNodeOps.html" title=""></a>
-                        <a href="package$$DefaultNodeOps.html" title="">DefaultNodeOps</a>
+                        <a class="class" href="DijkstraShortestPath.html" title=""></a>
+                        <a href="DijkstraShortestPath.html" title="">DijkstraShortestPath</a>
                       </li><li class="current-entities indented4">
                         <span class="separator"></span>
-                        <a class="class" href="DefaultUndirectedEdge.html" title=""></a>
-                        <a href="DefaultUndirectedEdge.html" title="">DefaultUndirectedEdge</a>
+                        <a class="class" href="package$$GraphOps.html" title=""></a>
+                        <a href="package$$GraphOps.html" title="">GraphOps</a>
                       </li><li class="current-entities indented4">
                         <span class="separator"></span>
-                        <a class="class" href="" title=""></a>
-                        <a href="" title="">DefaultWeightedEdge</a>
+                        <a class="class" href="TopologicalSort.html" title=""></a>
+                        <a href="TopologicalSort.html" title="">TopologicalSort</a>
+                      </li><li class="current-entities indented4">
+                        <span class="separator"></span>
+                        <a class="trait" href="" title=""></a>
+                        <a href="" title="">Traversal</a>
                       </li>
               </ul>
             </div>
           </div>
           <div id="content">
-            <body class="class type">
+            <body class="trait type">
       <div id="definition">
-        <div class="big-circle class">c</div>
-        <p id="owner"><a href="../../../index.html" class="extype" name="com">com</a>.<a href="../../index.html" class="extype" name="com.flowtick">flowtick</a>.<a href="../index.html" class="extype" name="com.flowtick.graphs">graphs</a>.<a href="index.html" class="extype" name="com.flowtick.graphs.defaults">defaults</a></p>
-        <h1>DefaultWeightedEdge<span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html" title="Permalink">
+        <div class="big-circle trait">t</div>
+        <p id="owner"><a href="../../../index.html" class="extype" name="com">com</a>.<a href="../../index.html" class="extype" name="com.flowtick">flowtick</a>.<a href="../index.html" class="extype" name="com.flowtick.graphs">graphs</a>.<a href="index.html" class="extype" name="com.flowtick.graphs.algorithm">algorithm</a></p>
+        <h1>Traversal<span class="permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
@@ -181,20 +181,25 @@
       <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">case class</span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <span class="name">DefaultWeightedEdge</span><span class="tparams">[<span name="T">T</span>, <span name="N">N &lt;: <a href="../Node.html" class="extype" name="com.flowtick.graphs.Node">Node</a></span>]</span><span class="params">(<span name="value">value: <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.T">T</span></span>, <span name="label">label: <a href="http://www.scala-lang.org/api/2.12.5/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="source">source: <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span></span>, <span name="target">target: <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="evidence$1">evidence$1: <span class="extype" name="scala.Numeric">Numeric</span>[<span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.T">T</span>]</span>)</span><span class="result"> extends <a href="../WeightedUndirectedEdge.html" class="extype" name="com.flowtick.graphs.WeightedUndirectedEdge">WeightedUndirectedEdge</a>[<span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.T">T</span>, <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span>] with <a href="http://www.scala-lang.org/api/2.12.5/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.5/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
+        <span class="name">Traversal</span><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.6/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Self Type</dt><dd><a href="" class="extype" name="com.flowtick.graphs.algorithm.Traversal">Traversal</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Traversal.N">N</span>]</dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.12.5/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="http://www.scala-lang.org/api/2.12.5/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a>, <a href="http://www.scala-lang.org/api/2.12.5/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a>, <a href="../WeightedUndirectedEdge.html" class="extype" name="com.flowtick.graphs.WeightedUndirectedEdge">WeightedUndirectedEdge</a>[<span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.T">T</span>, <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span>], <a href="../WeightedEdge.html" class="extype" name="com.flowtick.graphs.WeightedEdge">WeightedEdge</a>[<span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.T">T</span>, <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span>], <a href="../Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a>[<span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span>], <a href="http://www.scala-lang.org/api/2.12.5/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.5/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></div>
-        </div></div>
+          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.12.6/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></div>
+        </div><div class="toggleContainer block">
+            <span class="toggle">
+              Known Subclasses
+            </span>
+            <div class="subClasses hiddenContent"><a href="BreadthFirstSearch.html" class="extype" name="com.flowtick.graphs.algorithm.BreadthFirstSearch">BreadthFirstSearch</a>, <a href="DepthFirstSearch.html" class="extype" name="com.flowtick.graphs.algorithm.DepthFirstSearch">DepthFirstSearch</a>, <a href="TopologicalSort.html" class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort">TopologicalSort</a></div>
+          </div></div>
         
 
       <div id="mbrsel">
@@ -219,7 +224,7 @@
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="com.flowtick.graphs.defaults.DefaultWeightedEdge"><span>DefaultWeightedEdge</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="com.flowtick.graphs.WeightedUndirectedEdge"><span>WeightedUndirectedEdge</span></li><li class="in" name="com.flowtick.graphs.WeightedEdge"><span>WeightedEdge</span></li><li class="in" name="com.flowtick.graphs.Edge"><span>Edge</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="com.flowtick.graphs.algorithm.Traversal"><span>Traversal</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -237,38 +242,38 @@
 
       <div id="template">
         <div id="allMembers">
-        <div id="constructors" class="members">
-              <h3>Instance Constructors</h3>
-              <ol><li name="com.flowtick.graphs.defaults.DefaultWeightedEdge#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(value:T,label:Option[String],source:N,target:N)(implicitevidence$1:Numeric[T]):com.flowtick.graphs.defaults.DefaultWeightedEdge[T,N]"></a><a id="&lt;init&gt;:DefaultWeightedEdge[T,N]"></a>
+        
+
+        
+
+        <div class="values members">
+              <h3>Abstract Value Members</h3>
+              <ol><li name="com.flowtick.graphs.algorithm.Traversal#run" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="run:Seq[N]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#&lt;init&gt;(value:T,label:Option[String],source:N,target:N)(implicitevidence$1:Numeric[T]):com.flowtick.graphs.defaults.DefaultWeightedEdge[T,N]" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#run:Seq[N]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">new</span>
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">DefaultWeightedEdge</span><span class="params">(<span name="value">value: <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.T">T</span></span>, <span name="label">label: <a href="http://www.scala-lang.org/api/2.12.5/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="source">source: <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span></span>, <span name="target">target: <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="scala.Numeric">Numeric</span>[<span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.T">T</span>]</span>)</span>
+        <span class="name">run</span><span class="result">: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="com.flowtick.graphs.algorithm.Traversal.N">N</span>]</span>
       </span>
       
       
     </li></ol>
             </div>
 
-        
-
-        
-
         <div class="values members">
-              <h3>Value Members</h3>
+              <h3>Concrete Value Members</h3>
               <ol>
                 <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#!=(x$1:Any):Boolean" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#!=(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -277,14 +282,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.5/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html###():Int" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html###():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -293,14 +298,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#==(x$1:Any):Boolean" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#==(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -309,14 +314,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.5/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#asInstanceOf[T0]:T0" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#asInstanceOf[T0]:T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -329,10 +334,26 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.flowtick.graphs.algorithm.Traversal#backtrackCallbacks" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="backtrackCallbacks:scala.collection.mutable.ListBuffer[N=&gt;Any]"></a><a id="backtrackCallbacks:ListBuffer[(N)⇒Any]"></a>
+      <span class="permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#backtrackCallbacks:scala.collection.mutable.ListBuffer[N=&gt;Any]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">backtrackCallbacks</span><span class="result">: <span class="extype" name="scala.collection.mutable.ListBuffer">ListBuffer</span>[(<span class="extype" name="com.flowtick.graphs.algorithm.Traversal.N">N</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#clone():Object" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#clone():Object" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -341,7 +362,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -353,10 +374,26 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="com.flowtick.graphs.algorithm.Traversal#completeCallbacks" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="completeCallbacks:scala.collection.mutable.ListBuffer[N=&gt;Any]"></a><a id="completeCallbacks:ListBuffer[(N)⇒Any]"></a>
+      <span class="permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#completeCallbacks:scala.collection.mutable.ListBuffer[N=&gt;Any]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">completeCallbacks</span><span class="result">: <span class="extype" name="scala.collection.mutable.ListBuffer">ListBuffer</span>[(<span class="extype" name="com.flowtick.graphs.algorithm.Traversal.N">N</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#eq(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -365,14 +402,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.5/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.6/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="finalize():Unit"></a>
+    </li><li name="scala.AnyRef#equals" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a><a id="equals(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#finalize():Unit" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#equals(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -381,7 +418,23 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <span class="permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#finalize():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -394,7 +447,7 @@
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#getClass():Class[_]" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#getClass():Class[_]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -410,44 +463,29 @@
                 <span class="name">@native</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="isInstanceOf[T0]:Boolean"></a>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#isInstanceOf[T0]:Boolean" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="com.flowtick.graphs.defaults.DefaultWeightedEdge#label" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="label:Option[String]"></a>
-      <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#label:Option[String]" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#hashCode():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">label</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>
       </span>
       
-      <p class="shortcomment cmt">optional label to annotate this edge with some human readable text
-</p><div class="fullcomment"><div class="comment cmt"><p>optional label to annotate this edge with some human readable text
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge">DefaultWeightedEdge</a> → <a href="../WeightedUndirectedEdge.html" class="extype" name="com.flowtick.graphs.WeightedUndirectedEdge">WeightedUndirectedEdge</a> → <a href="../WeightedEdge.html" class="extype" name="com.flowtick.graphs.WeightedEdge">WeightedEdge</a> → <a href="../Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a></dd></dl></div>
-    </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#isInstanceOf[T0]:Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -456,14 +494,30 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.5/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.6/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#notify():Unit" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#notify():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -472,7 +526,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notify</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -482,7 +536,7 @@
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#notifyAll():Unit" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#notifyAll():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -491,33 +545,65 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@native</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li name="com.flowtick.graphs.defaults.DefaultWeightedEdge#source" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="source:N"></a>
+    </li><li name="com.flowtick.graphs.algorithm.Traversal#onBacktrack" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="onBacktrack(f:N=&gt;Any):Traversal.this.type"></a><a id="onBacktrack((N)⇒Any):Traversal.this.type"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#source:N" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#onBacktrack(f:N=&gt;Any):Traversal.this.type" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">source</span><span class="result">: <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span></span>
+        <span class="name">onBacktrack</span><span class="params">(<span name="f">f: (<span class="extype" name="com.flowtick.graphs.algorithm.Traversal.N">N</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></span>)</span><span class="result">: <a href="" class="extype" name="com.flowtick.graphs.algorithm.Traversal">Traversal</a>.this.type</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge">DefaultWeightedEdge</a> → <a href="../WeightedUndirectedEdge.html" class="extype" name="com.flowtick.graphs.WeightedUndirectedEdge">WeightedUndirectedEdge</a> → <a href="../WeightedEdge.html" class="extype" name="com.flowtick.graphs.WeightedEdge">WeightedEdge</a> → <a href="../Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a></dd></dl></div>
+      
+    </li><li name="com.flowtick.graphs.algorithm.Traversal#onComplete" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="onComplete(f:N=&gt;Any):Traversal.this.type"></a><a id="onComplete((N)⇒Any):Traversal.this.type"></a>
+      <span class="permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#onComplete(f:N=&gt;Any):Traversal.this.type" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">onComplete</span><span class="params">(<span name="f">f: (<span class="extype" name="com.flowtick.graphs.algorithm.Traversal.N">N</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></span>)</span><span class="result">: <a href="" class="extype" name="com.flowtick.graphs.algorithm.Traversal">Traversal</a>.this.type</span>
+      </span>
+      
+      
+    </li><li name="com.flowtick.graphs.algorithm.Traversal#onVisit" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="onVisit(f:N=&gt;Any):Traversal.this.type"></a><a id="onVisit((N)⇒Any):Traversal.this.type"></a>
+      <span class="permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#onVisit(f:N=&gt;Any):Traversal.this.type" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">onVisit</span><span class="params">(<span name="f">f: (<span class="extype" name="com.flowtick.graphs.algorithm.Traversal.N">N</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></span>)</span><span class="result">: <a href="" class="extype" name="com.flowtick.graphs.algorithm.Traversal">Traversal</a>.this.type</span>
+      </span>
+      
+      
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -530,10 +616,26 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="com.flowtick.graphs.defaults.DefaultWeightedEdge#target" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="target:N"></a>
+    </li><li name="scala.AnyRef#toString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#target:N" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#toString():String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.flowtick.graphs.algorithm.Traversal#visitCallbacks" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visitCallbacks:scala.collection.mutable.ListBuffer[N=&gt;Any]"></a><a id="visitCallbacks:ListBuffer[(N)⇒Any]"></a>
+      <span class="permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#visitCallbacks:scala.collection.mutable.ListBuffer[N=&gt;Any]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -542,30 +644,14 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">target</span><span class="result">: <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span></span>
+        <span class="name">visitCallbacks</span><span class="result">: <span class="extype" name="scala.collection.mutable.ListBuffer">ListBuffer</span>[(<span class="extype" name="com.flowtick.graphs.algorithm.Traversal.N">N</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a>]</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge">DefaultWeightedEdge</a> → <a href="../WeightedUndirectedEdge.html" class="extype" name="com.flowtick.graphs.WeightedUndirectedEdge">WeightedUndirectedEdge</a> → <a href="../WeightedEdge.html" class="extype" name="com.flowtick.graphs.WeightedEdge">WeightedEdge</a> → <a href="../Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a></dd></dl></div>
-    </li><li name="com.flowtick.graphs.defaults.DefaultWeightedEdge#value" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="value:T"></a>
-      <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#value:T" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">value</span><span class="result">: <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.T">T</span></span>
-      </span>
-      
-      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#wait():Unit" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#wait():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -574,7 +660,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -587,7 +673,7 @@
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -596,7 +682,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.5/scala/Long.html#scala.Long" class="extype" name="scala.Long">Long</a></span>, <span name="arg1">arg1: <a href="http://www.scala-lang.org/api/2.12.5/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.6/scala/Long.html#scala.Long" class="extype" name="scala.Long">Long</a></span>, <span name="arg1">arg1: <a href="http://www.scala-lang.org/api/2.12.6/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -609,7 +695,7 @@
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#wait(x$1:Long):Unit" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/Traversal.html#wait(x$1:Long):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -618,7 +704,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.5/scala/Long.html#scala.Long" class="extype" name="scala.Long">Long</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.5/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.6/scala/Long.html#scala.Long" class="extype" name="scala.Long">Long</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -630,22 +716,6 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="com.flowtick.graphs.WeightedUndirectedEdge#weight" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="weight:T"></a>
-      <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/defaults/DefaultWeightedEdge.html#weight:T" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">weight</span><span class="result">: <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.T">T</span></span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../WeightedUndirectedEdge.html" class="extype" name="com.flowtick.graphs.WeightedUndirectedEdge">WeightedUndirectedEdge</a> → <a href="../WeightedEdge.html" class="extype" name="com.flowtick.graphs.WeightedEdge">WeightedEdge</a></dd></dl></div>
     </li>
               </ol>
             </div>
@@ -656,24 +726,10 @@
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="scala.Serializable">
-              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.5/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></h3>
-            </div><div class="parent" name="java.io.Serializable">
-              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
-            </div><div class="parent" name="scala.Product">
-              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.5/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a></h3>
-            </div><div class="parent" name="scala.Equals">
-              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.5/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a></h3>
-            </div><div class="parent" name="com.flowtick.graphs.WeightedUndirectedEdge">
-              <h3>Inherited from <a href="../WeightedUndirectedEdge.html" class="extype" name="com.flowtick.graphs.WeightedUndirectedEdge">WeightedUndirectedEdge</a>[<span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.T">T</span>, <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span>]</h3>
-            </div><div class="parent" name="com.flowtick.graphs.WeightedEdge">
-              <h3>Inherited from <a href="../WeightedEdge.html" class="extype" name="com.flowtick.graphs.WeightedEdge">WeightedEdge</a>[<span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.T">T</span>, <span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span>]</h3>
-            </div><div class="parent" name="com.flowtick.graphs.Edge">
-              <h3>Inherited from <a href="../Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a>[<span class="extype" name="com.flowtick.graphs.defaults.DefaultWeightedEdge.N">N</span>]</h3>
-            </div><div class="parent" name="scala.AnyRef">
-              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.5/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></h3>
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.6/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">
-              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.5/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></h3>
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.6/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></h3>
             </div>
         
         </div>

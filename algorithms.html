@@ -30,7 +30,7 @@
 <span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
-0.1.11
+0.2.2*
 </div>
 </div>
 <div class="nav-toc">
@@ -69,7 +69,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
-0.1.11
+0.2.2*
 </div>
 </div>
 <div class="nav-toc">
@@ -107,23 +107,23 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <p>Every node will be visited.</p>
 <pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.defaults.directed._
 
 object DfsApp extends App {
-  val graph = DefaultGraph.create { implicit graph =&gt;
-    n(&quot;1&quot;) ~&gt; n(&quot;2&quot;)
-    n(&quot;1&quot;) ~&gt; n(&quot;9&quot;)
+  val graph = DefaultGraph.create(Seq(
+    n(&quot;1&quot;) -&gt; n(&quot;2&quot;),
+    n(&quot;1&quot;) -&gt; n(&quot;9&quot;),
 
-    n(&quot;2&quot;) ~&gt; n(&quot;6&quot;)
-    n(&quot;2&quot;) ~&gt; n(&quot;3&quot;)
+    n(&quot;2&quot;) -&gt; n(&quot;6&quot;),
+    n(&quot;2&quot;) -&gt; n(&quot;3&quot;),
 
-    n(&quot;3&quot;) ~&gt; n(&quot;5&quot;)
-    n(&quot;3&quot;) ~&gt; n(&quot;4&quot;)
+    n(&quot;3&quot;) -&gt; n(&quot;5&quot;),
+    n(&quot;3&quot;) -&gt; n(&quot;4&quot;),
 
-    n(&quot;6&quot;) ~&gt; n(&quot;7&quot;)
-    n(&quot;6&quot;) ~&gt; n(&quot;8&quot;)
-  }
+    n(&quot;6&quot;) -&gt; n(&quot;7&quot;),
+    n(&quot;6&quot;) -&gt; n(&quot;8&quot;)))
 
-  println(graph.dfs.traverse(startNode = Some(n(&quot;1&quot;))).run)
+  println(graph.dfs(n(&quot;1&quot;)).run)
   // List(DefaultNode(1), DefaultNode(9), DefaultNode(2), DefaultNode(3), DefaultNode(4), DefaultNode(5), DefaultNode(6), DefaultNode(8), DefaultNode(7))
 }</code></pre>
 <h2><a href="#breadth-first-traversal" name="breadth-first-traversal" class="anchor"><span class="anchor-link"></span></a>Breadth-first traversal</h2>
@@ -131,58 +131,70 @@ object DfsApp extends App {
 <p>Every node will be visited.</p>
 <pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.defaults.directed._
 
 object BfsApp extends App {
-  val graph = DefaultGraph.create { implicit graph =&gt;
-    n(&quot;A&quot;) ~&gt; n(&quot;D&quot;)
-    n(&quot;A&quot;) ~&gt; n(&quot;C&quot;)
-    n(&quot;A&quot;) ~&gt; n(&quot;B&quot;)
-    n(&quot;B&quot;) ~&gt; n(&quot;E&quot;)
-    n(&quot;B&quot;) ~&gt; n(&quot;F&quot;)
-    n(&quot;B&quot;) ~&gt; n(&quot;G&quot;)
-    n(&quot;E&quot;) ~&gt; n(&quot;H&quot;)
-  }
+  val graph = DefaultGraph.create(Seq(
+    n(&quot;A&quot;) -&gt; n(&quot;D&quot;),
+    n(&quot;A&quot;) -&gt; n(&quot;C&quot;),
+    n(&quot;A&quot;) -&gt; n(&quot;B&quot;),
+    n(&quot;B&quot;) -&gt; n(&quot;E&quot;),
+    n(&quot;B&quot;) -&gt; n(&quot;F&quot;),
+    n(&quot;B&quot;) -&gt; n(&quot;G&quot;),
+    n(&quot;E&quot;) -&gt; n(&quot;H&quot;)))
 
-  println(graph.bfs.traverse(startNode = Some(n(&quot;A&quot;))).run)
+  println(graph.bfs(n(&quot;A&quot;)).run)
   // List(DefaultNode(A), DefaultNode(D), DefaultNode(C), DefaultNode(B), DefaultNode(E), DefaultNode(F), DefaultNode(G), DefaultNode(H))
 }</code></pre>
 <h2><a href="#topological-sorting-using-a-depth-first-approach" name="topological-sorting-using-a-depth-first-approach" class="anchor"><span class="anchor-link"></span></a>Topological sorting using a depth-first approach</h2>
 <p><blockquote> <a href="https://en.wikipedia.org/wiki/Topological_sorting">https://en.wikipedia.org/wiki/Topological_sorting</a>:</p>
 <p>&ldquo;topological ordering of a directed graph is a linear ordering of its vertices such that for every directed edge uv from vertex u to vertex v, u comes before v in the ordering. For instance, the vertices of the graph may represent tasks to be performed, and the edges may represent constraints that one task must be performed before another&rdquo; </blockquote></p>
-<pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.defaults._
+<pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.Graph
+import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.defaults.directed._
 import com.flowtick.graphs.algorithm._
 
 object TopologicalSortingApp extends App {
-  val graph = DefaultGraph.create { implicit graph =&gt;
-    n(&quot;A&quot;) ~&gt; n(&quot;B&quot;)
-    n(&quot;B&quot;) ~&gt; n(&quot;C&quot;)
-    n(&quot;D&quot;) ~&gt; n(&quot;A&quot;)
-  }
+  lazy val graph = DefaultGraph.create(Seq(
+    n(&quot;A&quot;) -&gt; n(&quot;B&quot;),
+    n(&quot;B&quot;) -&gt; n(&quot;C&quot;),
+    n(&quot;D&quot;) -&gt; n(&quot;A&quot;)))
+
+  lazy val clothingDependencies: Graph[DefaultNode, DefaultEdge[DefaultNode]] = DefaultGraph.create(Seq(
+    n(&quot;Underpants&quot;) -&gt; n(&quot;Pants&quot;),
+    n(&quot;Pants&quot;) -&gt; n(&quot;Coat&quot;),
+    n(&quot;Pullover&quot;) -&gt; n(&quot;Coat&quot;),
+    n(&quot;Undershirt&quot;) -&gt; n(&quot;Pullover&quot;),
+    n(&quot;Pants&quot;) -&gt; n(&quot;Shoes&quot;),
+    n(&quot;Socks&quot;) -&gt; n(&quot;Shoes&quot;)))
 
   println(graph.topologicalSort)
   // List(DefaultNode(D), DefaultNode(A), DefaultNode(B), DefaultNode(C))
+
+  println(clothingDependencies.topologicalSort)
+  // List(DefaultNode(Socks), DefaultNode(Undershirt), DefaultNode(Pullover), DefaultNode(Underpants), DefaultNode(Pants), DefaultNode(Shoes), DefaultNode(Coat))
 }</code></pre>
 <h2><a href="#dijkstras-algorithm-for-shortest-paths" name="dijkstras-algorithm-for-shortest-paths" class="anchor"><span class="anchor-link"></span></a>Dijkstras algorithm for shortest paths</h2>
 <p><blockquote> <a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm">https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm</a>:</p>
 <p>For a given source node in the graph, the algorithm finds the shortest path between that node and every other. It can also be used for finding the shortest paths from a single node to a single destination node by stopping the algorithm once the shortest path to the destination node has been determined. </blockquote></p>
 <pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.defaults.undirected._
 
 object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
-  val cities = DefaultGraph.weighted { implicit g =&gt;
-    n(&quot;Frankfurt&quot;) ~ (85, n(&quot;Mannheim&quot;))
-    n(&quot;Frankfurt&quot;) ~ (217, n(&quot;Wuerzburg&quot;))
-    n(&quot;Frankfurt&quot;) ~ (173, n(&quot;Kassel&quot;))
-    n(&quot;Mannheim&quot;) ~ (80, n(&quot;Karlsruhe&quot;))
-    n(&quot;Wuerzburg&quot;) ~ (186, n(&quot;Erfurt&quot;))
-    n(&quot;Wuerzburg&quot;) ~ (103, n(&quot;Nuernberg&quot;))
-    n(&quot;Stuttgart&quot;) ~ (183, n(&quot;Nuernberg&quot;))
-    n(&quot;Kassel&quot;) ~ (502, n(&quot;Muenchen&quot;))
-    n(&quot;Nuernberg&quot;) ~ (167, n(&quot;Muenchen&quot;))
-    n(&quot;Karlsruhe&quot;) ~ (250, n(&quot;Augsburg&quot;))
-    n(&quot;Augsburg&quot;) ~ (84, n(&quot;Muenchen&quot;))
-  }
+  val cities = DefaultGraph.weighted[DefaultEdge[DefaultNode], DefaultNode, Int](Seq(
+    (85, n(&quot;Frankfurt&quot;) -&gt; n(&quot;Mannheim&quot;)),
+    (217, n(&quot;Frankfurt&quot;) -&gt; n(&quot;Wuerzburg&quot;)),
+    (173, n(&quot;Frankfurt&quot;) -&gt; n(&quot;Kassel&quot;)),
+    (80, n(&quot;Mannheim&quot;) -&gt; n(&quot;Karlsruhe&quot;)),
+    (186, n(&quot;Wuerzburg&quot;) -&gt; n(&quot;Erfurt&quot;)),
+    (103, n(&quot;Wuerzburg&quot;) -&gt; n(&quot;Nuernberg&quot;)),
+    (183, n(&quot;Stuttgart&quot;) -&gt; n(&quot;Nuernberg&quot;)),
+    (502, n(&quot;Kassel&quot;) -&gt; n(&quot;Muenchen&quot;)),
+    (167, n(&quot;Nuernberg&quot;) -&gt; n(&quot;Muenchen&quot;)),
+    (250, n(&quot;Karlsruhe&quot;) -&gt; n(&quot;Augsburg&quot;)),
+    (84, n(&quot;Augsburg&quot;) -&gt; n(&quot;Muenchen&quot;))))
 }
 
 object DijkstraApp extends App {
