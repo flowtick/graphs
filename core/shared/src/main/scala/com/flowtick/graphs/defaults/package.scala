@@ -37,6 +37,10 @@ package object defaults extends {
     override def id(node: DefaultNode): String = node.id
   }
 
+  implicit def identifiableNumeric[N](implicit numeric: Numeric[N]): Identifiable[N] = new Identifiable[N] {
+    override def id(node: N): String = numeric.toDouble(node).toString
+  }
+
   implicit def defaultLayout: GraphLayout = new GraphLayout {
     override def layout[N, E](g: Graph[N, E], shape: N => Option[ShapeDefinition])(implicit
       identifiable: Identifiable[N],
