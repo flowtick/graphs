@@ -35,6 +35,7 @@ class GraphMLImporterSpec extends FlatSpec with Matchers {
           edge.value.id should be("A-B")
           edge.value.source.id should be("A")
           edge.successors.map(_.id) should be(Set("B"))
+        case None => fail
       }
     }
   }

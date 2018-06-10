@@ -8,8 +8,14 @@ package object defaults extends {
   case class DefaultEdge[N](source: N, target: Option[N], directed: Boolean = true) extends Edge[DefaultEdge[N], N] {
     override def value: DefaultEdge[N] = this
 
-    override def predecessors: Set[N] = if (directed) Set(source) else Set(source) ++ Set(target).flatten
-    override def successors: Set[N] = if (directed) Set(target).flatten else Set(target).flatten ++ Set(source)
+    override def predecessors: Set[N] = Set(source)
+    override def successors: Set[N] = Set(target).flatten
+
+    override def incoming(node: N, graph: Graph[N, DefaultEdge[N]]): Iterable[Edge[DefaultEdge[N], N]] =
+      if (directed) super.incoming(node, graph) else super.incoming(node, graph) ++ super.outgoing(node, graph)
+
+    override def outgoing(node: N, graph: Graph[N, DefaultEdge[N]]): Iterable[Edge[DefaultEdge[N], N]] =
+      if (directed) super.outgoing(node, graph) else super.outgoing(node, graph) ++ super.incoming(node, graph)
   }
 
   case class WeightedEdge[E, N, V](edge: Edge[E, N], weight: V) extends Edge[WeightedEdge[E, N, V], N] {
