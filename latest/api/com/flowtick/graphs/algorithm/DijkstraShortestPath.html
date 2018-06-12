@@ -521,9 +521,9 @@
               
         </dd></dl></div>
     </li><li name="com.flowtick.graphs.algorithm.DijkstraShortestPath#shortestPath" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="shortestPath(start:N,end:N)(implicitweight:com.flowtick.graphs.Weighted[E,T],implicitnumeric:Numeric[T]):Option[List[N]]"></a><a id="shortestPath(N,N)(Weighted[E,T],Numeric[T]):Option[List[N]]"></a>
+      <a id="shortestPath(start:N,end:N)(implicitweight:com.flowtick.graphs.Weighted[E,T],implicitnumeric:Numeric[T]):Iterable[com.flowtick.graphs.Edge[E,N]]"></a><a id="shortestPath(N,N)(Weighted[E,T],Numeric[T]):Iterable[Edge[E,N]]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/algorithm/DijkstraShortestPath.html#shortestPath(start:N,end:N)(implicitweight:com.flowtick.graphs.Weighted[E,T],implicitnumeric:Numeric[T]):Option[List[N]]" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/DijkstraShortestPath.html#shortestPath(start:N,end:N)(implicitweight:com.flowtick.graphs.Weighted[E,T],implicitnumeric:Numeric[T]):Iterable[com.flowtick.graphs.Edge[E,N]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -532,7 +532,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">shortestPath</span><span class="params">(<span name="start">start: <span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.N">N</span></span>, <span name="end">end: <span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.N">N</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="weight">weight: <a href="../Weighted.html" class="extype" name="com.flowtick.graphs.Weighted">Weighted</a>[<span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.E">E</span>, <span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.T">T</span>]</span>, <span name="numeric">numeric: <span class="extype" name="scala.Numeric">Numeric</span>[<span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.T">T</span>]</span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.6/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.List">List</span>[<span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.N">N</span>]]</span>
+        <span class="name">shortestPath</span><span class="params">(<span name="start">start: <span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.N">N</span></span>, <span name="end">end: <span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.N">N</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="weight">weight: <a href="../Weighted.html" class="extype" name="com.flowtick.graphs.Weighted">Weighted</a>[<span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.E">E</span>, <span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.T">T</span>]</span>, <span name="numeric">numeric: <span class="extype" name="scala.Numeric">Numeric</span>[<span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Iterable">Iterable</span>[<a href="../Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a>[<span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.E">E</span>, <span class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath.N">N</span>]]</span>
       </span>
       
       <p class="shortcomment cmt">determine the shortest path from start to end,

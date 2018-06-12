@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>Example</title>
+<title>GraphML support · graphs</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='graphs'/>
@@ -26,8 +26,8 @@
 <div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
 <nav class="off-canvas-nav">
 <div class="nav-home">
-<a href="example.html" class="active">
-<span class="home-icon">⌂</span>Example
+<a href="index.html" >
+<span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
 0.2.2*
@@ -35,6 +35,11 @@
 </div>
 <div class="nav-toc">
 <ul>
+  <li><a href="setup.html" class="page">Setup</a></li>
+  <li><a href="creating-graphs.html" class="page">Creating graphs</a></li>
+  <li><a href="algorithms.html" class="page">Algorithms</a></li>
+  <li><a href="graphml.html" class="active page">GraphML support</a></li>
+  <li><a href="cats.html" class="page">cats support</a></li>
 </ul>
 </div>
 
@@ -49,7 +54,7 @@
 H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
 C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
 </a>
-<div class="title"><a href="example.html" class="active">Example</a></div>
+<div class="title"><a href="index.html">graphs</a></div>
 
 <!--
 <a href="https://www.example.com" class="logo show-for-medium">logo</a>
@@ -62,8 +67,8 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="medium-3 large-2 show-for-medium column">
 <nav class="site-nav">
 <div class="nav-home">
-<a href="example.html" class="active">
-<span class="home-icon">⌂</span>Example
+<a href="index.html" >
+<span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
 0.2.2*
@@ -71,6 +76,11 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 </div>
 <div class="nav-toc">
 <ul>
+  <li><a href="setup.html" class="page">Setup</a></li>
+  <li><a href="creating-graphs.html" class="page">Creating graphs</a></li>
+  <li><a href="algorithms.html" class="page">Algorithms</a></li>
+  <li><a href="graphml.html" class="active page">GraphML support</a></li>
+  <li><a href="cats.html" class="page">cats support</a></li>
 </ul>
 </div>
 
@@ -82,30 +92,53 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-header row">
 <div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="index.html">graphs</a></li>
+  <li>GraphML support</li>
+</ul>
+</div>
 </div>
 </div>
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
-<h1><a href="#example" name="example" class="anchor"><span class="anchor-link"></span></a>Example</h1>
-<p>Creating a simple graph and outputting its edges to the console:</p>
-<pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
+<h2><a href="#graphml-support" name="graphml-support" class="anchor"><span class="anchor-link"></span></a>GraphML support</h2>
+<p><code>graphs</code> supports rendering and loading (currently only on the JVM) of graphs to GraphML XML:</p>
+<pre class="prettyprint"><code class="language-scala">import java.io.FileOutputStream
 
-object SimpleGraphApp extends App {
-  val graph = DefaultGraph.create(Seq(
-    n(&quot;A&quot;) -&gt; n(&quot;B&quot;),
-    n(&quot;B&quot;) -&gt; n(&quot;C&quot;),
-    n(&quot;D&quot;) -&gt; n(&quot;A&quot;)))
+import com.flowtick.graphs.{ Graph, Identifiable, Labeled }
+import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.graphml.{ GraphMLRenderer, GraphMLImporter }
+import com.flowtick.graphs.layout.{ JGraphXLayouter, ShapeDefinition }
 
-  println(graph.edges)
-  // Set(DefaultDirectedEdge(None,DefaultNode(B),DefaultNode(C)), DefaultDirectedEdge(None,DefaultNode(D),DefaultNode(A)), DefaultDirectedEdge(None,DefaultNode(A),DefaultNode(B)))
+object GraphMLRendererApp extends App {
+  def writeGraphXML[N, E](g: Graph[N, E], fileName: String)(implicit identifiable: Identifiable[N], edgeLabel: Labeled[E, String]): String = {
+    val graphXml = new GraphMLRenderer().render(
+      g,
+      JGraphXLayouter,
+      (_: N) =&gt; Some(ShapeDefinition(rounded = true, color = &quot;#AAAAAA&quot;)))
+
+    val output = new FileOutputStream(fileName)
+    output.write(graphXml.toString().getBytes)
+    output.flush()
+    output.close()
+
+    graphXml.toString()
+  }
+
+  val writtenXml = writeGraphXML(DijkstraGraph.cities, &quot;target/cities.graphml&quot;)
+  println(new GraphMLImporter().fromXml(writtenXml))
+  // Right(GraphMLGraph(Some(G),SomeGraph(Set(GraphMLNode(Karlsruhe,Some(Karlsruhe),Map(graphics -&gt; ...
 }</code></pre>
-<p>Check the <a href="https://bitbucket.org/flowtick/graphs/src/master/core/jvm/src/test/scala/com/flowtick/graphs/">tests</a> for more examples.</p>
+<p>This format is used by the <a href="https://www.yworks.com/products/yed">yed editor</a>, so graphs can be edited and layouted there.</p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/flowtick/graphs/tree/master/docs/example.md">here</a>.
+The source code for this page can be found <a href="https://github.com/flowtick/graphs/tree/master/docs/graphml.md">here</a>.
 </div>
 
+<div class="nav-next">
+<p><strong>Next:</strong> <a href="cats.html">cats support</a></p>
+</div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
 </div>

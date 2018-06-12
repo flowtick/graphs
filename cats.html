@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>Setup · graphs</title>
+<title>cats support · graphs</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='graphs'/>
@@ -35,11 +35,11 @@
 </div>
 <div class="nav-toc">
 <ul>
-  <li><a href="setup.html" class="active page">Setup</a></li>
+  <li><a href="setup.html" class="page">Setup</a></li>
   <li><a href="creating-graphs.html" class="page">Creating graphs</a></li>
   <li><a href="algorithms.html" class="page">Algorithms</a></li>
   <li><a href="graphml.html" class="page">GraphML support</a></li>
-  <li><a href="cats.html" class="page">cats support</a></li>
+  <li><a href="cats.html" class="active page">cats support</a></li>
 </ul>
 </div>
 
@@ -76,11 +76,11 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 </div>
 <div class="nav-toc">
 <ul>
-  <li><a href="setup.html" class="active page">Setup</a></li>
+  <li><a href="setup.html" class="page">Setup</a></li>
   <li><a href="creating-graphs.html" class="page">Creating graphs</a></li>
   <li><a href="algorithms.html" class="page">Algorithms</a></li>
   <li><a href="graphml.html" class="page">GraphML support</a></li>
-  <li><a href="cats.html" class="page">cats support</a></li>
+  <li><a href="cats.html" class="active page">cats support</a></li>
 </ul>
 </div>
 
@@ -95,7 +95,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="nav-breadcrumbs">
 <ul>
   <li><a href="index.html">graphs</a></li>
-  <li>Setup</li>
+  <li>cats support</li>
 </ul>
 </div>
 </div>
@@ -103,22 +103,37 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
-<h1><a href="#setup" name="setup" class="anchor"><span class="anchor-link"></span></a>Setup</h1>
-<p>Add the dependency to your build:</p>
-<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-core&quot; % &quot;0.2.2-SNAPSHOT&quot;
-</code></pre>
-<p>Using the <a href="http://ammonite.io">ammonite REPL</a> you can quickly play around with (directed) Graphs:</p>
-<pre class="prettyprint"><code class="language-scala">import $ivy.`com.flowtick:graphs-core_2.12:$version$`, com.flowtick.graphs.defaults._, com.flowtick.graphs.defaults.directed._ 
+<h2><a href="#cats-support" name="cats-support" class="anchor"><span class="anchor-link"></span></a>cats support</h2>
+<p><code>graphs</code> implemented some typeclass instances to allow basic operations like combining graphs:</p>
+<pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.defaults.directed._
 
-DefaultGraph.create(Seq(n(&quot;1&quot;) -&gt; n(&quot;2&quot;)))
-</code></pre>
+import com.flowtick.graphs.cat._
+import cats.syntax.monoid._
+
+object CatsApp extends App {
+  val someGraph = DefaultGraph.create(Seq(
+    n(&quot;1&quot;) -&gt; n(&quot;2&quot;),
+
+    n(&quot;2&quot;) -&gt; n(&quot;3&quot;),
+    n(&quot;2&quot;) -&gt; n(&quot;4&quot;)))
+
+  val anotherGraph = DefaultGraph.create(Seq(
+    n(&quot;2&quot;) -&gt; n(&quot;3&quot;),
+
+    n(&quot;4&quot;) -&gt; n(&quot;3&quot;),
+    n(&quot;4&quot;) -&gt; n(&quot;5&quot;)))
+
+  val combined = someGraph |+| anotherGraph
+  println(combined.edges)
+  // Set(DefaultEdge(DefaultNode(4),Some(DefaultNode(3)),true), DefaultEdge(DefaultNode(2),Some(DefaultNode(4)),true), ...
+}</code></pre>
+<p>Which computes the following combination of graphs:</p>
+<p><img src="monoid-example.png" alt="monoid example" /></p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/flowtick/graphs/tree/master/docs/setup.md">here</a>.
+The source code for this page can be found <a href="https://github.com/flowtick/graphs/tree/master/docs/cats.md">here</a>.
 </div>
 
-<div class="nav-next">
-<p><strong>Next:</strong> <a href="creating-graphs.html">Creating graphs</a></p>
-</div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
 </div>

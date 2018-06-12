@@ -38,6 +38,8 @@
   <li><a href="setup.html" class="page">Setup</a></li>
   <li><a href="creating-graphs.html" class="page">Creating graphs</a></li>
   <li><a href="algorithms.html" class="active page">Algorithms</a></li>
+  <li><a href="graphml.html" class="page">GraphML support</a></li>
+  <li><a href="cats.html" class="page">cats support</a></li>
 </ul>
 </div>
 
@@ -77,6 +79,8 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="setup.html" class="page">Setup</a></li>
   <li><a href="creating-graphs.html" class="page">Creating graphs</a></li>
   <li><a href="algorithms.html" class="active page">Algorithms</a></li>
+  <li><a href="graphml.html" class="page">GraphML support</a></li>
+  <li><a href="cats.html" class="page">cats support</a></li>
 </ul>
 </div>
 
@@ -198,13 +202,16 @@ object DijkstraGraph {
 }
 
 object DijkstraApp extends App {
-  println(DijkstraGraph.cities.shortestPath(start = n(&quot;Frankfurt&quot;), end = n(&quot;Muenchen&quot;)))
+  println(DijkstraGraph.cities.shortestPath(start = n(&quot;Frankfurt&quot;), end = n(&quot;Muenchen&quot;)).flatMap(_.left))
   // Some(List(DefaultNode(Frankfurt), DefaultNode(Wuerzburg), DefaultNode(Nuernberg), DefaultNode(Muenchen)))
 }</code></pre>
 <div class="source-github">
 The source code for this page can be found <a href="https://github.com/flowtick/graphs/tree/master/docs/algorithms.md">here</a>.
 </div>
 
+<div class="nav-next">
+<p><strong>Next:</strong> <a href="graphml.html">GraphML support</a></p>
+</div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
 <nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">

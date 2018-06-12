@@ -38,6 +38,8 @@
   <li><a href="setup.html" class="page">Setup</a></li>
   <li><a href="creating-graphs.html" class="active page">Creating graphs</a></li>
   <li><a href="algorithms.html" class="page">Algorithms</a></li>
+  <li><a href="graphml.html" class="page">GraphML support</a></li>
+  <li><a href="cats.html" class="page">cats support</a></li>
 </ul>
 </div>
 
@@ -77,6 +79,8 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="setup.html" class="page">Setup</a></li>
   <li><a href="creating-graphs.html" class="active page">Creating graphs</a></li>
   <li><a href="algorithms.html" class="page">Algorithms</a></li>
+  <li><a href="graphml.html" class="page">GraphML support</a></li>
+  <li><a href="cats.html" class="page">cats support</a></li>
 </ul>
 </div>
 
@@ -100,7 +104,35 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
 <h1><a href="#creating-graphs" name="creating-graphs" class="anchor"><span class="anchor-link"></span></a>Creating graphs</h1>
-<p>A <em>graph</em> consists of <em>nodes</em> which represent some objects or values and <em>edges</em> which express a relation between this objects and values. In <code>graphs</code> the base type for a graph is therefore a trait with the type parameters for node and the edge type:</p>
+<p>A <em>graph</em> consists of <em>nodes</em> which represent some objects or values and <em>edges</em> which express a relation between this objects.</p>
+<p><code>graphs</code> has a default implementation of a graph with node values of type <code>String</code> which acts as the identifier of that node. Using this default implementation, you can instantly start creating simple graph instances:</p>
+<pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.defaults.directed._
+
+object SimpleGraphApp extends App {
+  val graph = DefaultGraph.create(Seq(
+    n(&quot;A&quot;) -&gt; n(&quot;B&quot;),
+    n(&quot;B&quot;) -&gt; n(&quot;C&quot;),
+    n(&quot;D&quot;) -&gt; n(&quot;A&quot;)))
+
+  println(graph.edges)
+  // Set(DefaultDirectedEdge(None,DefaultNode(B),DefaultNode(C)), DefaultDirectedEdge(None,DefaultNode(D),DefaultNode(A)), DefaultDirectedEdge(None,DefaultNode(A),DefaultNode(B)))
+}</code></pre>
+<p>The default graph types also support weighted edges, which are edges carrying some kind of value like a distance between nodes. Numeric weights can be used in algorithms.</p>
+<pre class="prettyprint"><code class="language-scala">val cities = DefaultGraph.weighted[DefaultEdge[DefaultNode], DefaultNode, Int](Seq(
+  (85, n(&quot;Frankfurt&quot;) -&gt; n(&quot;Mannheim&quot;)),
+  (217, n(&quot;Frankfurt&quot;) -&gt; n(&quot;Wuerzburg&quot;)),
+  (173, n(&quot;Frankfurt&quot;) -&gt; n(&quot;Kassel&quot;)),
+  (80, n(&quot;Mannheim&quot;) -&gt; n(&quot;Karlsruhe&quot;)),
+  (186, n(&quot;Wuerzburg&quot;) -&gt; n(&quot;Erfurt&quot;)),
+  (103, n(&quot;Wuerzburg&quot;) -&gt; n(&quot;Nuernberg&quot;)),
+  (183, n(&quot;Stuttgart&quot;) -&gt; n(&quot;Nuernberg&quot;)),
+  (502, n(&quot;Kassel&quot;) -&gt; n(&quot;Muenchen&quot;)),
+  (167, n(&quot;Nuernberg&quot;) -&gt; n(&quot;Muenchen&quot;)),
+  (250, n(&quot;Karlsruhe&quot;) -&gt; n(&quot;Augsburg&quot;)),
+  (84, n(&quot;Augsburg&quot;) -&gt; n(&quot;Muenchen&quot;))))</code></pre>
+<h2><a href="#core-types" name="core-types" class="anchor"><span class="anchor-link"></span></a>Core Types</h2>
+<p>In <code>graphs</code> the base type for a graph is a trait with the type parameters for the node and the edge type:</p>
 <pre class="prettyprint"><code class="language-scala">trait Graph[N, E] {
   def nodes: Set[N]
   def edges: Set[Edge[E, N]]
@@ -114,7 +146,9 @@ final case class SomeGraph[N, E](nodes: Set[N], edges: Set[Edge[E, N]]) extends 
 object Graph {
   def apply[N, E](nodes: Set[N], edges: Set[Edge[E, N]]): Graph[N, E] = SomeGraph(nodes, edges)
 
-  case class empty[N, E]() extends Graph[N, E] {
+  def empty[N, E]: Graph[N, E] = EmptyGraph[N, E]()
+
+  final case class EmptyGraph[N, E]() extends Graph[N, E] {
     override def nodes: Set[N] = Set.empty
     override def edges: Set[Edge[E, N]] = Set.empty
 
@@ -131,21 +165,8 @@ object Graph {
     apply(edgeNodes(edges), edges)
   }
 }</code></pre>
-<p>There is default implementation of a graph which has just one property for its nodes, which is an <code>id</code> to identify the node. Using this default implementation, you can instantly start creating graph instances:</p>
-<pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
-
-object SimpleGraphApp extends App {
-  val graph = DefaultGraph.create(Seq(
-    n(&quot;A&quot;) -&gt; n(&quot;B&quot;),
-    n(&quot;B&quot;) -&gt; n(&quot;C&quot;),
-    n(&quot;D&quot;) -&gt; n(&quot;A&quot;)))
-
-  println(graph.edges)
-  // Set(DefaultDirectedEdge(None,DefaultNode(B),DefaultNode(C)), DefaultDirectedEdge(None,DefaultNode(D),DefaultNode(A)), DefaultDirectedEdge(None,DefaultNode(A),DefaultNode(B)))
-}</code></pre>
 <h2><a href="#custom-graph-types" name="custom-graph-types" class="anchor"><span class="anchor-link"></span></a>Custom Graph Types</h2>
-<p>Creating a custom graph type is just a matter of extending the core interfaces <code>Node</code>, <code>Graph</code>, <code>Edge</code> with custom implementations and a graph builder to create instances:</p>
+<p>Creating a custom graph type is just a matter of extending the core trait <code>Edge</code> with custom implementations and an edge builder to create instances:</p>
 <pre class="prettyprint"><code class="language-scala">case class MyNode(id: String, someCustomProperty: String)
 case class MyEdge(label: Option[String] = None, source: MyNode, target: MyNode) extends Edge[MyEdge, MyNode] {
   override def value: MyEdge = this
@@ -174,7 +195,7 @@ val graph = MyGraph.create(
 println(graph.edges)
 // Set(MyEdge(None,MyNode(My first node),MyNode(My second node)))</code></pre>
 <h3><a href="#default-graph" name="default-graph" class="anchor"><span class="anchor-link"></span></a>Default Graph</h3>
-<p>The default graph implementation shows another example on how to define a simple node type and a bunch of builders for the different edge types:</p>
+<p>The default graph implementation shows a more complete example on how to define a simple node type and a bunch of builders for different edge types:</p>
 <pre class="prettyprint"><code class="language-scala">package com.flowtick.graphs
 
 import com.flowtick.graphs.layout.{ Cell, GraphLayout, ShapeDefinition }
@@ -277,6 +298,7 @@ The source code for this page can be found <a href="https://github.com/flowtick/
 <ul>
   <li><a href="creating-graphs.html#creating-graphs" class="header">Creating graphs</a>
   <ul>
+    <li><a href="creating-graphs.html#core-types" class="header">Core Types</a></li>
     <li><a href="creating-graphs.html#custom-graph-types" class="header">Custom Graph Types</a></li>
   </ul></li>
 </ul>
