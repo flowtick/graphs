@@ -1,15 +1,23 @@
 # Creating graphs
 
 A _graph_ consists of _nodes_ which represent some objects or values and _edges_ which express a
-relation between this objects and values. In `graphs` the base type for a graph is therefore
-a trait with the type parameters for node and the edge type:
+relation between this objects.
 
-@@snip [Graph.scala](../core/shared/src/main/scala/com/flowtick/graphs/Graph.scala){ #graph }
-
-There is default implementation of a graph which has just one property for its nodes, which is an `id`
-to identify the node. Using this default implementation, you can instantly start creating graph instances:
+`graphs` has a default implementation of a graph with node values of type `String` which acts as 
+the identifier of that node. Using this default implementation, you can instantly start creating simple graph instances:
 
 @@snip [SimpleGraphApp.scala](../examples/src/main/scala/SimpleGraphApp.scala)
+
+The default graph types also support weighted edges, which are edges carrying some kind of value like a 
+distance between nodes. Numeric weights can be used in algorithms.
+
+@@snip [SimpleGraphApp.scala](../examples/src/main/scala/DijkstraApp.scala){ #cities }
+
+## Core Types
+
+In `graphs` the base type for a graph is a trait with the type parameters for the node and the edge type:
+
+@@snip [Graph.scala](../core/shared/src/main/scala/com/flowtick/graphs/Graph.scala){ #graph }
 
 ## Custom Graph Types
 
@@ -20,7 +28,7 @@ custom implementations and an edge builder to create instances:
 
 ### Default Graph
 
-The default graph implementation shows another example on how to define a simple node type and a bunch of builders for
-the different edge types:
+The default graph implementation shows a more complete example on how to define a simple node type and a bunch of 
+builders for different edge types:
 
 @@snip [DefaultGraph.scala](../core/shared/src/main/scala/com/flowtick/graphs/defaults/package.scala)

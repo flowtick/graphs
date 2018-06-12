@@ -11,7 +11,7 @@ Features
 * Breadth-first traversal / search
 * Topological sorting
 * Dijkstras algorithm for shortest paths
-* <strike>graphml import / export</strike> (planned)
+* GraphML import / export (experimental)
 * <strike>force based layout</strike> (planned)
 * cross compiled for Scala 2.11, 2.12, Scala.js
 
@@ -34,5 +34,7 @@ graphs is published under the terms of the Apache 2.0 License. See the [LICENSE]
 * [Setup](setup.md)
 * [Creating Graphs](creating-graphs.md)
 * [Algorithms](algorithms.md)
+* [GraphML support](graphml.md)
+* [cats support](cats.md)
 
 @@@

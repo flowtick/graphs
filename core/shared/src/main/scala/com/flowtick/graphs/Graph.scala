@@ -54,6 +54,16 @@ trait Edge[E, N] {
    */
   def successors: Set[N]
 
+  /**
+   * shortcut for single element predecessors
+   */
+  def left: Option[N] = predecessors.headOption
+
+  /**
+   * shortcut for single element successors
+   */
+  def right: Option[N] = successors.headOption
+
   def incoming(node: N, graph: Graph[N, E]): Iterable[Edge[E, N]] = graph.edges.flatMap(edge => if (edge.successors.contains(node)) Some(edge) else None)
   def outgoing(node: N, graph: Graph[N, E]): Iterable[Edge[E, N]] = graph.edges.flatMap(edge => if (edge.predecessors.contains(node)) Some(edge) else None)
 }
@@ -76,8 +86,8 @@ trait EdgeBuilder[N, E, B] {
  * Wikipedia (https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)):
  * "a graph is a structure amounting to a set of objects in which some pairs of the objects are in some sense "related"."
  *
- * In this case the objects are called nodes and the relation is expressed as [[Edge]]s
- * between this nodes
+ * In this case the objects are called nodes and the relation is expressed as a set [[Edge]]s
+ * between nodes
  *
  * @tparam N the node type
  * @tparam E the edge type
@@ -96,7 +106,9 @@ final case class SomeGraph[N, E](nodes: Set[N], edges: Set[Edge[E, N]]) extends 
 object Graph {
   def apply[N, E](nodes: Set[N], edges: Set[Edge[E, N]]): Graph[N, E] = SomeGraph(nodes, edges)
 
-  case class empty[N, E]() extends Graph[N, E] {
+  def empty[N, E]: Graph[N, E] = EmptyGraph[N, E]()
+
+  final case class EmptyGraph[N, E]() extends Graph[N, E] {
     override def nodes: Set[N] = Set.empty
     override def edges: Set[Edge[E, N]] = Set.empty
 
