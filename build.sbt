@@ -101,7 +101,7 @@ lazy val examples = (project in file("examples"))
       .settings(
         name := "graphs-examples"
       )
-      .dependsOn(coreJVM, graphmlJVM)
+      .dependsOn(coreJVM, graphmlJVM, catsJVM)
 
 lazy val graphs = (project in file("."))
   .enablePlugins(ParadoxSitePlugin, ScalaUnidocPlugin, GhpagesPlugin)

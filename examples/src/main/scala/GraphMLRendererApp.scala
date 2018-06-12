@@ -2,11 +2,11 @@ import java.io.FileOutputStream
 
 import com.flowtick.graphs.{ Graph, Identifiable, Labeled }
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.graphml.GraphMLRenderer
+import com.flowtick.graphs.graphml.{ GraphMLRenderer, GraphMLImporter }
 import com.flowtick.graphs.layout.{ JGraphXLayouter, ShapeDefinition }
 
 object GraphMLRendererApp extends App {
-  def writeGraphXML[N, E](g: Graph[N, E], fileName: String)(implicit identifiable: Identifiable[N], edgeLabel: Labeled[E, String]): Unit = {
+  def writeGraphXML[N, E](g: Graph[N, E], fileName: String)(implicit identifiable: Identifiable[N], edgeLabel: Labeled[E, String]): String = {
     val graphXml = new GraphMLRenderer().render(
       g,
       JGraphXLayouter,
@@ -16,8 +16,11 @@ object GraphMLRendererApp extends App {
     output.write(graphXml.toString().getBytes)
     output.flush()
     output.close()
+
+    graphXml.toString()
   }
 
-  writeGraphXML(DijkstraGraph.cities, "target/cities.graphml")
-  // writeGraphXML(TopologicalSortingApp.clothingDependencies, "target/clothing.graphml")
+  val writtenXml = writeGraphXML(DijkstraGraph.cities, "target/cities.graphml")
+  println(new GraphMLImporter().fromXml(writtenXml))
+  // Right(GraphMLGraph(Some(G),SomeGraph(Set(GraphMLNode(Karlsruhe,Some(Karlsruhe),Map(graphics -> ...
 }
