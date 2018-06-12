@@ -14,9 +14,9 @@ class DijkstraShortestPath[T, N, E](graph: Graph[N, E]) {
    * @param end the end node
    * @return Some list of node ids with the shortest path, None if there is no path from start to end
    */
-  def shortestPath(start: N, end: N)(implicit weight: Weighted[E, T], numeric: Numeric[T]): Option[List[N]] = {
+  def shortestPath(start: N, end: N)(implicit weight: Weighted[E, T], numeric: Numeric[T]): Iterable[Edge[E, N]] = {
     val distanceMap = mutable.Map.empty[N, Double]
-    val predecessorMap = mutable.Map.empty[N, N]
+    val predecessorMap = mutable.Map.empty[N, (N, Edge[E, N])]
 
     implicit val nodePriority: Ordering[N] = new Ordering[N] {
       override def compare(x: N, y: N): Int = -distanceMap(x).compare(distanceMap(y))
@@ -40,25 +40,23 @@ class DijkstraShortestPath[T, N, E](graph: Graph[N, E]) {
         val newDist = currentDistance + numeric.toDouble(weight.value(edge.value))
         edge.successors.filter(newDist < distanceMap(_)).foreach { node =>
           distanceMap.put(node, newDist)
-          predecessorMap.put(node, current)
+          predecessorMap.put(node, (current, edge))
         }
       }
     }
 
     if (predecessorMap.get(end).nonEmpty) {
-      val predecessors = mutable.Stack[N]()
-      val predecessorList = ListBuffer.empty[N]
+      val predecessors = mutable.Stack[(N, Edge[E, N])]()
+      val predecessorList = ListBuffer.empty[Edge[E, N]]
       predecessorMap.get(end).foreach(predecessors.push)
 
       while (predecessors.nonEmpty) {
         val currentPredecessor = predecessors.pop()
-        predecessorList.prepend(currentPredecessor)
-        predecessorMap.get(currentPredecessor).foreach(predecessors.push)
+        predecessorList.prepend(currentPredecessor._2)
+        predecessorMap.get(currentPredecessor._1).foreach(predecessors.push)
       }
 
-      predecessorList.append(end)
-
-      Some(predecessorList.toList)
-    } else None
+      predecessorList
+    } else List.empty
   }
 }
