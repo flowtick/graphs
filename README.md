@@ -1,5 +1,5 @@
 [![Waffle.io - Columns and their card count](https://badge.waffle.io/flowtick/graphs.png?columns=all)](https://waffle.io/flowtick/graphs?utm_source=badge)
-![travis ci](https://api.travis-ci.org/flowtick/graphs.svg?branch=master)
+[![travis ci](https://api.travis-ci.org/flowtick/graphs.svg?branch=master)](https://travis-ci.org/flowtick/graphs)
 
 graphs
 ======
