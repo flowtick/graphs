@@ -45,7 +45,7 @@ trait Edge[E, N] {
   /**
    * @return the set of predecessors for an edge, this is a set to allow multi graphs and hyper edges.
    *         In the more common directed and undirected edge types, this will be a single value or empty set.
-   *         Empty means no successor and is useful to model graphs that allow unconnected nodes.
+   *         Empty means no predecessors and is useful to model graphs that allow unconnected nodes.
    */
   def predecessors: Set[N]
 

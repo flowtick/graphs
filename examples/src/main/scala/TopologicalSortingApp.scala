@@ -9,7 +9,7 @@ object TopologicalSortingApp extends App {
     n("B") -> n("C"),
     n("D") -> n("A")))
 
-  lazy val clothingDependencies: Graph[DefaultNode, DefaultEdge[DefaultNode]] = DefaultGraph.create(Seq(
+  lazy val clothingDependencies: Graph[DefaultNode, DirectedEdge[DefaultNode]] = DefaultGraph.create(Seq(
     n("Underpants") -> n("Pants"),
     n("Pants") -> n("Coat"),
     n("Pullover") -> n("Coat"),
