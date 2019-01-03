@@ -1,6 +1,8 @@
 import ReleaseTransformations._
 
-val mainScalaVersion = "2.12.7"
+val mainScalaVersion = "2.12.8"
+val scalaXmlV = "1.1.1"
+val catsV = "1.5.0"
 
 lazy val commonSettings = Seq(
   resolvers ++= Seq(
@@ -73,11 +75,11 @@ lazy val graphml = (crossProject in file(".") / "graphml")
   ).jvmSettings(
     libraryDependencies ++= Seq(
       "com.mxgraph" % "jgraphx" % "3.7.4",
-      "org.scala-lang.modules" %% "scala-xml" % "1.1.0"
+      "org.scala-lang.modules" %% "scala-xml" % scalaXmlV
     )
   ).jsSettings(
     libraryDependencies ++= Seq(
-      "org.scala-lang.modules" %%% "scala-xml" % "1.1.0"
+      "org.scala-lang.modules" %%% "scala-xml" % scalaXmlV
     )
   ).dependsOn(core)
 
@@ -89,7 +91,7 @@ lazy val cats = (crossProject in file(".") / "cats")
   .settings(
     name := "graphs-cats",
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % "1.0.1"
+      "org.typelevel" %% "cats-core" % catsV
     )
   ).dependsOn(core)
 
