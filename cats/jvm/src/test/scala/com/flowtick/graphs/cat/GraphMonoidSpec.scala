@@ -16,12 +16,12 @@ class GraphMonoidSpec extends FlatSpec with Matchers {
       4 -> 3,
       4 -> 5))
 
-    graphMonoid.combine(graphA, graphB) should be(SomeGraph[Int, DefaultEdge[Int]](
+    graphMonoid.combine(graphA, graphB) should be(SomeGraph[Int, DirectedEdge[Int]](
       Set(1, 2, 3, 4, 5),
       Set(
-        DefaultEdge(1, Some(2), true),
-        DefaultEdge(4, Some(5), true),
-        DefaultEdge(2, Some(3), true),
-        DefaultEdge(4, Some(3), true))))
+        DirectedEdge(1, Some(2)),
+        DirectedEdge(4, Some(5)),
+        DirectedEdge(2, Some(3)),
+        DirectedEdge(4, Some(3)))))
   }
 }

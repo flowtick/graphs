@@ -2,7 +2,7 @@ package com.flowtick.graphs.layout
 
 import java.io.{ FileOutputStream, OutputStream }
 
-import com.flowtick.graphs.defaults.{ DefaultEdge, DefaultGraph, DefaultNode, WeightedEdge, n }
+import com.flowtick.graphs.defaults.{ DirectedEdge, DefaultGraph, DefaultNode, WeightedEdge, n }
 import com.flowtick.graphs.defaults.directed._
 import com.mxgraph.view.mxGraph
 import org.scalatest.FlatSpec
@@ -16,7 +16,7 @@ class JGraphXLayoutSpec extends FlatSpec {
       n("B") -> n("C"),
       n("D") -> n("A")))
 
-    val layoutedGraph = new JGraphXLayout[DefaultNode, DefaultEdge[DefaultNode]].layout(graph, _ => None)
+    val layoutedGraph = new JGraphXLayout[DefaultNode, DirectedEdge[DefaultNode]].layout(graph, _ => None)
     saveGraph("simple", layoutedGraph)
   }
 
@@ -26,9 +26,9 @@ class JGraphXLayoutSpec extends FlatSpec {
   }
 
   it should "layout city graph" in {
-    val cities = DefaultGraph.weighted[DefaultEdge[DefaultNode], DefaultNode, Int](Seq.empty)
+    val cities = DefaultGraph.weighted[DirectedEdge[DefaultNode], DefaultNode, Int](Seq.empty)
 
-    val layoutedGraph = new JGraphXLayout[DefaultNode, WeightedEdge[DefaultEdge[DefaultNode], DefaultNode, Int]].layout(
+    val layoutedGraph = new JGraphXLayout[DefaultNode, WeightedEdge[DirectedEdge[DefaultNode], DefaultNode, Int]].layout(
       cities,
       _ => Some(ShapeDefinition(50, 70, rounded = true, color = "#FF0000", shapeType = "ellipse")))
 

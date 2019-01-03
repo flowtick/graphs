@@ -1,7 +1,7 @@
 package com.flowtick.graphs.algorithm
 
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.undirected._
+import com.flowtick.graphs.defaults.directed._
 
 import org.scalatest.{ FlatSpec, Matchers }
 
@@ -9,7 +9,7 @@ class DijkstraShortestPathSpec extends FlatSpec with Matchers {
   "Dijkstras algorithm" should "get the shortest path" in {
 
     // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
-    val g = DefaultGraph.weighted[DefaultEdge[DefaultNode], DefaultNode, Int](Seq(
+    val g = DefaultGraph.weighted[DirectedEdge[DefaultNode], DefaultNode, Int](Seq(
       (85, n("Frankfurt") -> n("Mannheim")),
       (217, n("Frankfurt") -> n("Wuerzburg")),
       (173, n("Frankfurt") -> n("Kassel")),
