@@ -22,20 +22,21 @@ class BreadthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
 
     inSequence {
       visitMock.expects(n("A"))
-      visitMock.expects(n("C"))
       visitMock.expects(n("D"))
+      visitMock.expects(n("C"))
       visitMock.expects(n("B"))
       completeMock.expects(n("A"))
-      completeMock.expects(n("C"))
       completeMock.expects(n("D"))
-      visitMock.expects(n("G"))
+      completeMock.expects(n("C"))
       visitMock.expects(n("E"))
       visitMock.expects(n("F"))
+      visitMock.expects(n("G"))
       completeMock.expects(n("B"))
-      completeMock.expects(n("G"))
       visitMock.expects(n("H"))
+
       completeMock.expects(n("E"))
       completeMock.expects(n("F"))
+      completeMock.expects(n("G"))
       completeMock.expects(n("H"))
     }
 
