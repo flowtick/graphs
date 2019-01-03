@@ -16,34 +16,34 @@ class GraphSpec extends FlatSpec with Matchers {
 
   "Graph" should "provide incoming edges for nodes" in {
     graph.incoming(n("A")).toList should contain theSameElementsAs List(
-      DefaultEdge(n("D"), Some(n("A"))))
+      DirectedEdge(n("D"), Some(n("A"))))
 
     graph.incoming(n("B")).toList should contain theSameElementsAs List(
-      DefaultEdge(n("A"), Some(n("B"))))
+      DirectedEdge(n("A"), Some(n("B"))))
 
     graph.incoming(n("C")).toList should contain theSameElementsAs List(
-      DefaultEdge(n("B"), Some(n("C"))),
-      DefaultEdge(n("A"), Some(n("C"))))
+      DirectedEdge(n("B"), Some(n("C"))),
+      DirectedEdge(n("A"), Some(n("C"))))
 
     graph.incoming(n("D")).toList should contain theSameElementsAs List(
-      DefaultEdge(n("C"), Some(n("D"))),
-      DefaultEdge(n("B"), Some(n("D"))))
+      DirectedEdge(n("C"), Some(n("D"))),
+      DirectedEdge(n("B"), Some(n("D"))))
   }
 
   "Graph" should "provide outgoing edges for nodes" in {
     graph.outgoing(n("A")).toList should contain theSameElementsAs List(
-      DefaultEdge(n("A"), Some(n("B"))),
-      DefaultEdge(n("A"), Some(n("C"))))
+      DirectedEdge(n("A"), Some(n("B"))),
+      DirectedEdge(n("A"), Some(n("C"))))
 
     graph.outgoing(n("B")).toList should contain theSameElementsAs List(
-      DefaultEdge(n("B"), Some(n("C"))),
-      DefaultEdge(n("B"), Some(n("D"))))
+      DirectedEdge(n("B"), Some(n("C"))),
+      DirectedEdge(n("B"), Some(n("D"))))
 
     graph.outgoing(n("C")).toList should contain theSameElementsAs List(
-      DefaultEdge(n("C"), Some(n("D"))))
+      DirectedEdge(n("C"), Some(n("D"))))
 
     graph.outgoing(n("D")).toList should contain theSameElementsAs List(
-      DefaultEdge(n("D"), Some(n("A"))))
+      DirectedEdge(n("D"), Some(n("A"))))
   }
 
 }

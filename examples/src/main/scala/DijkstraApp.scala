@@ -1,11 +1,11 @@
 import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.undirected._
+import com.flowtick.graphs.defaults.directed._
 
 object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
   // #cities
-  val cities = DefaultGraph.weighted[DefaultEdge[DefaultNode], DefaultNode, Int](Seq(
+  val cities = DefaultGraph.weighted[DirectedEdge[DefaultNode], DefaultNode, Int](Seq(
     (85, n("Frankfurt") -> n("Mannheim")),
     (217, n("Frankfurt") -> n("Wuerzburg")),
     (173, n("Frankfurt") -> n("Kassel")),

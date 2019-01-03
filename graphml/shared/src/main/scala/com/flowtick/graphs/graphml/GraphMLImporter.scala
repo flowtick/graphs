@@ -91,7 +91,7 @@ class GraphMLImporter {
     val nodes = new mutable.HashMap[String, GraphMLNode]()
 
     graphNode.child.zipWithIndex.foreach {
-      case (node: scala.xml.Node, index: Int) if node.label == "node" =>
+      case (node: scala.xml.Node, _: Int) if node.label == "node" =>
         val id = singleAttributeValue("id", node).getOrElse(node.label)
         val nodeProperties = parseProperties(node, keys)
         val graphNode = GraphMLNode(id, extractNodeLabel(nodeProperties), nodeProperties)
