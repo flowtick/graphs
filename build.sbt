@@ -68,23 +68,47 @@ lazy val core = (crossProject in file(".") / "core")
 lazy val coreJS = core.js
 lazy val coreJVM = core.jvm
 
+lazy val layout = (crossProject in file(".") / "layout")
+  .settings(commonSettings)
+  .settings(
+    name := "graphs-layout",
+  ).jvmSettings(
+  libraryDependencies ++= Seq(
+    "com.mxgraph" % "jgraphx" % "3.7.4"
+  )
+).dependsOn(core)
+
+lazy val layoutJS = layout.js
+lazy val layoutJVM = layout.jvm
+
 lazy val graphml = (crossProject in file(".") / "graphml")
   .settings(commonSettings)
   .settings(
     name := "graphs-graphml",
   ).jvmSettings(
     libraryDependencies ++= Seq(
-      "com.mxgraph" % "jgraphx" % "3.7.4",
       "org.scala-lang.modules" %% "scala-xml" % scalaXmlV
     )
   ).jsSettings(
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %%% "scala-xml" % scalaXmlV
     )
-  ).dependsOn(core)
+  ).dependsOn(core, layout)
 
 lazy val graphmlJS = graphml.js
 lazy val graphmlJVM = graphml.jvm
+
+lazy val editor = (crossProject in file(".") / "editor")
+  .settings(commonSettings)
+  .settings(
+    name := "graphs-editor",
+  ).dependsOn(core, graphml)
+
+lazy val editorJS = editor.js.settings(
+  scalaJSUseMainModuleInitializer := true,
+  libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.2"
+)
+lazy val editorJVM = editor.jvm
 
 lazy val cats = (crossProject in file(".") / "cats")
   .settings(commonSettings)
@@ -103,7 +127,7 @@ lazy val examples = (project in file("examples"))
       .settings(
         name := "graphs-examples"
       )
-      .dependsOn(coreJVM, graphmlJVM, catsJVM)
+      .dependsOn(coreJVM, graphmlJVM, catsJVM, layoutJVM)
 
 lazy val graphs = (project in file("."))
   .enablePlugins(ParadoxSitePlugin, ScalaUnidocPlugin, GhpagesPlugin)

@@ -17,7 +17,7 @@ package object cat {
 
   implicit def graphEdgeFunctor[N, E](implicit edgeFunctor: Functor[({ type f[x] = Edge[x, N] })#f]) = new Functor[({ type f[x] = Graph[N, x] })#f] {
     override def map[A, B](fa: Graph[N, A])(f: A => B): Graph[N, B] = fa match {
-      case _: EmptyGraph[_, _] => Graph.empty
+      case _: Graph[_, _] => Graph.empty
       case SomeGraph(nodes, edges) =>
         SomeGraph[N, B](nodes, edges.map(_.map(f)))
     }

@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>graphs editor</title>
+</head>
+
+<script src="https://cdn.jsdelivr.net/npm/mxgraph@3.9.12/javascript/mxClient.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mxgraph@3.9.12/javascript/src/css/common.css">
+
+<body>
+
+<div id="graphsContainer"
+     style="border:1px solid #ccc;position:relative;overflow:hidden;width:321px;height:241px;cursor:default;">
+</div>
+
+<script src="../js/target/scala-2.12/graphs-editor-fastopt.js"></script>
+<script>
+    graphsEditor.showDefaultGraph("graphsContainer", graphsEditor.exampleGraph)
+</script>
+</body>
+</html>

@@ -10,12 +10,12 @@ class GraphMLRenderer {
     g: Graph[N, E],
     layouter: GraphLayout,
     shapeDefinition: N => Option[ShapeDefinition] = (_: N) => None)(implicit identifiable: Identifiable[N], edgeLabel: Labeled[E, String]): Elem = {
-    val layoutedCells = layouter.layout(g, shapeDefinition)
+    val layout = layouter.layout(g, shapeDefinition)
 
     def nodeProperties(aNode: N): Map[String, GraphMLProperty] = (aNode match {
       case GraphMLNode(_, _, properties) => properties
       case _ => Map.empty[String, GraphMLProperty]
-    }) + ("graphics" -> nodeGraphicsProperty(identifiable.id(aNode), shapeDefinition(aNode)))
+    }) + ("graphics" -> nodeGraphicsProperty(aNode, identifiable.id(aNode), shapeDefinition(aNode)))
 
     def dataKeys: Set[Elem] = g.nodes.flatMap(nodeProperties(_).values).map { property: GraphMLProperty =>
       <key id={ property.key.id } for={ property.key.targetHint.map(Text(_)) } yfiles.type={ property.key.yfilesType.map(Text(_)) } attr.type={ property.key.typeHint.map(Text(_)) }/>
@@ -26,9 +26,10 @@ class GraphMLRenderer {
     }
 
     def nodeGraphicsProperty(
+      node: N,
       label: String,
       shape: Option[ShapeDefinition]): GraphMLProperty = {
-      val geometry = layoutedCells.get(label).map(_.geometry).getOrElse(DefaultGeometry(0, 0, 30, 30))
+      val geometry = layout(node).map(_.geometry).getOrElse(DefaultGeometry(0, 0, 30, 30))
 
       val shapeNodeElem =
         // format: OFF
