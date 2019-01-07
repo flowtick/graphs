@@ -2,6 +2,7 @@ package com.flowtick.graphs.layout
 
 import java.util
 
+import com.flowtick.graphs.layout.GraphLayout.NodeLayout
 import com.flowtick.graphs.{ Edge, Graph, Identifiable, Labeled }
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
 import com.mxgraph.model.{ mxCell, mxGeometry, mxGraphModel }
@@ -14,10 +15,10 @@ object JGraphXLayouter extends GraphLayout {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   override def layout[N, E](g: Graph[N, E], shape: N => Option[ShapeDefinition])(implicit
     identifiable: Identifiable[N],
-    edgeLabel: Labeled[E, String]): collection.Map[String, Cell] = {
+    edgeLabel: Labeled[E, String]): NodeLayout[N] = node => {
     new JGraphXLayout[N, E]().layout(g, shape)
       .getModel.asInstanceOf[mxGraphModel]
-      .getCells.asScala.mapValues(cell => JGraphXCell(cell.asInstanceOf[mxCell]))
+      .getCells.asScala.mapValues(cell => JGraphXCell(cell.asInstanceOf[mxCell])).get(identifiable.id(node))
   }
 }
 

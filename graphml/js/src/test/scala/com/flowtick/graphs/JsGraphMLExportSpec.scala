@@ -2,8 +2,8 @@ package com.flowtick.graphs
 
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.defaults.directed._
-
 import com.flowtick.graphs.graphml.GraphMLRenderer
+import com.flowtick.graphs.layout.GraphLayout.NodeLayout
 import com.flowtick.graphs.layout.{ Cell, GraphLayout, ShapeDefinition }
 import org.scalatest.{ FlatSpec, Matchers }
 
@@ -17,7 +17,7 @@ class JsGraphMLExportSpec extends FlatSpec with Matchers {
     val xml: Elem = render(graph, new GraphLayout {
       override def layout[N, E](g: Graph[N, E], shape: N => Option[ShapeDefinition])(implicit
         identifiable: Identifiable[N],
-        edgeLabel: Labeled[E, String]): collection.Map[String, Cell] = Map.empty
+        edgeLabel: Labeled[E, String]): NodeLayout[N] = _ => None
     })
 
     xml.headOption shouldBe defined

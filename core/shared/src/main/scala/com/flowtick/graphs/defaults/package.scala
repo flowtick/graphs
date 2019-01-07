@@ -1,7 +1,5 @@
 package com.flowtick.graphs
 
-import com.flowtick.graphs.layout.{ Cell, GraphLayout, ShapeDefinition }
-
 package object defaults extends {
   // #default_graph
   case class DefaultNode(id: String)
@@ -52,12 +50,6 @@ package object defaults extends {
 
   implicit def identifiableNumeric[N](implicit numeric: Numeric[N]): Identifiable[N] = new Identifiable[N] {
     override def id(node: N): String = numeric.toDouble(node).toString
-  }
-
-  implicit def defaultLayout: GraphLayout = new GraphLayout {
-    override def layout[N, E](g: Graph[N, E], shape: N => Option[ShapeDefinition])(implicit
-      identifiable: Identifiable[N],
-      edgeLabel: Labeled[E, String]): collection.Map[String, Cell] = Map.empty
   }
 
   implicit def weight[E, N, V: Numeric]: Weighted[WeightedEdge[E, N, V], V] = new Weighted[WeightedEdge[E, N, V], V] {

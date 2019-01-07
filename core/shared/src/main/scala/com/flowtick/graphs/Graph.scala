@@ -108,7 +108,7 @@ object Graph {
 
   def empty[N, E]: Graph[N, E] = EmptyGraph[N, E]()
 
-  final case class EmptyGraph[N, E]() extends Graph[N, E] {
+  private final case class EmptyGraph[N, E]() extends Graph[N, E] {
     override def nodes: Set[N] = Set.empty
     override def edges: Set[Edge[E, N]] = Set.empty
 
