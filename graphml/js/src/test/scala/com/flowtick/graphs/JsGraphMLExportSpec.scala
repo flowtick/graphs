@@ -4,7 +4,7 @@ import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.defaults.directed._
 import com.flowtick.graphs.graphml.GraphMLRenderer
 import com.flowtick.graphs.layout.GraphLayout.NodeLayout
-import com.flowtick.graphs.layout.{ Cell, GraphLayout, ShapeDefinition }
+import com.flowtick.graphs.layout.{ GraphLayout, ShapeDefinition }
 import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.xml.Elem

@@ -144,7 +144,7 @@ lazy val graphs = (project in file("."))
       file("LICENSE") -> "LICENSE"
     ),
     git.remoteRepo := "git@github.com:flowtick/graphs.git",
-    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(graphmlJS, coreJS, catsJS),
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(graphmlJS, coreJS, catsJS, layoutJS, editorJS),
     addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc),
   ).aggregate(coreJS, coreJVM, examples, graphmlJS, graphmlJVM, catsJVM, catsJS)
 
