@@ -56,7 +56,8 @@ lazy val commonSettings = Seq(
   ),
   autoAPIMappings := true,
   siteSubdirName in ScalaUnidoc := "latest/api",
-  scalacOptions += "-Ypartial-unification"
+  scalacOptions += "-Ypartial-unification",
+  coverageExcludedPackages := "<empty>;"
 )
 
 lazy val core = (crossProject in file(".") / "core")
