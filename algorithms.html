@@ -30,7 +30,7 @@
 <span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
-0.2.1
+0.2.2*
 </div>
 </div>
 <div class="nav-toc">
@@ -71,7 +71,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
-0.2.1
+0.2.2*
 </div>
 </div>
 <div class="nav-toc">
@@ -164,7 +164,7 @@ object TopologicalSortingApp extends App {
     n(&quot;B&quot;) -&gt; n(&quot;C&quot;),
     n(&quot;D&quot;) -&gt; n(&quot;A&quot;)))
 
-  lazy val clothingDependencies: Graph[DefaultNode, DefaultEdge[DefaultNode]] = DefaultGraph.create(Seq(
+  lazy val clothingDependencies: Graph[DefaultNode, DirectedEdge[DefaultNode]] = DefaultGraph.create(Seq(
     n(&quot;Underpants&quot;) -&gt; n(&quot;Pants&quot;),
     n(&quot;Pants&quot;) -&gt; n(&quot;Coat&quot;),
     n(&quot;Pullover&quot;) -&gt; n(&quot;Coat&quot;),
@@ -183,11 +183,11 @@ object TopologicalSortingApp extends App {
 <p>For a given source node in the graph, the algorithm finds the shortest path between that node and every other. It can also be used for finding the shortest paths from a single node to a single destination node by stopping the algorithm once the shortest path to the destination node has been determined. </blockquote></p>
 <pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.undirected._
+import com.flowtick.graphs.defaults.directed._
 
 object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
-  val cities = DefaultGraph.weighted[DefaultEdge[DefaultNode], DefaultNode, Int](Seq(
+  val cities = DefaultGraph.weighted[DirectedEdge[DefaultNode], DefaultNode, Int](Seq(
     (85, n(&quot;Frankfurt&quot;) -&gt; n(&quot;Mannheim&quot;)),
     (217, n(&quot;Frankfurt&quot;) -&gt; n(&quot;Wuerzburg&quot;)),
     (173, n(&quot;Frankfurt&quot;) -&gt; n(&quot;Kassel&quot;)),
@@ -267,7 +267,7 @@ The source code for this page can be found <a href="https://github.com/flowtick/
 
 <!--
 <div class="copyright">
-<span class="text">&copy; 2018</span>
+<span class="text">&copy; 2019</span>
 <a href="https://www.example.com" class="logo">logo</a>
 </div>
 -->
