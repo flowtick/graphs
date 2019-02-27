@@ -1,7 +1,5 @@
 package com.flowtick.graphs.graphml
 
-import com.flowtick.graphs._
-
 final case class GraphMLKey(
   id: String,
   name: Option[String] = None,
@@ -16,22 +14,10 @@ final case class GraphMLNode(
   label: Option[String] = None,
   properties: Map[String, GraphMLProperty] = Map.empty)
 
-final case class GraphMLEdge[N](
+final case class GraphMLEdge(
   id: String,
   label: Option[String] = None,
-  source: N,
-  target: Option[N],
-  properties: Map[String, GraphMLProperty] = Map.empty) extends Edge[GraphMLEdge[N], N] {
-  override def value: GraphMLEdge[N] = this
-  override def predecessors: Set[N] = Set(source)
-  override def successors: Set[N] = Set(target).flatten
-}
+  properties: Map[String, GraphMLProperty] = Map.empty)
 
-final case class GraphMLGraph[N, E](
-  id: Option[String],
-  graph: Graph[N, E])
-
-object GraphMLGraph {
-  def create: Seq[((GraphMLNode, GraphMLNode), Option[String])] => Graph[GraphMLNode, GraphMLEdge[GraphMLNode]] =
-    Graph.create[GraphMLNode, GraphMLEdge[GraphMLNode], ((GraphMLNode, GraphMLNode), Option[String])]
-}
+final case class GraphMLGraph(
+  id: Option[String])

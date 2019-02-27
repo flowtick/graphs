@@ -1,13 +1,14 @@
 import java.io.FileOutputStream
 
-import com.flowtick.graphs.{ Graph, Identifiable, Labeled }
+import com.flowtick.graphs.{ EdgeType, Graph, Identifiable, Labeled }
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.graphml.{ GraphMLRenderer, GraphMLImporter }
+import com.flowtick.graphs.defaults.directed._
+import com.flowtick.graphs.graphml.{ GraphMLImporter, GraphMLRenderer }
 import com.flowtick.graphs.layout.{ JGraphXLayouter, ShapeDefinition }
 
 object GraphMLRendererApp extends App {
-  def writeGraphXML[N, E](g: Graph[N, E], fileName: String)(implicit identifiable: Identifiable[N], edgeLabel: Labeled[E, String]): String = {
-    val graphXml = new GraphMLRenderer().render(
+  def writeGraphXML[G[_, _, _], E[_, _], V, N, M](g: G[E[V, N], N, M], fileName: String)(implicit graph: Graph[G, E], edgeType: EdgeType[E], identifiable: Identifiable[N], edgeLabel: Labeled[E[V, N], String]): String = {
+    val graphXml = new GraphMLRenderer().render[G, E, V, N, M](
       g,
       JGraphXLayouter,
       (_: N) => Some(ShapeDefinition(rounded = true, color = "#AAAAAA")))
@@ -21,6 +22,6 @@ object GraphMLRendererApp extends App {
   }
 
   val writtenXml = writeGraphXML(DijkstraGraph.cities, "target/cities.graphml")
-  println(new GraphMLImporter().fromXml(writtenXml))
-  // Right(GraphMLGraph(Some(G),SomeGraph(Set(GraphMLNode(Karlsruhe,Some(Karlsruhe),Map(graphics -> ...
+  println(new GraphMLImporter[DefaultGraph, Edge]().fromXml(writtenXml))
+  // Right(DefaultGraph(GraphMLGraph(Some(G)),ListBuffer(GraphMLNode(Frankfurt,Some(Frankfurt),Map(graphics -> ...
 }
