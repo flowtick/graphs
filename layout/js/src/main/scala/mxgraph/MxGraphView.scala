@@ -3,6 +3,7 @@ package mxgraph
 import com.flowtick.graphs._
 import org.scalajs.dom.Element
 
+// $COVERAGE-OFF$ coverage disabled here due to https://github.com/scoverage/scalac-scoverage-plugin/issues/196
 @SuppressWarnings(Array("org.wartremover.warts.Null"))
 object MxGraphView {
   def create[G[_, _, _], E[_, _]](
@@ -104,3 +105,4 @@ object MxGraphView {
     builder.create[JsEdge, JsNode, JsGraph](meta, nodes, edges)
   }
 }
+// $COVERAGE-ON$

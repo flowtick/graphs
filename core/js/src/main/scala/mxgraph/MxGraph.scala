@@ -62,7 +62,8 @@ class MxEvent extends js.Any
 @SuppressWarnings(Array("org.wartremover.warts.Var"))
 class MxHierarchicalLayout(
   graph: MxGraph,
-  orientation: js.UndefOr[String] = js.undefined, deterministic: js.UndefOr[Boolean] = js.undefined) extends js.Any {
+  orientation: js.UndefOr[String] = js.undefined,
+  deterministic: js.UndefOr[Boolean] = js.undefined) extends js.Any {
   def execute(parent: MxCell): Unit = js.native
 }
 
