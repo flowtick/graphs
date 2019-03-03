@@ -5,45 +5,44 @@ import com.flowtick.graphs.defaults.directed._
 import org.scalatest.{ FlatSpec, Matchers }
 
 class GraphSpec extends FlatSpec with Matchers {
-
-  val graph = DefaultGraph.create(Seq(
-    n("A") -> n("B"),
-    n("B") -> n("C"),
-    n("C") -> n("D"),
-    n("D") -> n("A"),
-    n("A") -> n("C"),
-    n("B") -> n("D")))
+  val testGraph: DefaultGraph[Edge[Unit, String], String, Unit] = defaultGraph.from(Seq(
+    n("A") --> n("B"),
+    n("B") --> n("C"),
+    n("C") --> n("D"),
+    n("D") --> n("A"),
+    n("A") --> n("C"),
+    n("B") --> n("D")))
 
   "Graph" should "provide incoming edges for nodes" in {
-    graph.incoming(n("A")).toList should contain theSameElementsAs List(
-      DirectedEdge(n("D"), Some(n("A"))))
+    defaultGraph.incoming("A", testGraph) should contain theSameElementsAs List(
+      n("D") --> n("A"))
 
-    graph.incoming(n("B")).toList should contain theSameElementsAs List(
-      DirectedEdge(n("A"), Some(n("B"))))
+    defaultGraph.incoming("B", testGraph) should contain theSameElementsAs List(
+      n("A") --> n("B"))
 
-    graph.incoming(n("C")).toList should contain theSameElementsAs List(
-      DirectedEdge(n("B"), Some(n("C"))),
-      DirectedEdge(n("A"), Some(n("C"))))
+    defaultGraph.incoming("C", testGraph) should contain theSameElementsAs List(
+      n("B") --> n("C"),
+      n("A") --> n("C"))
 
-    graph.incoming(n("D")).toList should contain theSameElementsAs List(
-      DirectedEdge(n("C"), Some(n("D"))),
-      DirectedEdge(n("B"), Some(n("D"))))
+    defaultGraph.incoming("D", testGraph) should contain theSameElementsAs List(
+      n("C") --> n("D"),
+      n("B") --> n("D"))
   }
 
   "Graph" should "provide outgoing edges for nodes" in {
-    graph.outgoing(n("A")).toList should contain theSameElementsAs List(
-      DirectedEdge(n("A"), Some(n("B"))),
-      DirectedEdge(n("A"), Some(n("C"))))
+    defaultGraph.outgoing("A", testGraph) should contain theSameElementsAs List(
+      n("A") --> n("B"),
+      n("A") --> n("C"))
 
-    graph.outgoing(n("B")).toList should contain theSameElementsAs List(
-      DirectedEdge(n("B"), Some(n("C"))),
-      DirectedEdge(n("B"), Some(n("D"))))
+    defaultGraph.outgoing("B", testGraph) should contain theSameElementsAs List(
+      n("B") --> n("C"),
+      n("B") --> n("D"))
 
-    graph.outgoing(n("C")).toList should contain theSameElementsAs List(
-      DirectedEdge(n("C"), Some(n("D"))))
+    defaultGraph.outgoing("C", testGraph) should contain theSameElementsAs List(
+      n("C") --> n("D"))
 
-    graph.outgoing(n("D")).toList should contain theSameElementsAs List(
-      DirectedEdge(n("D"), Some(n("A"))))
+    defaultGraph.outgoing("D", testGraph) should contain theSameElementsAs List(
+      n("D") --> n("A"))
   }
 
 }

@@ -8,42 +8,44 @@ import org.scalatest.{ FlatSpec, Matchers }
 class BreadthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
   "Bfs" should "traverse in breadth first manner" in {
 
-    val graph = DefaultGraph.create(Seq(
-      n("A") -> n("D"),
-      n("A") -> n("C"),
-      n("A") -> n("B"),
-      n("B") -> n("E"),
-      n("B") -> n("F"),
-      n("B") -> n("G"),
-      n("E") -> n("H")))
+    val graph = defaultGraph.from(Seq(
+      n("1") --> n("2"),
+      n("1") --> n("3"),
 
-    val visitMock = mockFunction[DefaultNode, Unit](functionName("visitCallback"))
-    val completeMock = mockFunction[DefaultNode, Unit](functionName("completeCallback"))
+      n("2") --> n("4"),
+      n("2") --> n("5"),
+
+      n("3") --> n("6"),
+      n("3") --> n("7")))
+
+    val visitMock = mockFunction[String, Unit](functionName("visitCallback"))
+    val completeMock = mockFunction[String, Unit](functionName("completeCallback"))
 
     inSequence {
-      visitMock.expects(n("A"))
-      visitMock.expects(n("D"))
-      visitMock.expects(n("C"))
-      visitMock.expects(n("B"))
-      completeMock.expects(n("A"))
-      completeMock.expects(n("D"))
-      completeMock.expects(n("C"))
-      visitMock.expects(n("E"))
-      visitMock.expects(n("F"))
-      visitMock.expects(n("G"))
-      completeMock.expects(n("B"))
-      visitMock.expects(n("H"))
+      visitMock.expects("1")
+      visitMock.expects("2")
+      visitMock.expects("3")
+      completeMock.expects("1")
 
-      completeMock.expects(n("E"))
-      completeMock.expects(n("F"))
-      completeMock.expects(n("G"))
-      completeMock.expects(n("H"))
+      visitMock.expects("4")
+      visitMock.expects("5")
+      completeMock.expects("2")
+
+      visitMock.expects("6")
+      visitMock.expects("7")
+      completeMock.expects("3")
+      completeMock.expects("4")
+      completeMock.expects("5")
+      completeMock.expects("6")
+      completeMock.expects("7")
     }
 
-    graph.bfs(n("A")).onVisit(node => {
+    val bfsResult = graph.bfs("1").onVisit(node => {
       visitMock(node)
     }).onComplete(node => {
       completeMock(node)
     }).run
+
+    bfsResult should be(List("1", "2", "3", "4", "5", "6", "7"))
   }
 }

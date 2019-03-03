@@ -1,10 +1,13 @@
 package com.flowtick.graphs.algorithm
 
-import com.flowtick.graphs.Graph
+import com.flowtick.graphs.{ EdgeType, Graph, Identifiable }
 
 import scala.collection.mutable
 
-class TopologicalSort[N, E](graph: Graph[N, E]) extends DepthFirstSearch[N, E](graph.nodes, graph) {
+class TopologicalSort[G[_, _, _], E[_, _], V, N, M](graph: G[E[V, N], N, M])(implicit
+  graphType: Graph[G, E],
+  edgeType: EdgeType[E],
+  identifiable: Identifiable[N]) extends DepthFirstSearch[G, E, V, N, M](graphType.nodes(graph), graph) {
   def sort: List[N] = {
     val sortedNodes = mutable.ListBuffer.empty[N]
     onComplete(sortedNodes.prepend(_)).run

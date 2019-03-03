@@ -1,7 +1,7 @@
 package com.flowtick.graphs.layout
 
 import com.flowtick.graphs.layout.GraphLayout.NodeLayout
-import com.flowtick.graphs.{ Graph, Identifiable, Labeled }
+import com.flowtick.graphs.{ EdgeType, Graph, Identifiable, Labeled }
 
 trait Geometry {
   def x: Double
@@ -21,18 +21,21 @@ trait Cell {
 }
 
 trait GraphLayout {
-  def layout[N, E](
-    g: Graph[N, E],
-    shape: N => Option[ShapeDefinition])(implicit
+  def layout[G[_, _, _], E[_, _], V, N, M](g: G[E[V, N], N, M], shape: N => Option[ShapeDefinition])(implicit
     identifiable: Identifiable[N],
-    edgeLabel: Labeled[E, String]): NodeLayout[N]
+    graphType: Graph[G, E],
+    edgeType: EdgeType[E],
+    edgeLabel: Labeled[E[V, N], String]): NodeLayout[N]
 }
 
 object GraphLayout {
   type NodeLayout[Node] = Node => Option[Cell]
 
   val none: GraphLayout = new GraphLayout {
-    override def layout[N, E](g: Graph[N, E], shape: N => Option[ShapeDefinition])(implicit identifiable: Identifiable[N], edgeLabel: Labeled[E, String]): NodeLayout[N] =
-      (_: N) => None
+    def layout[G[_, _, _], E[_, _], V, N, M](g: G[E[V, N], N, M], shape: N => Option[ShapeDefinition])(implicit
+      identifiable: Identifiable[N],
+      graphType: Graph[G, E],
+      edgeType: EdgeType[E],
+      edgeLabel: Labeled[E[V, N], String]): NodeLayout[N] = _ => None
   }
 }

@@ -1,23 +1,23 @@
 package com.flowtick.graphs.graphml
 
 import com.flowtick.graphs.layout.{ DefaultGeometry, GraphLayout, ShapeDefinition }
-import com.flowtick.graphs.{ Graph, Identifiable, Labeled }
+import com.flowtick.graphs.{ EdgeType, Graph, Identifiable, Labeled }
 
 import scala.xml.{ Elem, Text }
 
 class GraphMLRenderer {
-  def render[N, E](
-    g: Graph[N, E],
+  def render[G[_, _, _], E[_, _], V, N, M](
+    g: G[E[V, N], N, M],
     layouter: GraphLayout,
-    shapeDefinition: N => Option[ShapeDefinition] = (_: N) => None)(implicit identifiable: Identifiable[N], edgeLabel: Labeled[E, String]): Elem = {
-    val layout = layouter.layout(g, shapeDefinition)
+    shapeDefinition: N => Option[ShapeDefinition] = (_: N) => None)(implicit graph: Graph[G, E], edgeType: EdgeType[E], identifiable: Identifiable[N], edgeLabel: Labeled[E[V, N], String]): Elem = {
+    val layout = layouter.layout[G, E, V, N, M](g, shapeDefinition)
 
     def nodeProperties(aNode: N): Map[String, GraphMLProperty] = (aNode match {
       case GraphMLNode(_, _, properties) => properties
       case _ => Map.empty[String, GraphMLProperty]
     }) + ("graphics" -> nodeGraphicsProperty(aNode, identifiable.id(aNode), shapeDefinition(aNode)))
 
-    def dataKeys: Set[Elem] = g.nodes.flatMap(nodeProperties(_).values).map { property: GraphMLProperty =>
+    def dataKeys: Iterable[Elem] = graph.nodes(g).flatMap(nodeProperties(_).values).map { property: GraphMLProperty =>
       <key id={ property.key.id } for={ property.key.targetHint.map(Text(_)) } yfiles.type={ property.key.yfilesType.map(Text(_)) } attr.type={ property.key.typeHint.map(Text(_)) }/>
     }
 
@@ -70,16 +70,15 @@ class GraphMLRenderer {
     }
 
     def edgesXml = {
-      g.edges.flatMap { edge =>
-        for {
-          source <- edge.predecessors.headOption
-          target <- edge.successors.headOption
-        } yield <edge id={ identifiable.id(source) + "-" + identifiable.id(target) } source={ identifiable.id(source) } target={ identifiable.id(target) }/>
+      graph.edges(g).flatMap { edge =>
+        val source = edgeType.head(edge)
+        val target = edgeType.tail(edge)
+        <edge id={ identifiable.id(source) + "-" + identifiable.id(target) } source={ identifiable.id(source) } target={ identifiable.id(target) }/>
       }
     }
 
     def nodesXml =
-      g.nodes.map { node =>
+      graph.nodes(g).map { node =>
         <node id={ identifiable.id(node) }>
           { dataValues(node) }
         </node>
