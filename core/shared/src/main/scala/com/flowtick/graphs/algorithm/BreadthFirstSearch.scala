@@ -1,10 +1,12 @@
 package com.flowtick.graphs.algorithm
 
-import com.flowtick.graphs.{ Edge, Graph }
+import com.flowtick.graphs.{ EdgeType, Graph, Identifiable }
 
 import scala.collection.mutable
 
-class BreadthFirstSearch[N, E](initialNodes: Iterable[N], graph: Graph[N, E]) extends Traversal[N] {
+class BreadthFirstSearch[G[_, _, _], E[_, _], V, N, M](
+  initialNodes: Iterable[N],
+  graph: G[E[V, N], N, M])(implicit graphType: Graph[G, E], edgeType: EdgeType[E], identifiable: Identifiable[N]) extends Traversal[N] {
   override def run: Seq[N] = {
     val visited = mutable.Map[N, Boolean]()
     val visitedList = mutable.ListBuffer[N]()
@@ -18,18 +20,17 @@ class BreadthFirstSearch[N, E](initialNodes: Iterable[N], graph: Graph[N, E]) ex
           visitCallbacks.foreach(_.apply(node))
           visitedList += node
 
-          def addAdjacent(edges: Iterable[Edge[E, N]]): Unit = {
+          def addAdjacent(edges: Iterable[E[V, N]]): Unit = {
             for (edge <- edges) {
-              edge.successors.foreach { next =>
-                if (!visited.getOrElse(next, false)) {
-                  queue.enqueue(next)
-                } else {
-                  backtrackCallbacks.foreach(_.apply(node))
-                }
+              val next = edgeType.tail(edge)
+              if (!visited.getOrElse(edgeType.tail(edge), false)) {
+                queue.enqueue(next)
+              } else {
+                backtrackCallbacks.foreach(_.apply(node))
               }
             }
           }
-          addAdjacent(graph.outgoing(node))
+          addAdjacent(graphType.outgoing(node, graph))
           queue.enqueue(node)
         } else if (alreadyVisited.getOrElse(false)) {
           completeCallbacks.foreach(_.apply(node))

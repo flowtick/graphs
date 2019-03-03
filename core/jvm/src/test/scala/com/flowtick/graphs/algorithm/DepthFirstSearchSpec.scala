@@ -8,49 +8,44 @@ import org.scalatest.{ FlatSpec, Matchers }
 class DepthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
   "Dfs" should "traverse in depth first manner" in {
 
-    val graph = DefaultGraph.create(Seq(
-      n("1") -> n("2"),
-      n("1") -> n("9"),
+    val graph = defaultGraph.from(Seq(
+      n("1") --> n("2"),
+      n("1") --> n("3"),
 
-      n("2") -> n("6"),
-      n("2") -> n("3"),
+      n("2") --> n("4"),
+      n("2") --> n("5"),
 
-      n("3") -> n("5"),
-      n("3") -> n("4"),
+      n("3") --> n("6"),
+      n("3") --> n("7")))
 
-      n("6") -> n("7"),
-      n("6") -> n("8")))
-
-    val visitMock = mockFunction[DefaultNode, Unit](functionName("visitCallback"))
-    val completeMock = mockFunction[DefaultNode, Unit](functionName("completeCallback"))
+    val visitMock = mockFunction[String, Unit](functionName("visitCallback"))
+    val completeMock = mockFunction[String, Unit](functionName("completeCallback"))
 
     inSequence {
-      visitMock.expects(n("1"))
-      visitMock.expects(n("2"))
-      visitMock.expects(n("6"))
-      visitMock.expects(n("8"))
-      completeMock.expects(n("8"))
-      visitMock.expects(n("7"))
-      completeMock.expects(n("7"))
-      completeMock.expects(n("6"))
-      visitMock.expects(n("3"))
-      visitMock.expects(n("5"))
-      completeMock.expects(n("5"))
-      visitMock.expects(n("4"))
-      completeMock.expects(n("4"))
+      visitMock.expects("1")
+      visitMock.expects("3")
+      visitMock.expects("7")
+      completeMock.expects("7")
+      visitMock.expects("6")
+      completeMock.expects("6")
+      completeMock.expects("3")
 
-      completeMock.expects(n("3"))
-      completeMock.expects(n("2"))
+      visitMock.expects("2")
+      visitMock.expects("5")
+      completeMock.expects("5")
+      visitMock.expects("4")
+      completeMock.expects("4")
 
-      visitMock.expects(n("9"))
-      completeMock.expects(n("9"))
-      completeMock.expects(n("1"))
+      completeMock.expects("2")
+      completeMock.expects("1")
     }
 
-    graph.dfs(n("1")).onVisit(node => {
+    val dfsNodes = graph.dfs("1").onVisit(node => {
       visitMock(node)
     }).onComplete(node => {
       completeMock(node)
     }).run
+
+    dfsNodes.toList should be(List("1", "3", "7", "6", "2", "5", "4"))
   }
 }

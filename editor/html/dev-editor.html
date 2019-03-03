@@ -16,7 +16,8 @@
 
 <script src="../js/target/scala-2.12/graphs-editor-fastopt.js"></script>
 <script>
-    graphsEditor.showDefaultGraph("graphsContainer", graphsEditor.exampleGraph)
+    var view = graphs.createView("graphsContainer", graphs.exampleGraph);
+    console.log(graphs.toGraph(view).toString());
 </script>
 </body>
 </html>

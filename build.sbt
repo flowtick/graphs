@@ -30,6 +30,7 @@ lazy val commonSettings = Seq(
   libraryDependencies ++=
     "org.scalatest" %%% "scalatest" % "3.0.4" % Test ::
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test ::
+    "org.scalacheck" %% "scalacheck" % "1.14.0" % Test ::
     Nil,
   wartremoverErrors ++= Warts.unsafe.filterNot(Seq(
     Wart.NonUnitStatements,
@@ -66,7 +67,9 @@ lazy val core = (crossProject in file(".") / "core")
     name := "graphs-core"
   )
 
-lazy val coreJS = core.js
+lazy val coreJS = core.js.settings(
+  libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.2"
+)
 lazy val coreJVM = core.jvm
 
 lazy val layout = (crossProject in file(".") / "layout")
@@ -106,8 +109,7 @@ lazy val editor = (crossProject in file(".") / "editor")
   ).dependsOn(core, graphml)
 
 lazy val editorJS = editor.js.settings(
-  scalaJSUseMainModuleInitializer := true,
-  libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.2"
+  scalaJSUseMainModuleInitializer := true
 )
 lazy val editorJVM = editor.jvm
 
@@ -146,6 +148,18 @@ lazy val graphs = (project in file("."))
     git.remoteRepo := "git@github.com:flowtick/graphs.git",
     unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(graphmlJS, coreJS, catsJS, layoutJS, editorJS),
     addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc),
-  ).aggregate(coreJS, coreJVM, examples, graphmlJS, graphmlJVM, catsJVM, catsJS)
+  ).aggregate(
+    coreJS,
+    coreJVM,
+    examples,
+    graphmlJS,
+    graphmlJVM,
+    catsJVM,
+    catsJS,
+    layoutJS,
+    layoutJVM,
+    editorJS,
+    editorJVM
+  )
 
 addCommandAlias("testWithCoverage", ";clean;coverage;test;coverageReport")

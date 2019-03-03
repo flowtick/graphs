@@ -1,4 +1,4 @@
-package com.flowtick.graphs.view.mxgraph
+package mxgraph
 
 import org.scalajs.dom.Element
 
@@ -9,7 +9,7 @@ import scala.scalajs.js.annotation.JSGlobal
 @JSGlobal(name = "mxGraph")
 @SuppressWarnings(Array("org.wartremover.warts.Null"))
 class MxGraph(container: Element) extends js.Any {
-  def getModel(): GraphModel = js.native
+  def getModel(): MxGraphModel = js.native
   def getDefaultParent(): MxCell = js.native
   def getStylesheet(): MxStyleSheet = js.native
 
@@ -19,6 +19,9 @@ class MxGraph(container: Element) extends js.Any {
 
 @js.native
 trait MxCell extends js.Any {
+  def getId(): String = js.native
+  def source: js.UndefOr[MxCell] = js.native
+  def target: js.UndefOr[MxCell] = js.native
 }
 
 @js.native
@@ -28,9 +31,12 @@ object MxEvent extends js.Any {
 }
 
 @js.native
-trait GraphModel extends js.Any {
+trait MxGraphModel extends js.Any {
   def beginUpdate(): Unit = js.native
   def endUpdate(): Unit = js.native
+  def getChildren(parent: MxCell): js.Array[MxCell] = js.native
+  def getChildVertices(parent: MxCell): js.Array[MxCell] = js.native
+  def getChildEdges(parent: MxCell): js.Array[MxCell] = js.native
 }
 
 @js.native
@@ -54,7 +60,10 @@ class MxEvent extends js.Any
 @js.native
 @JSGlobal(name = "mxHierarchicalLayout")
 @SuppressWarnings(Array("org.wartremover.warts.Var"))
-class MxHierarchicalLayout(graph: MxGraph) extends js.Any {
+class MxHierarchicalLayout(
+  graph: MxGraph,
+  orientation: js.UndefOr[String] = js.undefined,
+  deterministic: js.UndefOr[Boolean] = js.undefined) extends js.Any {
   def execute(parent: MxCell): Unit = js.native
 }
 
@@ -81,3 +90,4 @@ class MxStyleSheet extends js.Any {
   def getDefaultVertexStyle(): js.Dictionary[js.Any] = js.native
   def getDefaultEdgeStyle(): js.Dictionary[js.Any] = js.native
 }
+
