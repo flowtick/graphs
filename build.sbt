@@ -3,6 +3,7 @@ import ReleaseTransformations._
 val mainScalaVersion = "2.12.8"
 val scalaXmlV = "1.1.1"
 val catsV = "1.5.0"
+val xmlsV = "0.1.9"
 
 lazy val commonSettings = Seq(
   resolvers ++= Seq(
@@ -91,11 +92,11 @@ lazy val graphml = (crossProject in file(".") / "graphml")
     name := "graphs-graphml",
   ).jvmSettings(
     libraryDependencies ++= Seq(
-      "org.scala-lang.modules" %% "scala-xml" % scalaXmlV
+      "com.flowtick" %% "xmls" % xmlsV
     )
   ).jsSettings(
     libraryDependencies ++= Seq(
-      "org.scala-lang.modules" %%% "scala-xml" % scalaXmlV
+      "com.flowtick" %%% "xmls" % xmlsV
     )
   ).dependsOn(core, layout)
 

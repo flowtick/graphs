@@ -1,14 +1,17 @@
 package com.flowtick.graphs.graphml
 
 import com.flowtick.graphs.{ EdgeType, GraphBuilder, Identifiable }
+import xmls.XMLS
 
 import scala.collection.mutable
 import scala.util._
-import scala.xml.{ Node, Text, XML }
+import scala.xml.{ Node, Text }
 
 class GraphMLImporter[G[_, _, _], ET[_, _]](implicit builder: GraphBuilder[G, ET], edge: EdgeType[ET], identifiable: Identifiable[GraphMLNode]) {
   def fromXml(graphml: String): Either[Throwable, G[ET[GraphMLEdge, GraphMLNode], GraphMLNode, GraphMLGraph]] =
-    Try(XML.load(new java.io.ByteArrayInputStream(graphml.getBytes)))
+    XMLS
+      .parse(graphml)
+      .toTry
       .filter(_.label.toLowerCase == "graphml").flatMap { rootElem =>
         rootElem.child.find(_.label.toLowerCase == "graph") match {
           case Some(graph) => Success(parseGraphNode(graph, parseKeys(rootElem)))
