@@ -9,18 +9,15 @@ import scala.xml.{ Node, Text }
 
 class GraphMLImporter[G[_, _, _], ET[_, _]](implicit builder: GraphBuilder[G, ET], edge: EdgeType[ET], identifiable: Identifiable[GraphMLNode]) {
   def fromXml(graphml: String): Either[Throwable, G[ET[GraphMLEdge, GraphMLNode], GraphMLNode, GraphMLGraph]] =
-    XMLS
-      .parse(graphml)
-      .toTry
-      .filter(_.label.toLowerCase == "graphml").flatMap { rootElem =>
+    XMLS.parse(graphml) match {
+      case Right(rootElem) if rootElem.label.toLowerCase == "graphml" =>
         rootElem.child.find(_.label.toLowerCase == "graph") match {
-          case Some(graph) => Success(parseGraphNode(graph, parseKeys(rootElem)))
-          case None => Failure(new IllegalArgumentException("graph node not found"))
+          case Some(graph) => Right(parseGraphNode(graph, parseKeys(rootElem)))
+          case None => Left(new IllegalArgumentException("graph node not found"))
         }
-      } match {
-        case Success(graph) => Right(graph)
-        case Failure(error) => Left(error)
-      }
+      case Right(nonGraphMl) => Left(new IllegalArgumentException(s"parsed elem is not a graphml element: $nonGraphMl"))
+      case Left(error) => Left(error)
+    }
 
   protected def singleAttributeValue(attributeName: String, node: scala.xml.Node): Option[String] = {
     node.attribute(attributeName).getOrElse(Seq.empty).headOption.map(_.text)
