@@ -30,7 +30,7 @@ class BreadthFirstSearch[G[_, _, _], E[_, _], V, N, M](
               }
             }
           }
-          addAdjacent(graphType.outgoing(node, graph))
+          addAdjacent(graphType.outgoing(graph).getOrElse(node, Iterable.empty))
           queue.enqueue(node)
         } else if (alreadyVisited.getOrElse(false)) {
           completeCallbacks.foreach(_.apply(node))

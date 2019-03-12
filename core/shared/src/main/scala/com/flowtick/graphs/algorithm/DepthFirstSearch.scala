@@ -33,7 +33,7 @@ class DepthFirstSearch[G[_, _, _], E[_, _], V, N, M](
               }
             }
 
-          addAdjacent(graphType.outgoing(node, graph))
+          addAdjacent(graphType.outgoing(graph).getOrElse(node, Iterable.empty))
         } else if (completed) {
           completeCallbacks.foreach(_.apply(node))
         }

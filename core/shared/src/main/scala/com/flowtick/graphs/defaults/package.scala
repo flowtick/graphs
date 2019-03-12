@@ -35,24 +35,22 @@ package object defaults extends {
       graph.edges
 
     override def incoming[V, N, M](
-      node: N,
-      graph: DefaultGraph[ET[V, N], N, M])(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): Iterable[ET[V, N]] =
-      graph.incoming.getOrElse(node, Iterable.empty)
+      graph: DefaultGraph[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): scala.collection.Map[N, Iterable[ET[V, N]]] =
+      graph.incoming
 
     override def outgoing[V, N, M](
-      node: N,
-      graph: DefaultGraph[ET[V, N], N, M])(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): Iterable[ET[V, N]] =
-      graph.outgoing.getOrElse(node, Iterable.empty)
+      graph: DefaultGraph[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): scala.collection.Map[N, Iterable[ET[V, N]]] =
+      graph.outgoing
 
     override def nodes[V, N, M](graph: DefaultGraph[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
       graph.nodes
 
-    override def build[E[_, _], V, N, M](
+    override def build[V, N, M](
       value: M,
-      edges: Iterable[E[V, N]],
+      edges: Iterable[ET[V, N]],
       nodes: Iterable[N],
-      incoming: collection.Map[N, Iterable[E[V, N]]],
-      outgoing: collection.Map[N, Iterable[E[V, N]]]): DefaultGraph[E[V, N], N, M] = DefaultGraph(value, edges, nodes, incoming, outgoing)
+      incoming: scala.collection.Map[N, Iterable[ET[V, N]]],
+      outgoing: scala.collection.Map[N, Iterable[ET[V, N]]]): DefaultGraph[ET[V, N], N, M] = DefaultGraph(value, edges, nodes, incoming, outgoing)
 
     override def value[V, N, M](graph: DefaultGraph[ET[V, N], N, M]): M = graph.value
   }
