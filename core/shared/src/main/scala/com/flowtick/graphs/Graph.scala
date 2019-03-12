@@ -44,17 +44,13 @@ trait Graph[G[_, _, _], ET[_, _]] {
 
   def nodes[V, N, M](graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N]
 
-  def incoming[V, N, M](
-    node: N,
-    graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): Iterable[ET[V, N]]
+  def incoming[V, N, M](graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): scala.collection.Map[N, Iterable[ET[V, N]]]
 
-  def outgoing[V, N, M](
-    node: N,
-    graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): Iterable[ET[V, N]]
+  def outgoing[V, N, M](graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): scala.collection.Map[N, Iterable[ET[V, N]]]
 }
 
 trait GraphBuilder[G[_, _, _], ET[_, _]] {
-  def empty[V, N, M](implicit emptyValue: Empty[M]): G[ET[V, N], N, M] = build[ET, V, N, M](emptyValue.empty, Iterable.empty, Iterable.empty, Map.empty, Map.empty)
+  def empty[V, N, M](implicit metaEmpty: Empty[M]): G[ET[V, N], N, M] = build[V, N, M](metaEmpty.empty, Iterable.empty, Iterable.empty, Map.empty, Map.empty)
 
   def withValue[V, N, M](value: M)(edges: Iterable[ET[V, N]])(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): G[ET[V, N], N, M] =
     create(value, Iterable.empty, edges, None)
@@ -66,12 +62,12 @@ trait GraphBuilder[G[_, _, _], ET[_, _]] {
   def from[V, N, M](edges: Iterable[ET[V, N]])(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): G[ET[V, N], N, Unit] =
     create((), Iterable.empty, edges, None)
 
-  def build[E[_, _], V, N, M](
+  def build[V, N, M](
     value: M,
-    edges: Iterable[E[V, N]],
+    edges: Iterable[ET[V, N]],
     nodes: Iterable[N],
-    incoming: scala.collection.Map[N, Iterable[E[V, N]]],
-    outgoing: scala.collection.Map[N, Iterable[E[V, N]]]): G[E[V, N], N, M]
+    incoming: scala.collection.Map[N, Iterable[ET[V, N]]],
+    outgoing: scala.collection.Map[N, Iterable[ET[V, N]]]): G[ET[V, N], N, M]
 
   def create[V, N, M](
     value: M,

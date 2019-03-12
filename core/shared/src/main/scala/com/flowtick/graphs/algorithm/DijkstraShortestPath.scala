@@ -45,7 +45,7 @@ class DijkstraShortestPath[G[_, _, _], E[_, _], V, N, M](graph: G[E[V, N], N, M]
       val current = queue.dequeue()
       val currentDistance: Double = distanceMap(current)
       if (currentDistance != Double.NaN) {
-        graphType.outgoing(current, graph).foreach { edge =>
+        graphType.outgoing(graph).getOrElse(current, Iterable.empty).foreach { edge =>
           val weight = numeric.toDouble(edgeType.value(edge))
           val newDist = currentDistance + weight
 

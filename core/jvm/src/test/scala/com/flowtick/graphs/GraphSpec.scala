@@ -14,34 +14,34 @@ class GraphSpec extends FlatSpec with Matchers {
     n("B") --> n("D")))
 
   "Graph" should "provide incoming edges for nodes" in {
-    defaultGraph.incoming("A", testGraph) should contain theSameElementsAs List(
+    defaultGraph.incoming(testGraph).getOrElse("A", Iterable.empty) should contain theSameElementsAs List(
       n("D") --> n("A"))
 
-    defaultGraph.incoming("B", testGraph) should contain theSameElementsAs List(
+    defaultGraph.incoming(testGraph).getOrElse("B", Iterable.empty) should contain theSameElementsAs List(
       n("A") --> n("B"))
 
-    defaultGraph.incoming("C", testGraph) should contain theSameElementsAs List(
+    defaultGraph.incoming(testGraph).getOrElse("C", Iterable.empty) should contain theSameElementsAs List(
       n("B") --> n("C"),
       n("A") --> n("C"))
 
-    defaultGraph.incoming("D", testGraph) should contain theSameElementsAs List(
+    defaultGraph.incoming(testGraph).getOrElse("D", Iterable.empty) should contain theSameElementsAs List(
       n("C") --> n("D"),
       n("B") --> n("D"))
   }
 
   "Graph" should "provide outgoing edges for nodes" in {
-    defaultGraph.outgoing("A", testGraph) should contain theSameElementsAs List(
+    defaultGraph.outgoing(testGraph).getOrElse("A", Iterable.empty) should contain theSameElementsAs List(
       n("A") --> n("B"),
       n("A") --> n("C"))
 
-    defaultGraph.outgoing("B", testGraph) should contain theSameElementsAs List(
+    defaultGraph.outgoing(testGraph).getOrElse("B", Iterable.empty) should contain theSameElementsAs List(
       n("B") --> n("C"),
       n("B") --> n("D"))
 
-    defaultGraph.outgoing("C", testGraph) should contain theSameElementsAs List(
+    defaultGraph.outgoing(testGraph).getOrElse("C", Iterable.empty) should contain theSameElementsAs List(
       n("C") --> n("D"))
 
-    defaultGraph.outgoing("D", testGraph) should contain theSameElementsAs List(
+    defaultGraph.outgoing(testGraph).getOrElse("D", Iterable.empty) should contain theSameElementsAs List(
       n("D") --> n("A"))
   }
 
