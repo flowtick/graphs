@@ -7,8 +7,15 @@ package com.flowtick.graphs
  *
  * @tparam T the node type
  */
-trait Identifiable[T] {
+trait Identifiable[-T] {
   def id(node: T): String
+}
+
+object Identifiable {
+  /** creates an instance of [[Identifiable]] using the provided function */
+  def identify[A](f: A => String): Identifiable[A] = new Identifiable[A] {
+    def id(a: A): String = f(a)
+  }
 }
 
 /**
@@ -47,20 +54,26 @@ trait Graph[G[_, _, _], ET[_, _]] {
   def incoming[V, N, M](graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): scala.collection.Map[N, Iterable[ET[V, N]]]
 
   def outgoing[V, N, M](graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): scala.collection.Map[N, Iterable[ET[V, N]]]
+
+  def predecessors[V, N, M](node: N, graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
+    incoming(graph).getOrElse(node, Iterable.empty).map(edgeType.head)
+
+  def successors[V, N, M](node: N, graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
+    outgoing(graph).getOrElse(node, Iterable.empty).map(edgeType.tail)
 }
 
 trait GraphBuilder[G[_, _, _], ET[_, _]] {
   def empty[V, N, M](implicit metaEmpty: Empty[M]): G[ET[V, N], N, M] = build[V, N, M](metaEmpty.empty, Iterable.empty, Iterable.empty, Map.empty, Map.empty)
 
-  def withValue[V, N, M](value: M)(edges: Iterable[ET[V, N]])(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): G[ET[V, N], N, M] =
-    create(value, Iterable.empty, edges, None)
+  def withValue[V, N, M](value: M)(edges: Iterable[ET[V, N]], nodes: Iterable[N])(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): G[ET[V, N], N, M] =
+    create(value, nodes, edges, None)
 
-  def of[V, N, M](value: M)(edges: ET[V, N]*)(implicit
+  def of[V, N, M](value: M, nodes: Option[Iterable[N]] = None)(edges: ET[V, N]*)(implicit
     edgeType: EdgeType[ET],
-    identifiable: Identifiable[N]): G[ET[V, N], N, M] = create(value, Iterable.empty, edges, None)
+    identifiable: Identifiable[N]): G[ET[V, N], N, M] = create(value, nodes.getOrElse(Iterable.empty), edges, None)
 
-  def from[V, N, M](edges: Iterable[ET[V, N]])(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): G[ET[V, N], N, Unit] =
-    create((), Iterable.empty, edges, None)
+  def from[V, N, M](edges: Iterable[ET[V, N]], nodes: Option[Iterable[N]] = None)(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): G[ET[V, N], N, Unit] =
+    create((), nodes.getOrElse(Iterable.empty), edges, None)
 
   def build[V, N, M](
     value: M,
@@ -86,18 +99,18 @@ trait GraphBuilder[G[_, _, _], ET[_, _]] {
       }
     })
 
-    val incoming: mutable.Map[N, mutable.TreeSet[ET[V, N]]] = mutable.Map[N, mutable.TreeSet[ET[V, N]]]()
-    val outgoing: mutable.Map[N, mutable.TreeSet[ET[V, N]]] = mutable.Map[N, mutable.TreeSet[ET[V, N]]]()
+    val incoming: mutable.HashMap[N, mutable.ListBuffer[ET[V, N]]] = mutable.HashMap[N, mutable.ListBuffer[ET[V, N]]]()
+    val outgoing: mutable.HashMap[N, mutable.ListBuffer[ET[V, N]]] = mutable.HashMap[N, mutable.ListBuffer[ET[V, N]]]()
 
     val nodes = mutable.HashSet[N]()
 
     edges.foreach { edge =>
       val head = edgeType.head(edge)
-      outgoing.put(head, outgoing.getOrElse(head, mutable.TreeSet.empty) += edge)
+      outgoing.put(head, outgoing.getOrElse(head, mutable.ListBuffer.empty) += edge)
       nodes += head
 
       val tail = edgeType.tail(edge)
-      incoming.put(tail, incoming.getOrElse(tail, mutable.TreeSet.empty) += edge)
+      incoming.put(tail, incoming.getOrElse(tail, mutable.ListBuffer.empty) += edge)
       nodes += tail
     }
 

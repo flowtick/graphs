@@ -20,17 +20,16 @@ class BreadthFirstSearch[G[_, _, _], E[_, _], V, N, M](
           visitCallbacks.foreach(_.apply(node))
           visitedList += node
 
-          def addAdjacent(edges: Iterable[E[V, N]]): Unit = {
-            for (edge <- edges) {
-              val next = edgeType.tail(edge)
-              if (!visited.getOrElse(edgeType.tail(edge), false)) {
+          def addAdjacent(nodes: Iterable[N]): Unit = {
+            for (next <- nodes) {
+              if (!visited.getOrElse(next, false)) {
                 queue.enqueue(next)
               } else {
                 backtrackCallbacks.foreach(_.apply(node))
               }
             }
           }
-          addAdjacent(graphType.outgoing(graph).getOrElse(node, Iterable.empty))
+          addAdjacent(graphType.successors(node, graph))
           queue.enqueue(node)
         } else if (alreadyVisited.getOrElse(false)) {
           completeCallbacks.foreach(_.apply(node))

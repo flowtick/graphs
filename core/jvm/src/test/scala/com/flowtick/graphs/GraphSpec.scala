@@ -29,7 +29,7 @@ class GraphSpec extends FlatSpec with Matchers {
       n("B") --> n("D"))
   }
 
-  "Graph" should "provide outgoing edges for nodes" in {
+  it should "provide outgoing edges for nodes" in {
     defaultGraph.outgoing(testGraph).getOrElse("A", Iterable.empty) should contain theSameElementsAs List(
       n("A") --> n("B"),
       n("A") --> n("C"))
@@ -43,6 +43,14 @@ class GraphSpec extends FlatSpec with Matchers {
 
     defaultGraph.outgoing(testGraph).getOrElse("D", Iterable.empty) should contain theSameElementsAs List(
       n("D") --> n("A"))
+  }
+
+  it should "get the predecessors for a node" in {
+    defaultGraph.predecessors("A", testGraph).toList should be(List("D"))
+  }
+
+  it should "get the successors for a node" in {
+    defaultGraph.successors("A", testGraph).toList should be(List("B", "C"))
   }
 
 }

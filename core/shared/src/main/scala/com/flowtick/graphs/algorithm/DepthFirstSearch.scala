@@ -23,9 +23,8 @@ class DepthFirstSearch[G[_, _, _], E[_, _], V, N, M](
           // to recognize that we completed that node, this will trigger the completion callback branch
           stack.push((node, true))
 
-          def addAdjacent(edges: Iterable[E[V, N]]): Unit =
-            edges.foreach { edge =>
-              val next = edgeType.tail(edge)
+          def addAdjacent(nodes: Iterable[N]): Unit =
+            nodes.foreach { next =>
               if (!visited.getOrElse(next, false)) {
                 stack.push((next, false))
               } else {
@@ -33,7 +32,7 @@ class DepthFirstSearch[G[_, _, _], E[_, _], V, N, M](
               }
             }
 
-          addAdjacent(graphType.outgoing(graph).getOrElse(node, Iterable.empty))
+          addAdjacent(graphType.successors(node, graph))
         } else if (completed) {
           completeCallbacks.foreach(_.apply(node))
         }

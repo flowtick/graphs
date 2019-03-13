@@ -77,7 +77,7 @@ class GraphMLImporter[G[_, _, _], ET[_, _]](implicit builder: GraphBuilder[G, ET
       }
     }
 
-    builder.withValue(GraphMLGraph(id = singleAttributeValue("id", graphNode)))(edges)
+    builder.withValue(GraphMLGraph(id = singleAttributeValue("id", graphNode)))(edges, nodes.values)
   }
 
   protected def parseGraphNodes(
@@ -98,7 +98,7 @@ class GraphMLImporter[G[_, _, _], ET[_, _]](implicit builder: GraphBuilder[G, ET
           case _ =>
         }
 
-      case (edge: scala.xml.Node, index: Int) if edge.label == "edge" =>
+      case (edge: scala.xml.Node, _: Int) if edge.label == "edge" =>
         edgeXmlNodes.append(edge)
       case _ =>
     }
