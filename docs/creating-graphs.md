@@ -3,32 +3,51 @@
 A _graph_ consists of _nodes_ which represent some objects or values and _edges_ which express a
 relation between this objects.
 
-`graphs` has a default implementation of a graph with node values of type `String` which acts as 
-the identifier of that node. Using this default implementation, you can instantly start creating simple graph instances:
+`graphs` has a default implementation of a graph that you can use with arbitrary node types.
+Using this default implementation, you can instantly start creating simple graphs:
 
 @@snip [SimpleGraphApp.scala](../examples/src/main/scala/SimpleGraphApp.scala)
 
-The default graph types also support weighted edges, which are edges carrying some kind of value like a 
-distance between nodes. Numeric weights can be used in algorithms.
+Edges can also have values associated with them, for example a 
+distance between nodes that represent locations. 
+
+Numeric edge values can be used in algorithms like Dijkstras 
+algorithm to find the shortest path between two nodes.
 
 @@snip [SimpleGraphApp.scala](../examples/src/main/scala/DijkstraApp.scala){ #cities }
 
 ## Core Types
 
-In `graphs` the base type for a graph is a trait with the type parameters for the node and the edge type:
+In `graphs` the core type is the graph type-class:
 
 @@snip [Graph.scala](../core/shared/src/main/scala/com/flowtick/graphs/Graph.scala){ #graph }
 
+You can see that is a type constructor with a higher-kinded type `G` for a graph type that has 3 _holes_ (type parameters) in it: 
+`G[_, _, _]`  and a second higher-kinded type with 2 parameters: `ET[_, _]` which is the edge type.
+
+This allows to parametrize the graphs: 
+
+* by the edge type which defines the relation between nodes
+* by the value type of the edges
+* by the value type of the node
+* by the value type of the graph (to allow carry it some meta information like a description or groups of nodes)
+
+The edge type is parametrized by the edge value type and the node value type.
+
+In the methods of the type-class you see how the type parameters are applied to the type constructors: 
+`G[ET[V, N], N, M]` which can be read as 
+*a graph with value M and edge type ET of edge values V connecting nodes of type N*.
+
 ## Custom Graph Types
 
-Creating a custom graph type is just a matter of extending the core trait `Edge` with
-custom implementations and an edge builder to create instances:
+Since the graph type itself is parametrized, you can just plug in your types. 
+You only need to define how nodes can be identified:
 
 @@snip [CustomGraphApp.scala](../examples/src/main/scala/CustomGraphApp.scala){#custom_graph}
 
 ### Default Graph
 
-The default graph implementation shows a more complete example on how to define a simple node type and a bunch of 
-builders for different edge types:
+If you want to change the graph type itself for some reason, you should look at 
+the default graph implementation, which shows a complete example on how to implement the type class instances:
 
 @@snip [DefaultGraph.scala](../core/shared/src/main/scala/com/flowtick/graphs/defaults/package.scala)

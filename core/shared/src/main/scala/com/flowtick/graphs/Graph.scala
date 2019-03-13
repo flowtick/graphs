@@ -44,6 +44,7 @@ trait EdgeType[ET[_, _]] {
   def tail[V, N](edge: ET[V, N]): N
 }
 
+// #graph
 trait Graph[G[_, _, _], ET[_, _]] {
   def value[V, N, M](graph: G[ET[V, N], N, M]): M
 
@@ -61,6 +62,7 @@ trait Graph[G[_, _, _], ET[_, _]] {
   def successors[V, N, M](node: N, graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
     outgoing(graph).getOrElse(node, Iterable.empty).map(edgeType.tail)
 }
+// #graph
 
 trait GraphBuilder[G[_, _, _], ET[_, _]] {
   def empty[V, N, M](implicit metaEmpty: Empty[M]): G[ET[V, N], N, M] = build[V, N, M](metaEmpty.empty, Iterable.empty, Iterable.empty, Map.empty, Map.empty)
