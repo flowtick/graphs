@@ -30,7 +30,7 @@ object GraphsJs {
 
   @JSExport
   def exampleGraph: DefaultGraph[Edge[JsEdge, JsNode], JsNode, JsGraph] = defaultGraph.withValue(JsGraph(Some("example")))(Seq(
-    n(JsNode("A")) --> (JsEdge(None, None), n(JsNode("B")))))
+    n(JsNode("A")) --> (JsEdge(None, None), n(JsNode("B")))), Iterable.empty)
 
   def main(args: Array[String]): Unit = {
     println("graphs loaded...")
