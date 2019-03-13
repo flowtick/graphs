@@ -1,6 +1,6 @@
 package com.flowtick.graphs
 
-package object defaults extends {
+package object defaults {
   // #default_graph
   final case class Node[X](value: X, label: Option[String] = None)(implicit identifiable: Identifiable[X]) {
     def id: String = identifiable.id(value)

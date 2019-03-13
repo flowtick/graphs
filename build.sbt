@@ -134,21 +134,13 @@ lazy val examples = (project in file("examples"))
       .dependsOn(coreJVM, graphmlJVM, catsJVM, layoutJVM)
 
 lazy val graphs = (project in file("."))
-  .enablePlugins(ParadoxSitePlugin, ScalaUnidocPlugin, GhpagesPlugin)
+  .enablePlugins(ScalaUnidocPlugin)
   .settings(commonSettings)
   .settings(
     publishLocal := {},
     publish := {},
     test := {},
-    sourceDirectory in Paradox := baseDirectory.value / "docs",
-    paradoxTheme := Some(builtinParadoxTheme("generic")),
-    paradoxProperties += ("version" -> version.value),
-    mappings in makeSite ++= Seq(
-      file("LICENSE") -> "LICENSE"
-    ),
-    git.remoteRepo := "git@github.com:flowtick/graphs.git",
-    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(graphmlJS, coreJS, catsJS, layoutJS, editorJS),
-    addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc),
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(graphmlJS, coreJS, catsJS, layoutJS, editorJS)
   ).aggregate(
     coreJS,
     coreJVM,
