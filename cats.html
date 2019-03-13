@@ -30,7 +30,7 @@
 <span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
-0.2.1
+0.2.3*
 </div>
 </div>
 <div class="nav-toc">
@@ -71,7 +71,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
-0.2.1
+0.2.3*
 </div>
 </div>
 <div class="nav-toc">
@@ -106,30 +106,33 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <h2><a href="#cats-support" name="cats-support" class="anchor"><span class="anchor-link"></span></a>cats support</h2>
 <p><code>graphs</code> implements some typeclass instances to allow basic operations like combining graphs.</p>
 <p>You need to add the <code>graphs-cats</code> dependency to use that:</p>
-<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-cats&quot; % &quot;0.2.1&quot;
+<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-cats&quot; % &quot;0.2.3-SNAPSHOT&quot;
 </code></pre>
 <pre class="prettyprint"><code class="language-scala">import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.defaults.directed._
-
 import com.flowtick.graphs.cat._
-import cats.syntax.monoid._
+import cats.implicits._
+import cats.kernel.Monoid
 
 object CatsApp extends App {
-  val someGraph = DefaultGraph.create(Seq(
-    n(&quot;1&quot;) -&gt; n(&quot;2&quot;),
+  implicit val monoid: Monoid[DefaultGraph[Edge[Unit, String], String, Unit]] = graphMonoid
 
-    n(&quot;2&quot;) -&gt; n(&quot;3&quot;),
-    n(&quot;2&quot;) -&gt; n(&quot;4&quot;)))
+  val someGraph = defaultGraph.from(Set(
+    n(&quot;1&quot;) --&gt; n(&quot;2&quot;),
 
-  val anotherGraph = DefaultGraph.create(Seq(
-    n(&quot;2&quot;) -&gt; n(&quot;3&quot;),
+    n(&quot;2&quot;) --&gt; n(&quot;3&quot;),
+    n(&quot;2&quot;) --&gt; n(&quot;4&quot;)))
 
-    n(&quot;4&quot;) -&gt; n(&quot;3&quot;),
-    n(&quot;4&quot;) -&gt; n(&quot;5&quot;)))
+  val anotherGraph = defaultGraph.from(Set(
+    n(&quot;2&quot;) --&gt; n(&quot;3&quot;),
 
-  val combined = someGraph |+| anotherGraph
-  println(combined.edges)
-  // Set(DefaultEdge(DefaultNode(4),Some(DefaultNode(3)),true), DefaultEdge(DefaultNode(2),Some(DefaultNode(4)),true), ...
+    n(&quot;4&quot;) --&gt; n(&quot;3&quot;),
+    n(&quot;4&quot;) --&gt; n(&quot;5&quot;)))
+
+  val combined = monoid.combine(someGraph, anotherGraph)
+
+  println(defaultGraph.edges(combined))
+  // Set(4 --&gt; 3[()], 4 --&gt; 5[()], 1 --&gt; 2[()], 2 --&gt; 3[()], 2 --&gt; 4[()])
 }</code></pre>
 <p>Which computes the following combination of graphs:</p>
 <p><img src="monoid-example.png" alt="monoid example" /></p>

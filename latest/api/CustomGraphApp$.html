@@ -165,23 +165,7 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="CustomGraphApp.MyEdge" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="MyEdgeextendsEdge[CustomGraphApp.MyEdge,CustomGraphApp.MyNode]withProductwithSerializable"></a><a id="MyEdge:MyEdge"></a>
-      <span class="permalink">
-      <a href="CustomGraphApp$.html#MyEdgeextendsEdge[CustomGraphApp.MyEdge,CustomGraphApp.MyNode]withProductwithSerializable" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="CustomGraphApp$$MyEdge.html"><span class="name">MyEdge</span></a><span class="params">(<span name="label">label: <a href="http://www.scala-lang.org/api/2.12.8/scala/Option.html#scala.Option" class="extype" name="scala.Option">Option</a>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="source">source: <a href="CustomGraphApp$$MyNode.html" class="extype" name="CustomGraphApp.MyNode">MyNode</a></span>, <span name="target">target: <a href="CustomGraphApp$$MyNode.html" class="extype" name="CustomGraphApp.MyNode">MyNode</a></span>)</span><span class="result"> extends <a href="com/flowtick/graphs/Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a>[<a href="CustomGraphApp$$MyEdge.html" class="extype" name="CustomGraphApp.MyEdge">MyEdge</a>, <a href="CustomGraphApp$$MyNode.html" class="extype" name="CustomGraphApp.MyNode">MyNode</a>] with <a href="http://www.scala-lang.org/api/2.12.8/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.8/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
-      </span>
-      
-      
-    </li><li name="CustomGraphApp.MyNode" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="CustomGraphApp.MyNode" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MyNodeextendsProductwithSerializable"></a><a id="MyNode:MyNode"></a>
       <span class="permalink">
       <a href="CustomGraphApp$.html#MyNodeextendsProductwithSerializable" title="Permalink">
@@ -417,9 +401,9 @@
               
         </dd></dl></div>
     </li><li name="CustomGraphApp#graph" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="graph:com.flowtick.graphs.Graph[CustomGraphApp.MyNode,CustomGraphApp.MyEdge]"></a><a id="graph:Graph[MyNode,MyEdge]"></a>
+      <a id="graph:com.flowtick.graphs.defaults.DefaultGraph[com.flowtick.graphs.defaults.Edge[Unit,CustomGraphApp.MyNode],CustomGraphApp.MyNode,Unit]"></a><a id="graph:DefaultGraph[Edge[Unit,MyNode],MyNode,Unit]"></a>
       <span class="permalink">
-      <a href="CustomGraphApp$.html#graph:com.flowtick.graphs.Graph[CustomGraphApp.MyNode,CustomGraphApp.MyEdge]" title="Permalink">
+      <a href="CustomGraphApp$.html#graph:com.flowtick.graphs.defaults.DefaultGraph[com.flowtick.graphs.defaults.Edge[Unit,CustomGraphApp.MyNode],CustomGraphApp.MyNode,Unit]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -428,7 +412,7 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">graph</span><span class="result">: <a href="com/flowtick/graphs/Graph.html" class="extype" name="com.flowtick.graphs.Graph">Graph</a>[<a href="CustomGraphApp$$MyNode.html" class="extype" name="CustomGraphApp.MyNode">MyNode</a>, <a href="CustomGraphApp$$MyEdge.html" class="extype" name="CustomGraphApp.MyEdge">MyEdge</a>]</span>
+        <span class="name">graph</span><span class="result">: <a href="com/flowtick/graphs/defaults/package$$DefaultGraph.html" class="extype" name="com.flowtick.graphs.defaults.DefaultGraph">DefaultGraph</a>[<a href="com/flowtick/graphs/defaults/package$$Edge.html" class="extype" name="com.flowtick.graphs.defaults.Edge">Edge</a>[<a href="http://www.scala-lang.org/api/2.12.8/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a>, <a href="CustomGraphApp$$MyNode.html" class="extype" name="CustomGraphApp.MyNode">MyNode</a>], <a href="CustomGraphApp$$MyNode.html" class="extype" name="CustomGraphApp.MyNode">MyNode</a>, <a href="http://www.scala-lang.org/api/2.12.8/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a>]</span>
       </span>
       
       
@@ -451,6 +435,22 @@
                 <span class="name">@native</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li name="CustomGraphApp#identifiableNode" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="identifiableNode:com.flowtick.graphs.Identifiable[CustomGraphApp.MyNode]"></a><a id="identifiableNode:Identifiable[MyNode]"></a>
+      <span class="permalink">
+      <a href="CustomGraphApp$.html#identifiableNode:com.flowtick.graphs.Identifiable[CustomGraphApp.MyNode]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">identifiableNode</span><span class="result">: <a href="com/flowtick/graphs/Identifiable.html" class="extype" name="com.flowtick.graphs.Identifiable">Identifiable</a>[<a href="CustomGraphApp$$MyNode.html" class="extype" name="CustomGraphApp.MyNode">MyNode</a>]</span>
+      </span>
+      
+      
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
@@ -646,22 +646,6 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="CustomGraphApp.MyGraph" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="MyGraph"></a><a id="MyGraph:MyGraph"></a>
-      <span class="permalink">
-      <a href="CustomGraphApp$.html#MyGraph" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="CustomGraphApp$$MyGraph$.html"><span class="name">MyGraph</span></a>
-      </span>
-      
-      
     </li>
               </ol>
             </div>

@@ -138,7 +138,7 @@
                         <a class="class" href="GraphMLEdge.html" title=""></a>
                         <a href="GraphMLEdge.html" title="">GraphMLEdge</a>
                       </li><li class="current-entities indented4">
-                        <a class="object" href="GraphMLGraph$.html" title=""></a>
+                        <span class="separator"></span>
                         <a class="class" href="GraphMLGraph.html" title=""></a>
                         <a href="GraphMLGraph.html" title="">GraphMLGraph</a>
                       </li><li class="current-entities indented4">
@@ -184,7 +184,7 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">GraphMLImporter</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
+        <span class="name">GraphMLImporter</span><span class="tparams">[<span name="G">G<span class="tparams">[<span name="_">_</span>, <span name="_">_</span>, <span name="_">_</span>]</span></span>, <span name="ET">ET<span class="tparams">[<span name="_">_</span>, <span name="_">_</span>]</span></span>]</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></span>
       </span>
       </h4>
 
@@ -240,9 +240,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.flowtick.graphs.graphml.GraphMLImporter#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;():com.flowtick.graphs.graphml.GraphMLImporter"></a><a id="&lt;init&gt;:GraphMLImporter"></a>
+      <a id="&lt;init&gt;()(implicitbuilder:com.flowtick.graphs.GraphBuilder[G,ET],implicitedge:com.flowtick.graphs.EdgeType[ET],implicitidentifiable:com.flowtick.graphs.Identifiable[com.flowtick.graphs.graphml.GraphMLNode]):com.flowtick.graphs.graphml.GraphMLImporter[G,ET]"></a><a id="&lt;init&gt;:GraphMLImporter[G,ET]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/graphml/GraphMLImporter.html#&lt;init&gt;():com.flowtick.graphs.graphml.GraphMLImporter" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/graphml/GraphMLImporter.html#&lt;init&gt;()(implicitbuilder:com.flowtick.graphs.GraphBuilder[G,ET],implicitedge:com.flowtick.graphs.EdgeType[ET],implicitidentifiable:com.flowtick.graphs.Identifiable[com.flowtick.graphs.graphml.GraphMLNode]):com.flowtick.graphs.graphml.GraphMLImporter[G,ET]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -251,7 +251,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">GraphMLImporter</span><span class="params">()</span>
+        <span class="name">GraphMLImporter</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="builder">builder: <a href="../GraphBuilder.html" class="extype" name="com.flowtick.graphs.GraphBuilder">GraphBuilder</a>[<span class="extype" name="com.flowtick.graphs.graphml.GraphMLImporter.G">G</span>, <span class="extype" name="com.flowtick.graphs.graphml.GraphMLImporter.ET">ET</span>]</span>, <span name="edge">edge: <a href="../EdgeType.html" class="extype" name="com.flowtick.graphs.EdgeType">EdgeType</a>[<span class="extype" name="com.flowtick.graphs.graphml.GraphMLImporter.ET">ET</span>]</span>, <span name="identifiable">identifiable: <a href="../Identifiable.html" class="extype" name="com.flowtick.graphs.Identifiable">Identifiable</a>[<a href="GraphMLNode.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLNode">GraphMLNode</a>]</span>)</span>
       </span>
       
       
@@ -440,9 +440,9 @@
               
         </dd></dl></div>
     </li><li name="com.flowtick.graphs.graphml.GraphMLImporter#fromXml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="fromXml(graphml:String):scala.util.Either[Throwable,com.flowtick.graphs.graphml.GraphMLGraph[com.flowtick.graphs.graphml.GraphMLNode,com.flowtick.graphs.graphml.GraphMLEdge[com.flowtick.graphs.graphml.GraphMLNode]]]"></a><a id="fromXml(String):Either[Throwable,GraphMLGraph[GraphMLNode,GraphMLEdge[GraphMLNode]]]"></a>
+      <a id="fromXml(graphml:String):scala.util.Either[Throwable,G[ET[com.flowtick.graphs.graphml.GraphMLEdge,com.flowtick.graphs.graphml.GraphMLNode],com.flowtick.graphs.graphml.GraphMLNode,com.flowtick.graphs.graphml.GraphMLGraph]]"></a><a id="fromXml(String):Either[Throwable,G[ET[GraphMLEdge,GraphMLNode],GraphMLNode,GraphMLGraph]]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/graphml/GraphMLImporter.html#fromXml(graphml:String):scala.util.Either[Throwable,com.flowtick.graphs.graphml.GraphMLGraph[com.flowtick.graphs.graphml.GraphMLNode,com.flowtick.graphs.graphml.GraphMLEdge[com.flowtick.graphs.graphml.GraphMLNode]]]" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/graphml/GraphMLImporter.html#fromXml(graphml:String):scala.util.Either[Throwable,G[ET[com.flowtick.graphs.graphml.GraphMLEdge,com.flowtick.graphs.graphml.GraphMLNode],com.flowtick.graphs.graphml.GraphMLNode,com.flowtick.graphs.graphml.GraphMLGraph]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -451,7 +451,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">fromXml</span><span class="params">(<span name="graphml">graphml: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.8/scala/util/Either.html#scala.util.Either" class="extype" name="scala.util.Either">Either</a>[<span class="extype" name="scala.Throwable">Throwable</span>, <a href="GraphMLGraph.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLGraph">GraphMLGraph</a>[<a href="GraphMLNode.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLNode">GraphMLNode</a>, <a href="GraphMLEdge.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLEdge">GraphMLEdge</a>[<a href="GraphMLNode.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLNode">GraphMLNode</a>]]]</span>
+        <span class="name">fromXml</span><span class="params">(<span name="graphml">graphml: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.util.Either">Either</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <span class="extype" name="com.flowtick.graphs.graphml.GraphMLImporter.G">G</span>[<span class="extype" name="com.flowtick.graphs.graphml.GraphMLImporter.ET">ET</span>[<a href="GraphMLEdge.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLEdge">GraphMLEdge</a>, <a href="GraphMLNode.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLNode">GraphMLNode</a>], <a href="GraphMLNode.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLNode">GraphMLNode</a>, <a href="GraphMLGraph.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLGraph">GraphMLGraph</a>]]</span>
       </span>
       
       
@@ -564,9 +564,9 @@
               
         </dd></dl></div>
     </li><li name="com.flowtick.graphs.graphml.GraphMLImporter#parseGraphNode" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="parseGraphNode(graphNode:scala.xml.Node,keys:Seq[com.flowtick.graphs.graphml.GraphMLKey]):com.flowtick.graphs.graphml.GraphMLGraph[com.flowtick.graphs.graphml.GraphMLNode,com.flowtick.graphs.graphml.GraphMLEdge[com.flowtick.graphs.graphml.GraphMLNode]]"></a><a id="parseGraphNode(Node,Seq[GraphMLKey]):GraphMLGraph[GraphMLNode,GraphMLEdge[GraphMLNode]]"></a>
+      <a id="parseGraphNode(graphNode:scala.xml.Node,keys:Seq[com.flowtick.graphs.graphml.GraphMLKey]):G[ET[com.flowtick.graphs.graphml.GraphMLEdge,com.flowtick.graphs.graphml.GraphMLNode],com.flowtick.graphs.graphml.GraphMLNode,com.flowtick.graphs.graphml.GraphMLGraph]"></a><a id="parseGraphNode(Node,Seq[GraphMLKey]):G[ET[GraphMLEdge,GraphMLNode],GraphMLNode,GraphMLGraph]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/graphml/GraphMLImporter.html#parseGraphNode(graphNode:scala.xml.Node,keys:Seq[com.flowtick.graphs.graphml.GraphMLKey]):com.flowtick.graphs.graphml.GraphMLGraph[com.flowtick.graphs.graphml.GraphMLNode,com.flowtick.graphs.graphml.GraphMLEdge[com.flowtick.graphs.graphml.GraphMLNode]]" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/graphml/GraphMLImporter.html#parseGraphNode(graphNode:scala.xml.Node,keys:Seq[com.flowtick.graphs.graphml.GraphMLKey]):G[ET[com.flowtick.graphs.graphml.GraphMLEdge,com.flowtick.graphs.graphml.GraphMLNode],com.flowtick.graphs.graphml.GraphMLNode,com.flowtick.graphs.graphml.GraphMLGraph]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -575,7 +575,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseGraphNode</span><span class="params">(<span name="graphNode">graphNode: <span class="extype" name="scala.xml.Node">Node</span></span>, <span name="keys">keys: <span class="extype" name="scala.Seq">Seq</span>[<a href="GraphMLKey.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLKey">GraphMLKey</a>]</span>)</span><span class="result">: <a href="GraphMLGraph.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLGraph">GraphMLGraph</a>[<a href="GraphMLNode.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLNode">GraphMLNode</a>, <a href="GraphMLEdge.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLEdge">GraphMLEdge</a>[<a href="GraphMLNode.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLNode">GraphMLNode</a>]]</span>
+        <span class="name">parseGraphNode</span><span class="params">(<span name="graphNode">graphNode: <span class="extype" name="scala.xml.Node">Node</span></span>, <span name="keys">keys: <span class="extype" name="scala.Seq">Seq</span>[<a href="GraphMLKey.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLKey">GraphMLKey</a>]</span>)</span><span class="result">: <span class="extype" name="com.flowtick.graphs.graphml.GraphMLImporter.G">G</span>[<span class="extype" name="com.flowtick.graphs.graphml.GraphMLImporter.ET">ET</span>[<a href="GraphMLEdge.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLEdge">GraphMLEdge</a>, <a href="GraphMLNode.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLNode">GraphMLNode</a>], <a href="GraphMLNode.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLNode">GraphMLNode</a>, <a href="GraphMLGraph.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLGraph">GraphMLGraph</a>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
@@ -591,7 +591,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parseGraphNodes</span><span class="params">(<span name="graphNode">graphNode: <span class="extype" name="scala.xml.Node">Node</span></span>, <span name="keys">keys: <span class="extype" name="scala.Seq">Seq</span>[<a href="GraphMLKey.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLKey">GraphMLKey</a>]</span>, <span name="edgeXmlNodes">edgeXmlNodes: <span class="extype" name="scala.collection.mutable.ListBuffer">ListBuffer</span>[<span class="extype" name="scala.xml.Node">Node</span>]</span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.8/scala/collection/mutable/HashMap.html#scala.collection.mutable.HashMap" class="extype" name="scala.collection.mutable.HashMap">HashMap</a>[<span class="extype" name="scala.Predef.String">String</span>, <a href="GraphMLNode.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLNode">GraphMLNode</a>]</span>
+        <span class="name">parseGraphNodes</span><span class="params">(<span name="graphNode">graphNode: <span class="extype" name="scala.xml.Node">Node</span></span>, <span name="keys">keys: <span class="extype" name="scala.Seq">Seq</span>[<a href="GraphMLKey.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLKey">GraphMLKey</a>]</span>, <span name="edgeXmlNodes">edgeXmlNodes: <a href="http://www.scala-lang.org/api/2.12.8/scala/collection/mutable/ListBuffer.html#scala.collection.mutable.ListBuffer" class="extype" name="scala.collection.mutable.ListBuffer">ListBuffer</a>[<span class="extype" name="scala.xml.Node">Node</span>]</span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.8/scala/collection/mutable/HashMap.html#scala.collection.mutable.HashMap" class="extype" name="scala.collection.mutable.HashMap">HashMap</a>[<span class="extype" name="scala.Predef.String">String</span>, <a href="GraphMLNode.html" class="extype" name="com.flowtick.graphs.graphml.GraphMLNode">GraphMLNode</a>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>

@@ -184,7 +184,7 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">Dijkstra</span><span class="tparams">[<span name="T">T</span>, <span name="N">N</span>, <span name="E">E</span>]</span><span class="result"> extends <a href="DijkstraShortestPath.html" class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath">DijkstraShortestPath</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.T">T</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>]</span>
+        <span class="name">Dijkstra</span><span class="tparams">[<span name="G">G<span class="tparams">[<span name="_">_</span>, <span name="_">_</span>, <span name="_">_</span>]</span></span>, <span name="E">E<span class="tparams">[<span name="_">_</span>, <span name="_">_</span>]</span></span>, <span name="V">V</span>, <span name="N">N</span>, <span name="M">M</span>]</span><span class="result"> extends <a href="DijkstraShortestPath.html" class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath">DijkstraShortestPath</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.G">G</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.V">V</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.M">M</span>]</span>
       </span>
       </h4>
 
@@ -193,7 +193,7 @@
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="DijkstraShortestPath.html" class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath">DijkstraShortestPath</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.T">T</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>], <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.8/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></div>
+          <div class="superTypes hiddenContent"><a href="DijkstraShortestPath.html" class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath">DijkstraShortestPath</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.G">G</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.V">V</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.M">M</span>], <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.8/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></div>
         </div></div>
         
 
@@ -240,9 +240,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.flowtick.graphs.algorithm.Dijkstra#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(graph:com.flowtick.graphs.Graph[N,E]):com.flowtick.graphs.algorithm.package.Dijkstra[T,N,E]"></a><a id="&lt;init&gt;:Dijkstra[T,N,E]"></a>
+      <a id="&lt;init&gt;(graph:G[E[V,N],N,M])(implicitnumeric:Numeric[V],implicitidentifiable:com.flowtick.graphs.Identifiable[N],implicitgraphType:com.flowtick.graphs.Graph[G,E],implicitedgeType:com.flowtick.graphs.EdgeType[E]):com.flowtick.graphs.algorithm.package.Dijkstra[G,E,V,N,M]"></a><a id="&lt;init&gt;:Dijkstra[G,E,V,N,M]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/algorithm/package$$Dijkstra.html#&lt;init&gt;(graph:com.flowtick.graphs.Graph[N,E]):com.flowtick.graphs.algorithm.package.Dijkstra[T,N,E]" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/package$$Dijkstra.html#&lt;init&gt;(graph:G[E[V,N],N,M])(implicitnumeric:Numeric[V],implicitidentifiable:com.flowtick.graphs.Identifiable[N],implicitgraphType:com.flowtick.graphs.Graph[G,E],implicitedgeType:com.flowtick.graphs.EdgeType[E]):com.flowtick.graphs.algorithm.package.Dijkstra[G,E,V,N,M]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -251,7 +251,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Dijkstra</span><span class="params">(<span name="graph">graph: <a href="../Graph.html" class="extype" name="com.flowtick.graphs.Graph">Graph</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>]</span>)</span>
+        <span class="name">Dijkstra</span><span class="params">(<span name="graph">graph: <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.G">G</span>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.V">V</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>], <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.M">M</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="numeric">numeric: <span class="extype" name="scala.Numeric">Numeric</span>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.V">V</span>]</span>, <span name="identifiable">identifiable: <a href="../Identifiable.html" class="extype" name="com.flowtick.graphs.Identifiable">Identifiable</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>]</span>, <span name="graphType">graphType: <a href="../Graph.html" class="extype" name="com.flowtick.graphs.Graph">Graph</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.G">G</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>]</span>, <span name="edgeType">edgeType: <a href="../EdgeType.html" class="extype" name="com.flowtick.graphs.EdgeType">EdgeType</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>]</span>)</span>
       </span>
       
       
@@ -516,9 +516,9 @@
               
         </dd></dl></div>
     </li><li name="com.flowtick.graphs.algorithm.DijkstraShortestPath#shortestPath" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="shortestPath(start:N,end:N)(implicitweight:com.flowtick.graphs.Weighted[E,T],implicitnumeric:Numeric[T]):Iterable[com.flowtick.graphs.Edge[E,N]]"></a><a id="shortestPath(N,N)(Weighted[E,T],Numeric[T]):Iterable[Edge[E,N]]"></a>
+      <a id="shortestPath(start:N,end:N):Iterable[E[V,N]]"></a><a id="shortestPath(N,N):Iterable[E[V,N]]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/algorithm/package$$Dijkstra.html#shortestPath(start:N,end:N)(implicitweight:com.flowtick.graphs.Weighted[E,T],implicitnumeric:Numeric[T]):Iterable[com.flowtick.graphs.Edge[E,N]]" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/package$$Dijkstra.html#shortestPath(start:N,end:N):Iterable[E[V,N]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -527,7 +527,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">shortestPath</span><span class="params">(<span name="start">start: <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span></span>, <span name="end">end: <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="weight">weight: <a href="../Weighted.html" class="extype" name="com.flowtick.graphs.Weighted">Weighted</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.T">T</span>]</span>, <span name="numeric">numeric: <span class="extype" name="scala.Numeric">Numeric</span>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Iterable">Iterable</span>[<a href="../Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>]]</span>
+        <span class="name">shortestPath</span><span class="params">(<span name="start">start: <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span></span>, <span name="end">end: <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span></span>)</span><span class="result">: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.V">V</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>]]</span>
       </span>
       
       <p class="shortcomment cmt">determine the shortest path from start to end,
@@ -646,7 +646,7 @@ works only for positive weight values
 
         <div id="inheritedMembers">
         <div class="parent" name="com.flowtick.graphs.algorithm.DijkstraShortestPath">
-              <h3>Inherited from <a href="DijkstraShortestPath.html" class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath">DijkstraShortestPath</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.T">T</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>]</h3>
+              <h3>Inherited from <a href="DijkstraShortestPath.html" class="extype" name="com.flowtick.graphs.algorithm.DijkstraShortestPath">DijkstraShortestPath</a>[<span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.G">G</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.E">E</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.V">V</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.Dijkstra.M">M</span>]</h3>
             </div><div class="parent" name="scala.AnyRef">
               <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">

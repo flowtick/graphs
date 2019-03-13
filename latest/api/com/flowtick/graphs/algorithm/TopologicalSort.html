@@ -184,7 +184,7 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">TopologicalSort</span><span class="tparams">[<span name="N">N</span>, <span name="E">E</span>]</span><span class="result"> extends <a href="DepthFirstSearch.html" class="extype" name="com.flowtick.graphs.algorithm.DepthFirstSearch">DepthFirstSearch</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.E">E</span>]</span>
+        <span class="name">TopologicalSort</span><span class="tparams">[<span name="G">G<span class="tparams">[<span name="_">_</span>, <span name="_">_</span>, <span name="_">_</span>]</span></span>, <span name="E">E<span class="tparams">[<span name="_">_</span>, <span name="_">_</span>]</span></span>, <span name="V">V</span>, <span name="N">N</span>, <span name="M">M</span>]</span><span class="result"> extends <a href="DepthFirstSearch.html" class="extype" name="com.flowtick.graphs.algorithm.DepthFirstSearch">DepthFirstSearch</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.G">G</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.E">E</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.V">V</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.M">M</span>]</span>
       </span>
       </h4>
 
@@ -193,7 +193,7 @@
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="DepthFirstSearch.html" class="extype" name="com.flowtick.graphs.algorithm.DepthFirstSearch">DepthFirstSearch</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.E">E</span>], <a href="Traversal.html" class="extype" name="com.flowtick.graphs.algorithm.Traversal">Traversal</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>], <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.8/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></div>
+          <div class="superTypes hiddenContent"><a href="DepthFirstSearch.html" class="extype" name="com.flowtick.graphs.algorithm.DepthFirstSearch">DepthFirstSearch</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.G">G</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.E">E</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.V">V</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.M">M</span>], <a href="Traversal.html" class="extype" name="com.flowtick.graphs.algorithm.Traversal">Traversal</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>], <a href="http://www.scala-lang.org/api/2.12.8/scala/AnyRef.html#scala.AnyRef" class="extype" name="scala.AnyRef">AnyRef</a>, <a href="http://www.scala-lang.org/api/2.12.8/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a></div>
         </div></div>
         
 
@@ -240,9 +240,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="com.flowtick.graphs.algorithm.TopologicalSort#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(graph:com.flowtick.graphs.Graph[N,E]):com.flowtick.graphs.algorithm.TopologicalSort[N,E]"></a><a id="&lt;init&gt;:TopologicalSort[N,E]"></a>
+      <a id="&lt;init&gt;(graph:G[E[V,N],N,M])(implicitgraphType:com.flowtick.graphs.Graph[G,E],implicitedgeType:com.flowtick.graphs.EdgeType[E],implicitidentifiable:com.flowtick.graphs.Identifiable[N]):com.flowtick.graphs.algorithm.TopologicalSort[G,E,V,N,M]"></a><a id="&lt;init&gt;:TopologicalSort[G,E,V,N,M]"></a>
       <span class="permalink">
-      <a href="../../../../com/flowtick/graphs/algorithm/TopologicalSort.html#&lt;init&gt;(graph:com.flowtick.graphs.Graph[N,E]):com.flowtick.graphs.algorithm.TopologicalSort[N,E]" title="Permalink">
+      <a href="../../../../com/flowtick/graphs/algorithm/TopologicalSort.html#&lt;init&gt;(graph:G[E[V,N],N,M])(implicitgraphType:com.flowtick.graphs.Graph[G,E],implicitedgeType:com.flowtick.graphs.EdgeType[E],implicitidentifiable:com.flowtick.graphs.Identifiable[N]):com.flowtick.graphs.algorithm.TopologicalSort[G,E,V,N,M]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -251,7 +251,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">TopologicalSort</span><span class="params">(<span name="graph">graph: <a href="../Graph.html" class="extype" name="com.flowtick.graphs.Graph">Graph</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.E">E</span>]</span>)</span>
+        <span class="name">TopologicalSort</span><span class="params">(<span name="graph">graph: <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.G">G</span>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.E">E</span>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.V">V</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>], <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.M">M</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="graphType">graphType: <a href="../Graph.html" class="extype" name="com.flowtick.graphs.Graph">Graph</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.G">G</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.E">E</span>]</span>, <span name="edgeType">edgeType: <a href="../EdgeType.html" class="extype" name="com.flowtick.graphs.EdgeType">EdgeType</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.E">E</span>]</span>, <span name="identifiable">identifiable: <a href="../Identifiable.html" class="extype" name="com.flowtick.graphs.Identifiable">Identifiable</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>]</span>)</span>
       </span>
       
       
@@ -341,7 +341,7 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">backtrackCallbacks</span><span class="result">: <span class="extype" name="scala.collection.mutable.ListBuffer">ListBuffer</span>[(<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.8/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a>]</span>
+        <span class="name">backtrackCallbacks</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.8/scala/collection/mutable/ListBuffer.html#scala.collection.mutable.ListBuffer" class="extype" name="scala.collection.mutable.ListBuffer">ListBuffer</a>[(<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.8/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Traversal.html" class="extype" name="com.flowtick.graphs.algorithm.Traversal">Traversal</a></dd></dl></div>
@@ -381,7 +381,7 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">completeCallbacks</span><span class="result">: <span class="extype" name="scala.collection.mutable.ListBuffer">ListBuffer</span>[(<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.8/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a>]</span>
+        <span class="name">completeCallbacks</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.8/scala/collection/mutable/ListBuffer.html#scala.collection.mutable.ListBuffer" class="extype" name="scala.collection.mutable.ListBuffer">ListBuffer</a>[(<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.8/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Traversal.html" class="extype" name="com.flowtick.graphs.algorithm.Traversal">Traversal</a></dd></dl></div>
@@ -671,7 +671,7 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">visitCallbacks</span><span class="result">: <span class="extype" name="scala.collection.mutable.ListBuffer">ListBuffer</span>[(<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.8/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a>]</span>
+        <span class="name">visitCallbacks</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.8/scala/collection/mutable/ListBuffer.html#scala.collection.mutable.ListBuffer" class="extype" name="scala.collection.mutable.ListBuffer">ListBuffer</a>[(<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.8/scala/Any.html#scala.Any" class="extype" name="scala.Any">Any</a>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Traversal.html" class="extype" name="com.flowtick.graphs.algorithm.Traversal">Traversal</a></dd></dl></div>
@@ -754,7 +754,7 @@
 
         <div id="inheritedMembers">
         <div class="parent" name="com.flowtick.graphs.algorithm.DepthFirstSearch">
-              <h3>Inherited from <a href="DepthFirstSearch.html" class="extype" name="com.flowtick.graphs.algorithm.DepthFirstSearch">DepthFirstSearch</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.E">E</span>]</h3>
+              <h3>Inherited from <a href="DepthFirstSearch.html" class="extype" name="com.flowtick.graphs.algorithm.DepthFirstSearch">DepthFirstSearch</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.G">G</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.E">E</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.V">V</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>, <span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.M">M</span>]</h3>
             </div><div class="parent" name="com.flowtick.graphs.algorithm.Traversal">
               <h3>Inherited from <a href="Traversal.html" class="extype" name="com.flowtick.graphs.algorithm.Traversal">Traversal</a>[<span class="extype" name="com.flowtick.graphs.algorithm.TopologicalSort.N">N</span>]</h3>
             </div><div class="parent" name="scala.AnyRef">

@@ -30,7 +30,7 @@
 <span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
-0.2.1
+0.2.3*
 </div>
 </div>
 <div class="nav-toc">
@@ -71,7 +71,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
-0.2.1
+0.2.3*
 </div>
 </div>
 <div class="nav-toc">
@@ -106,18 +106,19 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <h2><a href="#graphml-support" name="graphml-support" class="anchor"><span class="anchor-link"></span></a>GraphML support</h2>
 <p><code>graphs</code> supports rendering and loading (currently only on the JVM) of graphs to GraphML XML.</p>
 <p>You need to add the <code>graphs-graphml</code> dependency to use that:</p>
-<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-graphml&quot; % &quot;0.2.1&quot;
+<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-graphml&quot; % &quot;0.2.3-SNAPSHOT&quot;
 </code></pre>
 <pre class="prettyprint"><code class="language-scala">import java.io.FileOutputStream
 
-import com.flowtick.graphs.{ Graph, Identifiable, Labeled }
+import com.flowtick.graphs.{ EdgeType, Graph, Identifiable, Labeled }
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.graphml.{ GraphMLRenderer, GraphMLImporter }
+import com.flowtick.graphs.defaults.directed._
+import com.flowtick.graphs.graphml.{ GraphMLImporter, GraphMLRenderer }
 import com.flowtick.graphs.layout.{ JGraphXLayouter, ShapeDefinition }
 
 object GraphMLRendererApp extends App {
-  def writeGraphXML[N, E](g: Graph[N, E], fileName: String)(implicit identifiable: Identifiable[N], edgeLabel: Labeled[E, String]): String = {
-    val graphXml = new GraphMLRenderer().render(
+  def writeGraphXML[G[_, _, _], E[_, _], V, N, M](g: G[E[V, N], N, M], fileName: String)(implicit graph: Graph[G, E], edgeType: EdgeType[E], identifiable: Identifiable[N], edgeLabel: Labeled[E[V, N], String]): String = {
+    val graphXml = new GraphMLRenderer().render[G, E, V, N, M](
       g,
       JGraphXLayouter,
       (_: N) =&gt; Some(ShapeDefinition(rounded = true, color = &quot;#AAAAAA&quot;)))
@@ -131,8 +132,8 @@ object GraphMLRendererApp extends App {
   }
 
   val writtenXml = writeGraphXML(DijkstraGraph.cities, &quot;target/cities.graphml&quot;)
-  println(new GraphMLImporter().fromXml(writtenXml))
-  // Right(GraphMLGraph(Some(G),SomeGraph(Set(GraphMLNode(Karlsruhe,Some(Karlsruhe),Map(graphics -&gt; ...
+  println(new GraphMLImporter[DefaultGraph, Edge]().fromXml(writtenXml))
+  // Right(DefaultGraph(GraphMLGraph(Some(G)),ListBuffer(GraphMLNode(Frankfurt,Some(Frankfurt),Map(graphics -&gt; ...
 }</code></pre>
 <p>This format is used by the <a href="https://www.yworks.com/products/yed">yed editor</a>, so graphs can be edited and layouted there.</p>
 <div class="source-github">

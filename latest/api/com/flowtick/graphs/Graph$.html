@@ -181,54 +181,30 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="com.flowtick.graphs">graphs</a></dd></dl></div>
-    </li><li name="com.flowtick.graphs.view" visbl="pub" class="indented4 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="view"></a><a id="view:view"></a>
-      <span class="permalink">
-      <a href="../../../com/flowtick/graphs/index.html#view" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">package</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="view/index.html"><span class="name">view</span></a>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="com.flowtick.graphs">graphs</a></dd></dl></div>
     </li><li class="current-entities indented3">
                         <span class="separator"></span>
-                        <a class="trait" href="Edge.html" title="The base type for edge in a graph, which connects incoming nodes to outgoing nodes of the same type."></a>
-                        <a href="Edge.html" title="The base type for edge in a graph, which connects incoming nodes to outgoing nodes of the same type.">Edge</a>
+                        <a class="trait" href="EdgeType.html" title=""></a>
+                        <a href="EdgeType.html" title="">EdgeType</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
-                        <a class="trait" href="EdgeBuilder.html" title="an edge builder allows to create an edge from another type."></a>
-                        <a href="EdgeBuilder.html" title="an edge builder allows to create an edge from another type.">EdgeBuilder</a>
+                        <a class="trait" href="Empty.html" title=""></a>
+                        <a href="Empty.html" title="">Empty</a>
                       </li><li class="current-entities indented3">
                         <a class="object" href="" title=""></a>
-                        <a class="trait" href="Graph.html" title="Wikipedia (https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)): &quot;a graph is a structure amounting to a set of objects in which some pairs of the objects are in some sense &quot;related&quot;.&quot;"></a>
-                        <a href="Graph.html" title="Wikipedia (https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)): &quot;a graph is a structure amounting to a set of objects in which some pairs of the objects are in some sense &quot;related&quot;.&quot;">Graph</a>
+                        <a class="trait" href="Graph.html" title=""></a>
+                        <a href="Graph.html" title="">Graph</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
+                        <a class="trait" href="GraphBuilder.html" title=""></a>
+                        <a href="GraphBuilder.html" title="">GraphBuilder</a>
+                      </li><li class="current-entities indented3">
+                        <a class="object" href="Identifiable$.html" title=""></a>
                         <a class="trait" href="Identifiable.html" title="Type class to define an identifier for a node type as string."></a>
                         <a href="Identifiable.html" title="Type class to define an identifier for a node type as string.">Identifiable</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
                         <a class="trait" href="Labeled.html" title="Type class to define an optional label for a node type as string."></a>
                         <a href="Labeled.html" title="Type class to define an optional label for a node type as string.">Labeled</a>
-                      </li><li class="current-entities indented3">
-                        <span class="separator"></span>
-                        <a class="class" href="SomeEdge.html" title=""></a>
-                        <a href="SomeEdge.html" title="">SomeEdge</a>
-                      </li><li class="current-entities indented3">
-                        <span class="separator"></span>
-                        <a class="class" href="SomeGraph.html" title=""></a>
-                        <a href="SomeGraph.html" title="">SomeGraph</a>
-                      </li><li class="current-entities indented3">
-                        <span class="separator"></span>
-                        <a class="trait" href="Weighted.html" title="Type class to define an weight for a type, in this context, mainly used for edges."></a>
-                        <a href="Weighted.html" title="Type class to define an weight for a type, in this context, mainly used for edges.">Weighted</a>
                       </li>
               </ul>
             </div>
@@ -365,9 +341,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.flowtick.graphs.Graph#apply" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="apply[N,E](nodes:Set[N],edges:Set[com.flowtick.graphs.Edge[E,N]]):com.flowtick.graphs.Graph[N,E]"></a><a id="apply[N,E](Set[N],Set[Edge[E,N]]):Graph[N,E]"></a>
+      <a id="apply[G[_,_,_],E[_,_]](implicitgraph:com.flowtick.graphs.Graph[G,E],implicitedge:com.flowtick.graphs.EdgeType[E]):com.flowtick.graphs.Graph[G,E]"></a><a id="apply[G[_,_,_],E[_,_]](Graph[G,E],EdgeType[E]):Graph[G,E]"></a>
       <span class="permalink">
-      <a href="../../../com/flowtick/graphs/Graph$.html#apply[N,E](nodes:Set[N],edges:Set[com.flowtick.graphs.Edge[E,N]]):com.flowtick.graphs.Graph[N,E]" title="Permalink">
+      <a href="../../../com/flowtick/graphs/Graph$.html#apply[G[_,_,_],E[_,_]](implicitgraph:com.flowtick.graphs.Graph[G,E],implicitedge:com.flowtick.graphs.EdgeType[E]):com.flowtick.graphs.Graph[G,E]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -376,7 +352,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">apply</span><span class="tparams">[<span name="N">N</span>, <span name="E">E</span>]</span><span class="params">(<span name="nodes">nodes: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="com.flowtick.graphs.Graph.apply.N">N</span>]</span>, <span name="edges">edges: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a>[<span class="extype" name="com.flowtick.graphs.Graph.apply.E">E</span>, <span class="extype" name="com.flowtick.graphs.Graph.apply.N">N</span>]]</span>)</span><span class="result">: <a href="Graph.html" class="extype" name="com.flowtick.graphs.Graph">Graph</a>[<span class="extype" name="com.flowtick.graphs.Graph.apply.N">N</span>, <span class="extype" name="com.flowtick.graphs.Graph.apply.E">E</span>]</span>
+        <span class="name">apply</span><span class="tparams">[<span name="G">G<span class="tparams">[<span name="_">_</span>, <span name="_">_</span>, <span name="_">_</span>]</span></span>, <span name="E">E<span class="tparams">[<span name="_">_</span>, <span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="graph">graph: <a href="Graph.html" class="extype" name="com.flowtick.graphs.Graph">Graph</a>[<span class="extype" name="com.flowtick.graphs.Graph.apply.G">G</span>, <span class="extype" name="com.flowtick.graphs.Graph.apply.E">E</span>]</span>, <span name="edge">edge: <a href="EdgeType.html" class="extype" name="com.flowtick.graphs.EdgeType">EdgeType</a>[<span class="extype" name="com.flowtick.graphs.Graph.apply.E">E</span>]</span>)</span><span class="result">: <a href="Graph.html" class="extype" name="com.flowtick.graphs.Graph">Graph</a>[<span class="extype" name="com.flowtick.graphs.Graph.apply.G">G</span>, <span class="extype" name="com.flowtick.graphs.Graph.apply.E">E</span>]</span>
       </span>
       
       
@@ -420,54 +396,6 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="com.flowtick.graphs.Graph#create" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="create[N,E,B](tuples:B*)(implicitidentifiable:com.flowtick.graphs.Identifiable[N],implicitedgeBuilder:com.flowtick.graphs.EdgeBuilder[N,E,B]):com.flowtick.graphs.Graph[N,E]"></a><a id="create[N,E,B](B*)(Identifiable[N],EdgeBuilder[N,E,B]):Graph[N,E]"></a>
-      <span class="permalink">
-      <a href="../../../com/flowtick/graphs/Graph$.html#create[N,E,B](tuples:B*)(implicitidentifiable:com.flowtick.graphs.Identifiable[N],implicitedgeBuilder:com.flowtick.graphs.EdgeBuilder[N,E,B]):com.flowtick.graphs.Graph[N,E]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">create</span><span class="tparams">[<span name="N">N</span>, <span name="E">E</span>, <span name="B">B</span>]</span><span class="params">(<span name="tuples">tuples: <span class="extype" name="com.flowtick.graphs.Graph.create.B">B</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="identifiable">identifiable: <a href="Identifiable.html" class="extype" name="com.flowtick.graphs.Identifiable">Identifiable</a>[<span class="extype" name="com.flowtick.graphs.Graph.create.N">N</span>]</span>, <span name="edgeBuilder">edgeBuilder: <a href="EdgeBuilder.html" class="extype" name="com.flowtick.graphs.EdgeBuilder">EdgeBuilder</a>[<span class="extype" name="com.flowtick.graphs.Graph.create.N">N</span>, <span class="extype" name="com.flowtick.graphs.Graph.create.E">E</span>, <span class="extype" name="com.flowtick.graphs.Graph.create.B">B</span>]</span>)</span><span class="result">: <a href="Graph.html" class="extype" name="com.flowtick.graphs.Graph">Graph</a>[<span class="extype" name="com.flowtick.graphs.Graph.create.N">N</span>, <span class="extype" name="com.flowtick.graphs.Graph.create.E">E</span>]</span>
-      </span>
-      
-      
-    </li><li name="com.flowtick.graphs.Graph#edgeNodes" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="edgeNodes[E,N](edges:Set[com.flowtick.graphs.Edge[E,N]]):Set[N]"></a><a id="edgeNodes[E,N](Set[Edge[E,N]]):Set[N]"></a>
-      <span class="permalink">
-      <a href="../../../com/flowtick/graphs/Graph$.html#edgeNodes[E,N](edges:Set[com.flowtick.graphs.Edge[E,N]]):Set[N]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">edgeNodes</span><span class="tparams">[<span name="E">E</span>, <span name="N">N</span>]</span><span class="params">(<span name="edges">edges: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="Edge.html" class="extype" name="com.flowtick.graphs.Edge">Edge</a>[<span class="extype" name="com.flowtick.graphs.Graph.edgeNodes.E">E</span>, <span class="extype" name="com.flowtick.graphs.Graph.edgeNodes.N">N</span>]]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="com.flowtick.graphs.Graph.edgeNodes.N">N</span>]</span>
-      </span>
-      
-      
-    </li><li name="com.flowtick.graphs.Graph#empty" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="empty[N,E]:com.flowtick.graphs.Graph[N,E]"></a><a id="empty[N,E]:Graph[N,E]"></a>
-      <span class="permalink">
-      <a href="../../../com/flowtick/graphs/Graph$.html#empty[N,E]:com.flowtick.graphs.Graph[N,E]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">empty</span><span class="tparams">[<span name="N">N</span>, <span name="E">E</span>]</span><span class="result">: <a href="Graph.html" class="extype" name="com.flowtick.graphs.Graph">Graph</a>[<span class="extype" name="com.flowtick.graphs.Graph.empty.N">N</span>, <span class="extype" name="com.flowtick.graphs.Graph.empty.E">E</span>]</span>
-      </span>
-      
-      
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
