@@ -10,7 +10,7 @@ object MxGraphView {
     container: Element,
     graph: G[E[JsEdge, JsNode], JsNode, JsGraph],
     layout: MxGraph => MxGraph = hierarchicalLayout)(implicit
-    graphType: Graph[G, E],
+    graphType: Graph[G],
     edgeType: EdgeType[E],
     nodeId: Identifiable[JsNode],
     edgeLabel: Labeled[E[JsEdge, JsNode], String]): MxGraph = {
@@ -34,7 +34,7 @@ object MxGraphView {
 
     try {
       val parent = viewGraph.getDefaultParent()
-      val nodeCells: Map[JsNode, MxCell] = graphType.nodes[JsEdge, JsNode, JsGraph](graph).map { node =>
+      val nodeCells: Map[JsNode, MxCell] = graphType.nodes[E, JsEdge, JsNode, JsGraph](graph).map { node =>
         val id = nodeId.id(node)
 
         (node, viewGraph.insertVertex(
@@ -90,7 +90,7 @@ object MxGraphView {
   }
 
   def toGraph[G[_, _, _], E[_, _]](meta: JsGraph, view: MxGraph)(implicit
-    builder: GraphBuilder[G, E],
+    builder: GraphBuilder[G],
     edge: EdgeType[E],
     identifiable: Identifiable[JsNode]): G[E[JsEdge, JsNode], JsNode, JsGraph] = {
 
@@ -102,7 +102,7 @@ object MxGraphView {
         JsNode(edgeCell.target.get.getId()))
     })
 
-    builder.create[JsEdge, JsNode, JsGraph](meta, nodes, edges)
+    builder.create[E, JsEdge, JsNode, JsGraph](meta, nodes, edges)
   }
 }
 // $COVERAGE-ON$

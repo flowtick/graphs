@@ -9,7 +9,7 @@ class GraphMLRenderer {
   def render[G[_, _, _], E[_, _], V, N, M](
     g: G[E[V, N], N, M],
     layouter: GraphLayout,
-    shapeDefinition: N => Option[ShapeDefinition] = (_: N) => None)(implicit graph: Graph[G, E], edgeType: EdgeType[E], identifiable: Identifiable[N], edgeLabel: Labeled[E[V, N], String]): Elem = {
+    shapeDefinition: N => Option[ShapeDefinition] = (_: N) => None)(implicit graph: Graph[G], edgeType: EdgeType[E], identifiable: Identifiable[N], edgeLabel: Labeled[E[V, N], String]): Elem = {
     val layout = layouter.layout[G, E, V, N, M](g, shapeDefinition)
 
     def nodeProperties(aNode: N): Map[String, GraphMLProperty] = (aNode match {

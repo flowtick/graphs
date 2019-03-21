@@ -41,44 +41,44 @@ trait EdgeType[ET[_, _]] {
 }
 
 // #graph
-trait Graph[G[_, _, _], ET[_, _]] {
-  def value[V, N, M](graph: G[ET[V, N], N, M]): M
+trait Graph[G[_, _, _]] {
+  def value[ET[_, _], V, N, M](graph: G[ET[V, N], N, M]): M
 
-  def edges[V, N, M](graph: G[ET[V, N], N, M]): Iterable[ET[V, N]]
+  def edges[ET[_, _], V, N, M](graph: G[ET[V, N], N, M]): Iterable[ET[V, N]]
 
-  def nodes[V, N, M](graph: G[ET[V, N], N, M]): Iterable[N]
+  def nodes[ET[_, _], V, N, M](graph: G[ET[V, N], N, M]): Iterable[N]
 
-  def incoming[V, N, M](graph: G[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]]
+  def incoming[ET[_, _], V, N, M](graph: G[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]]
 
-  def outgoing[V, N, M](graph: G[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]]
+  def outgoing[ET[_, _], V, N, M](graph: G[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]]
 
-  def predecessors[V, N, M](node: N, graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
+  def predecessors[ET[_, _], V, N, M](node: N, graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
     incoming(graph).getOrElse(node, Iterable.empty).view.map(edgeType.head)
 
-  def successors[V, N, M](node: N, graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
+  def successors[ET[_, _], V, N, M](node: N, graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
     outgoing(graph).getOrElse(node, Iterable.empty).view.map(edgeType.tail)
 }
 // #graph
 
-trait GraphBuilder[G[_, _, _], ET[_, _]] {
-  def empty[V, N, M](meta: M): G[ET[V, N], N, M] = build[V, N, M](meta, Iterable.empty, Iterable.empty, Map.empty, Map.empty)
+trait GraphBuilder[G[_, _, _]] {
+  def empty[ET[_, _], V, N, M](meta: M): G[ET[V, N], N, M] = build[ET, V, N, M](meta, Iterable.empty, Iterable.empty, Map.empty, Map.empty)
 
-  def withValue[V, N, M](value: M)(edges: Iterable[ET[V, N]], nodes: Iterable[N])(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, M] =
+  def withValue[ET[_, _], V, N, M](value: M)(edges: Iterable[ET[V, N]], nodes: Iterable[N])(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, M] =
     create(value, nodes, edges, None)
 
-  def of[V, N, M](value: M, nodes: Option[Iterable[N]] = None)(edges: ET[V, N]*)(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, M] = create(value, nodes.getOrElse(Iterable.empty), edges, None)
+  def of[ET[_, _], V, N, M](value: M, nodes: Option[Iterable[N]] = None)(edges: ET[V, N]*)(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, M] = create(value, nodes.getOrElse(Iterable.empty), edges, None)
 
-  def from[V, N, M](edges: Iterable[ET[V, N]], nodes: Option[Iterable[N]] = None)(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, Unit] =
+  def from[ET[_, _], V, N, M](edges: Iterable[ET[V, N]], nodes: Option[Iterable[N]] = None)(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, Unit] =
     create((), nodes.getOrElse(Iterable.empty), edges, None)
 
-  def build[V, N, M](
+  def build[ET[_, _], V, N, M](
     value: M,
     edges: Iterable[ET[V, N]],
     nodes: Iterable[N],
     incoming: scala.collection.Map[N, Iterable[ET[V, N]]],
     outgoing: scala.collection.Map[N, Iterable[ET[V, N]]]): G[ET[V, N], N, M]
 
-  def create[V, N, M](
+  def create[ET[_, _], V, N, M](
     value: M,
     nodes: Iterable[N],
     edges: Iterable[ET[V, N]],
@@ -115,5 +115,5 @@ trait GraphBuilder[G[_, _, _], ET[_, _]] {
 }
 
 object Graph {
-  def apply[G[_, _, _], E[_, _]](implicit graph: Graph[G, E], edge: EdgeType[E]): Graph[G, E] = graph
+  def apply[G[_, _, _]](implicit graph: Graph[G]): Graph[G] = graph
 }
