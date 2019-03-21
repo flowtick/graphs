@@ -119,19 +119,22 @@ lazy val cats = (crossProject in file(".") / "cats")
   .settings(
     name := "graphs-cats",
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % catsV
+      "org.typelevel" %%% "cats-core" % catsV
     )
   ).dependsOn(core)
 
 lazy val catsJS = cats.js
 lazy val catsJVM = cats.jvm
 
-lazy val examples = (project in file("examples"))
+lazy val examples = (crossProject in file("examples"))
       .settings(commonSettings)
       .settings(
         name := "graphs-examples"
       )
-      .dependsOn(coreJVM, graphmlJVM, catsJVM, layoutJVM)
+      .dependsOn(core, graphml, cats, layout)
+
+lazy val examplesJS = examples.js
+lazy val examplesJVM = examples.jvm
 
 lazy val graphs = (project in file("."))
   .enablePlugins(ScalaUnidocPlugin)
@@ -140,11 +143,12 @@ lazy val graphs = (project in file("."))
     publishLocal := {},
     publish := {},
     test := {},
-    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(graphmlJS, coreJS, catsJS, layoutJS, editorJS)
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(graphmlJS, coreJS, catsJS, layoutJS, editorJS, examplesJS)
   ).aggregate(
     coreJS,
     coreJVM,
-    examples,
+    examplesJS,
+    examplesJVM,
     graphmlJS,
     graphmlJVM,
     catsJVM,

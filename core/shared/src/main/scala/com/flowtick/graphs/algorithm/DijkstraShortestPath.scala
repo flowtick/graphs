@@ -8,7 +8,6 @@ import scala.collection.mutable.ListBuffer
 class DijkstraShortestPath[G[_, _, _], E[_, _], V, N, M](graph: G[E[V, N], N, M])(implicit
   graphType: Graph[G, E],
   edgeType: EdgeType[E],
-  identifiable: Identifiable[N],
   numeric: Numeric[V]) {
 
   /**

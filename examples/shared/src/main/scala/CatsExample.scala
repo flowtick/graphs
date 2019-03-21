@@ -1,11 +1,11 @@
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.defaults.directed._
-import com.flowtick.graphs.cat._
+import com.flowtick.graphs.cat.instances._
 import cats.implicits._
 import cats.kernel.Monoid
 
-object CatsApp extends App {
-  implicit val monoid: Monoid[DefaultGraph[Edge[Unit, String], String, Unit]] = graphMonoid
+trait CatsExample {
+  implicit val monoid = Monoid[DefaultGraph[Edge[Unit, String], String, Unit]]
 
   val someGraph = defaultGraph.from(Set(
     n("1") --> n("2"),

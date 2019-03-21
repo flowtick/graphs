@@ -28,10 +28,6 @@ trait Labeled[E, L] {
   def label(edge: E): Option[L]
 }
 
-trait Empty[T] {
-  def empty: T
-}
-
 trait EdgeType[ET[_, _]] {
   def apply[V, N](
     value: V,
@@ -48,33 +44,31 @@ trait EdgeType[ET[_, _]] {
 trait Graph[G[_, _, _], ET[_, _]] {
   def value[V, N, M](graph: G[ET[V, N], N, M]): M
 
-  def edges[V, N, M](graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[ET[V, N]]
+  def edges[V, N, M](graph: G[ET[V, N], N, M]): Iterable[ET[V, N]]
 
-  def nodes[V, N, M](graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N]
+  def nodes[V, N, M](graph: G[ET[V, N], N, M]): Iterable[N]
 
-  def incoming[V, N, M](graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): scala.collection.Map[N, Iterable[ET[V, N]]]
+  def incoming[V, N, M](graph: G[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]]
 
-  def outgoing[V, N, M](graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): scala.collection.Map[N, Iterable[ET[V, N]]]
+  def outgoing[V, N, M](graph: G[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]]
 
   def predecessors[V, N, M](node: N, graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
-    incoming(graph).getOrElse(node, Iterable.empty).map(edgeType.head)
+    incoming(graph).getOrElse(node, Iterable.empty).view.map(edgeType.head)
 
   def successors[V, N, M](node: N, graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
-    outgoing(graph).getOrElse(node, Iterable.empty).map(edgeType.tail)
+    outgoing(graph).getOrElse(node, Iterable.empty).view.map(edgeType.tail)
 }
 // #graph
 
 trait GraphBuilder[G[_, _, _], ET[_, _]] {
-  def empty[V, N, M](implicit metaEmpty: Empty[M]): G[ET[V, N], N, M] = build[V, N, M](metaEmpty.empty, Iterable.empty, Iterable.empty, Map.empty, Map.empty)
+  def empty[V, N, M](meta: M): G[ET[V, N], N, M] = build[V, N, M](meta, Iterable.empty, Iterable.empty, Map.empty, Map.empty)
 
-  def withValue[V, N, M](value: M)(edges: Iterable[ET[V, N]], nodes: Iterable[N])(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): G[ET[V, N], N, M] =
+  def withValue[V, N, M](value: M)(edges: Iterable[ET[V, N]], nodes: Iterable[N])(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, M] =
     create(value, nodes, edges, None)
 
-  def of[V, N, M](value: M, nodes: Option[Iterable[N]] = None)(edges: ET[V, N]*)(implicit
-    edgeType: EdgeType[ET],
-    identifiable: Identifiable[N]): G[ET[V, N], N, M] = create(value, nodes.getOrElse(Iterable.empty), edges, None)
+  def of[V, N, M](value: M, nodes: Option[Iterable[N]] = None)(edges: ET[V, N]*)(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, M] = create(value, nodes.getOrElse(Iterable.empty), edges, None)
 
-  def from[V, N, M](edges: Iterable[ET[V, N]], nodes: Option[Iterable[N]] = None)(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): G[ET[V, N], N, Unit] =
+  def from[V, N, M](edges: Iterable[ET[V, N]], nodes: Option[Iterable[N]] = None)(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, Unit] =
     create((), nodes.getOrElse(Iterable.empty), edges, None)
 
   def build[V, N, M](
@@ -88,14 +82,14 @@ trait GraphBuilder[G[_, _, _], ET[_, _]] {
     value: M,
     nodes: Iterable[N],
     edges: Iterable[ET[V, N]],
-    ordering: Option[Ordering[ET[V, N]]] = None)(implicit edgeType: EdgeType[ET], identifiable: Identifiable[N]): G[ET[V, N], N, M] = {
+    ordering: Option[Ordering[ET[V, N]]] = None)(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, M] = {
     import scala.collection.mutable
 
     // order edges by ascending tail id, this is needed for stable algorithms
     implicit val edgeOrdering: Ordering[ET[V, N]] = ordering.getOrElse(new Ordering[ET[V, N]] {
       override def compare(x: ET[V, N], y: ET[V, N]): Int = {
-        val xid = identifiable.id(edgeType.head(x)) + identifiable.id(edgeType.tail(x))
-        val yid = identifiable.id(edgeType.head(y)) + identifiable.id(edgeType.tail(y))
+        val xid = edgeType.head(x).toString + edgeType.tail(x).toString
+        val yid = edgeType.head(y).toString + edgeType.tail(y).toString
 
         xid.compareTo(yid)
       }

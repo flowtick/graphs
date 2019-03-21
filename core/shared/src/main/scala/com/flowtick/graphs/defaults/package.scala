@@ -2,9 +2,8 @@ package com.flowtick.graphs
 
 package object defaults {
   // #default_graph
-  final case class Node[X](value: X, label: Option[String] = None)(implicit identifiable: Identifiable[X]) {
-    def id: String = identifiable.id(value)
-    override def toString: String = s"$id${label.map(" (" + _ + ")").getOrElse("")}"
+  final case class Node[X](value: X, label: Option[String] = None) {
+    override def toString: String = s"${value.toString}${label.map(" (" + _ + ")").getOrElse("")}"
   }
 
   /**
@@ -27,22 +26,26 @@ package object defaults {
     private[defaults] val outgoing: scala.collection.Map[N, Iterable[E]])
 
   final case class Edge[V, N](value: V, head: N, tail: N) {
-    override def toString: String = s"$head --> $tail[$value]"
+    override def toString: String = {
+      val valueString = if (value != Unit) s"[$value]" else ""
+
+      s"$head --> $tail$valueString"
+    }
   }
 
-  implicit def defaultGraph[G[_, _, _], ET[_, _]]: Graph[DefaultGraph, ET] with GraphBuilder[DefaultGraph, ET] = new Graph[DefaultGraph, ET] with GraphBuilder[DefaultGraph, ET] {
-    override def edges[V, N, M](graph: DefaultGraph[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[ET[V, N]] =
+  class DefaultGraphInstance[G[_, _, _], ET[_, _]] extends Graph[DefaultGraph, ET] with GraphBuilder[DefaultGraph, ET] {
+    override def edges[V, N, M](graph: DefaultGraph[ET[V, N], N, M]): Iterable[ET[V, N]] =
       graph.edges
 
     override def incoming[V, N, M](
-      graph: DefaultGraph[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): scala.collection.Map[N, Iterable[ET[V, N]]] =
+      graph: DefaultGraph[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]] =
       graph.incoming
 
     override def outgoing[V, N, M](
-      graph: DefaultGraph[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): scala.collection.Map[N, Iterable[ET[V, N]]] =
+      graph: DefaultGraph[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]] =
       graph.outgoing
 
-    override def nodes[V, N, M](graph: DefaultGraph[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
+    override def nodes[V, N, M](graph: DefaultGraph[ET[V, N], N, M]): Iterable[N] =
       graph.nodes
 
     override def build[V, N, M](
@@ -57,11 +60,9 @@ package object defaults {
 
   // #default_graph
 
-  def n[X](value: X, label: Option[String] = None)(implicit identifiable: Identifiable[X]) = Node[X](value, None)
+  def n[X](value: X, label: Option[String] = None) = Node[X](value, label)
 
-  implicit def identifiableNode[X]: Identifiable[Node[X]] = new Identifiable[Node[X]] {
-    override def id(node: Node[X]): String = node.id
-  }
+  implicit def defaultGraph[G[_, _, _], ET[_, _]] = new DefaultGraphInstance[G, ET]
 
   implicit def identifiableString[X]: Identifiable[String] = new Identifiable[String] {
     override def id(string: String): String = string
@@ -87,16 +88,8 @@ package object defaults {
     override def label(e: E[V, N]): Option[String] = labeled.label(edge.value(e))
   }
 
-  implicit def emptyUnit: Empty[Unit] = new Empty[Unit] {
-    override def empty: Unit = ()
-  }
-
-  implicit def emptyOption[T]: Empty[Option[T]] = new Empty[Option[T]] {
-    override def empty: Option[T] = None
-  }
-
   object directed {
-    implicit def edge: EdgeType[Edge] = new EdgeType[Edge] {
+    implicit object edge extends EdgeType[Edge] {
       override def apply[V, N](
         value: V,
         head: N,

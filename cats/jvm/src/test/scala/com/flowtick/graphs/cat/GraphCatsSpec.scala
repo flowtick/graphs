@@ -7,6 +7,8 @@ import com.flowtick.graphs.Identifiable
 import org.scalatest.{ FlatSpec, Matchers }
 
 class GraphCatsSpec extends FlatSpec with Matchers {
+  import com.flowtick.graphs.cat.instances._
+
   "Graph Monoid" should "combine graphs" in {
     type NumberNodeGraph = DefaultGraph[Edge[Unit, Int], Int, Unit]
 
