@@ -7,7 +7,7 @@ import scala.collection.mutable
 import scala.util._
 import scala.xml.{ Node, Text }
 
-class GraphMLImporter[G[_, _, _], ET[_, _]](implicit builder: GraphBuilder[G, ET], edge: EdgeType[ET], identifiable: Identifiable[GraphMLNode]) {
+class GraphMLImporter[G[_, _, _], ET[_, _]](implicit builder: GraphBuilder[G], edge: EdgeType[ET], identifiable: Identifiable[GraphMLNode]) {
   def fromXml(graphml: String): Either[Throwable, G[ET[GraphMLEdge, GraphMLNode], GraphMLNode, GraphMLGraph]] =
     XMLS.parse(graphml) match {
       case Right(rootElem) if rootElem.label.toLowerCase == "graphml" =>

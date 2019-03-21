@@ -17,7 +17,7 @@ object JGraphXLayouter extends GraphLayout {
     g: G[E[V, N], N, M],
     shape: N => Option[ShapeDefinition])(implicit
     identifiable: Identifiable[N],
-    graphType: Graph[G, E],
+    graphType: Graph[G],
     edgeType: EdgeType[E],
     edgeLabel: Labeled[E[V, N], String]): NodeLayout[N] = node => {
     new JGraphXLayout[G, E, V, N, M]().layout(g, shape)
@@ -42,7 +42,7 @@ final case class JGraphXCell(cell: mxCell) extends Cell {
 
 class JGraphXLayout[G[_, _, _], E[_, _], V, N, M](implicit
   identifiable: Identifiable[N],
-  graphType: Graph[G, E],
+  graphType: Graph[G],
   edgeType: EdgeType[E],
   edgeLabel: Labeled[E[V, N], String]) {
 

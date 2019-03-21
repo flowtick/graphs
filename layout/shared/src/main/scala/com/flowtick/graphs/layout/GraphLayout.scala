@@ -23,7 +23,7 @@ trait Cell {
 trait GraphLayout {
   def layout[G[_, _, _], E[_, _], V, N, M](g: G[E[V, N], N, M], shape: N => Option[ShapeDefinition])(implicit
     identifiable: Identifiable[N],
-    graphType: Graph[G, E],
+    graphType: Graph[G],
     edgeType: EdgeType[E],
     edgeLabel: Labeled[E[V, N], String]): NodeLayout[N]
 }
@@ -34,7 +34,7 @@ object GraphLayout {
   val none: GraphLayout = new GraphLayout {
     def layout[G[_, _, _], E[_, _], V, N, M](g: G[E[V, N], N, M], shape: N => Option[ShapeDefinition])(implicit
       identifiable: Identifiable[N],
-      graphType: Graph[G, E],
+      graphType: Graph[G],
       edgeType: EdgeType[E],
       edgeLabel: Labeled[E[V, N], String]): NodeLayout[N] = _ => None
   }

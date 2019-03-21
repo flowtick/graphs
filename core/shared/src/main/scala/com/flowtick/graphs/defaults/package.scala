@@ -33,36 +33,36 @@ package object defaults {
     }
   }
 
-  class DefaultGraphInstance[G[_, _, _], ET[_, _]] extends Graph[DefaultGraph, ET] with GraphBuilder[DefaultGraph, ET] {
-    override def edges[V, N, M](graph: DefaultGraph[ET[V, N], N, M]): Iterable[ET[V, N]] =
+  class DefaultGraphInstance[G[_, _, _]] extends Graph[DefaultGraph] with GraphBuilder[DefaultGraph] {
+    override def edges[ET[_, _], V, N, M](graph: DefaultGraph[ET[V, N], N, M]): Iterable[ET[V, N]] =
       graph.edges
 
-    override def incoming[V, N, M](
+    override def incoming[ET[_, _], V, N, M](
       graph: DefaultGraph[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]] =
       graph.incoming
 
-    override def outgoing[V, N, M](
+    override def outgoing[ET[_, _], V, N, M](
       graph: DefaultGraph[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]] =
       graph.outgoing
 
-    override def nodes[V, N, M](graph: DefaultGraph[ET[V, N], N, M]): Iterable[N] =
+    override def nodes[ET[_, _], V, N, M](graph: DefaultGraph[ET[V, N], N, M]): Iterable[N] =
       graph.nodes
 
-    override def build[V, N, M](
+    override def build[ET[_, _], V, N, M](
       value: M,
       edges: Iterable[ET[V, N]],
       nodes: Iterable[N],
       incoming: scala.collection.Map[N, Iterable[ET[V, N]]],
       outgoing: scala.collection.Map[N, Iterable[ET[V, N]]]): DefaultGraph[ET[V, N], N, M] = DefaultGraph(value, edges, nodes, incoming, outgoing)
 
-    override def value[V, N, M](graph: DefaultGraph[ET[V, N], N, M]): M = graph.value
+    override def value[ET[_, _], V, N, M](graph: DefaultGraph[ET[V, N], N, M]): M = graph.value
   }
 
   // #default_graph
 
   def n[X](value: X, label: Option[String] = None) = Node[X](value, label)
 
-  implicit def defaultGraph[G[_, _, _], ET[_, _]] = new DefaultGraphInstance[G, ET]
+  implicit def defaultGraph[G[_, _, _]] = new DefaultGraphInstance[G]
 
   implicit def identifiableString[X]: Identifiable[String] = new Identifiable[String] {
     override def id(string: String): String = string

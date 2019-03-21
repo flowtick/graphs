@@ -7,7 +7,7 @@ import com.flowtick.graphs.{ EdgeType, Graph, Identifiable, Labeled }
 trait GraphMLRendererExample {
   def layout: GraphLayout
 
-  def toXml[G[_, _, _], E[_, _], V, N, M](g: G[E[V, N], N, M])(implicit graph: Graph[G, E], edgeType: EdgeType[E], identifiable: Identifiable[N], edgeLabel: Labeled[E[V, N], String]): String = {
+  def toXml[G[_, _, _], E[_, _], V, N, M](g: G[E[V, N], N, M])(implicit graph: Graph[G], edgeType: EdgeType[E], identifiable: Identifiable[N], edgeLabel: Labeled[E[V, N], String]): String = {
     val graphXml = new GraphMLRenderer().render[G, E, V, N, M](
       g,
       layout,

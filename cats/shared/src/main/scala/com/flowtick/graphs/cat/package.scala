@@ -10,8 +10,8 @@ package object cat {
   }
 
   class GraphMonoid[G[_, _, _], E[_, _], V, N, M](implicit
-    graph: Graph[G, E],
-    builder: GraphBuilder[G, E],
+    graph: Graph[G],
+    builder: GraphBuilder[G],
     edge: EdgeType[E],
     metaMonoid: Monoid[M]) extends Monoid[G[E[V, N], N, M]] {
     override def empty: G[E[V, N], N, M] = builder.empty(metaMonoid.empty)
@@ -29,20 +29,20 @@ package object cat {
   }
 
   class GraphNodeFunctor[G[_, _, _], E[_, _], V, N, M](implicit
-    graph: Graph[G, E],
-    builder: GraphBuilder[G, E],
+    graph: Graph[G],
+    builder: GraphBuilder[G],
     edge: EdgeType[E],
     identifiable: Identifiable[N],
     edgeNodeFunctor: Functor[({ type f[x] = E[V, x] })#f]) extends Functor[({ type f[x] = G[E[V, x], x, M] })#f] {
     override def map[A, B](fa: G[E[V, A], A, M])(f: A => B): G[E[V, B], B, M] = {
       builder.build(
         graph.value(fa),
-        graph.edges[V, A, M](fa).map(edgeNodeFunctor.map(_)(f)),
-        graph.nodes[V, A, M](fa).map(f),
-        graph.incoming[V, A, M](fa).map {
+        graph.edges[E, V, A, M](fa).map(edgeNodeFunctor.map(_)(f)),
+        graph.nodes[E, V, A, M](fa).map(f),
+        graph.incoming[E, V, A, M](fa).map {
           case (node, incoming) => (f(node), incoming.map(edgeNodeFunctor.map(_)(f)))
         },
-        graph.outgoing[V, A, M](fa).map {
+        graph.outgoing[E, V, A, M](fa).map {
           case (node, outgoing) => (f(node), outgoing.map(edgeNodeFunctor.map(_)(f)))
         })
     }
@@ -50,15 +50,15 @@ package object cat {
 
   trait GraphInstances {
     implicit def graphMonoid[G[_, _, _], E[_, _], V, N, M](implicit
-      graph: Graph[G, E],
-      builder: GraphBuilder[G, E],
+      graph: Graph[G],
+      builder: GraphBuilder[G],
       edge: EdgeType[E],
       identifiable: Identifiable[N],
       metaMonoid: Monoid[M]) = new GraphMonoid[G, E, V, N, M]
 
     implicit def graphNodeFunctor[G[_, _, _], E[_, _], V, N, M](implicit
-      graph: Graph[G, E],
-      builder: GraphBuilder[G, E],
+      graph: Graph[G],
+      builder: GraphBuilder[G],
       edge: EdgeType[E],
       identifiable: Identifiable[N],
       edgeNodeFunctor: Functor[({ type f[x] = E[V, x] })#f]) = new GraphNodeFunctor[G, E, V, N, M]

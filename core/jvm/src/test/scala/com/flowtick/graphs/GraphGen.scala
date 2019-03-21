@@ -12,8 +12,8 @@ object GraphGen {
   }
 
   def graphGen[G[_, _, _], ET[_, _], V, N, M](implicit
-    graph: Graph[G, ET],
-    builder: GraphBuilder[G, ET],
+    graph: Graph[G],
+    builder: GraphBuilder[G],
     edge: EdgeType[ET],
     identifiable: Identifiable[N],
     metaGen: Gen[M],
