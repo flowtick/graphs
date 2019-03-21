@@ -1,6 +1,6 @@
-import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.defaults.directed._
+import com.flowtick.graphs.algorithm._
 
 object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
@@ -20,7 +20,7 @@ object DijkstraGraph {
   // #cities
 }
 
-object DijkstraApp extends App {
+trait DijkstraExample {
   println(DijkstraGraph.cities.shortestPath("Frankfurt", "Muenchen"))
   // ListBuffer(Frankfurt --> Wuerzburg[217], Wuerzburg --> Nuernberg[103], Nuernberg --> Muenchen[167])
 }

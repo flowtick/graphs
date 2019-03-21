@@ -2,7 +2,7 @@ import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.defaults.directed._
 import com.flowtick.graphs.algorithm._
 
-object TopologicalSortingApp extends App {
+trait TopologicalSortingExample {
   lazy val graph = defaultGraph.from(Set(
     n("A") --> n("B"),
     n("B") --> n("C"),

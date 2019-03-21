@@ -2,7 +2,7 @@ import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.defaults.directed._
 
-object BfsApp extends App {
+trait BfsExample {
   val graph = defaultGraph.from(Set(
     n("A") --> n("D"),
     n("A") --> n("C"),

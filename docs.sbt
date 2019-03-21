@@ -12,7 +12,7 @@ mappings in makeSite ++= Seq(
 
 paradoxMaterialTheme in Paradox := {
   ParadoxMaterialTheme()
-    .withColor("light-blue", "light-blue")
+    .withColor("green", "green")
     .withCopyright("© graphs contributors")
     .withRepository(uri("https://github.com/flowtick/graphs"))
     .withFont("Source Sans Pro", "Iosevka")

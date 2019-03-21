@@ -10,7 +10,7 @@ libraryDependencies += "com.flowtick" %% "graphs-graphml" % "$version$"
 ```
 @@@
 
-@@snip [SimpleGraphApp.scala](../examples/src/main/scala/GraphMLRendererApp.scala)
+@@snip [SimpleGraphApp.scala](../examples/shared/src/main/scala/GraphMLRendererExample.scala)
 
 This format is used by the [yed editor](https://www.yworks.com/products/yed), so graphs can be edited and 
 layouted there.

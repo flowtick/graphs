@@ -6,7 +6,7 @@ relation between this objects.
 `graphs` has a default implementation of a graph that you can use with arbitrary node types.
 Using this default implementation, you can instantly start creating simple graphs:
 
-@@snip [SimpleGraphApp.scala](../examples/src/main/scala/SimpleGraphApp.scala)
+@@snip [SimpleGraphApp.scala](../examples/shared/src/main/scala/SimpleGraphExample.scala)
 
 Edges can also have values associated with them, for example a 
 distance between nodes that represent locations. 
@@ -14,7 +14,7 @@ distance between nodes that represent locations.
 Numeric edge values can be used in algorithms like Dijkstras 
 algorithm to find the shortest path between two nodes.
 
-@@snip [SimpleGraphApp.scala](../examples/src/main/scala/DijkstraApp.scala){ #cities }
+@@snip [SimpleGraphApp.scala](../examples/shared/src/main/scala/DijkstraExample.scala){ #cities }
 
 ## Core Types
 
@@ -43,7 +43,7 @@ In the methods of the type-class you see how the type parameters are applied to 
 Since the graph type itself is parametrized, you can just plug in your types. 
 You only need to define how nodes can be identified:
 
-@@snip [CustomGraphApp.scala](../examples/src/main/scala/CustomGraphApp.scala){#custom_graph}
+@@snip [CustomGraphApp.scala](../examples/shared/src/main/scala/CustomGraphExample.scala){#custom_graph}
 
 ### Default Graph
 
