@@ -14,22 +14,21 @@ object GraphsJs {
   @JSExport
   def createView(
     containerElementId: String,
-    graph: DefaultGraph[Edge[JsEdge, JsNode], JsNode, JsGraph]): js.UndefOr[MxGraph] = {
+    graph: DefaultGraph[JsEdge, JsNode, JsGraph]): js.UndefOr[MxGraph] = {
     val container = org.scalajs.dom.window.document.getElementById(containerElementId)
 
     MxGraphView.create(container, graph)(
       implicitly[Graph[DefaultGraph]],
-      implicitly[EdgeType[Edge]],
       implicitly[Identifiable[JsNode]],
       implicitly[Labeled[Edge[JsEdge, JsNode], String]])
   }
 
   @JSExport
-  def toGraph(mxGraph: MxGraph): DefaultGraph[Edge[JsEdge, JsNode], JsNode, JsGraph] =
-    MxGraphView.toGraph[DefaultGraph, Edge](JsGraph(None), mxGraph)
+  def toGraph(mxGraph: MxGraph): DefaultGraph[JsEdge, JsNode, JsGraph] =
+    MxGraphView.toGraph[DefaultGraph](JsGraph(None), mxGraph)
 
   @JSExport
-  def exampleGraph: DefaultGraph[Edge[JsEdge, JsNode], JsNode, JsGraph] = defaultGraph.withValue(JsGraph(Some("example")))(Seq(
+  def exampleGraph: DefaultGraph[JsEdge, JsNode, JsGraph] = directedGraph.withValue(JsGraph(Some("example")))(Seq(
     n(JsNode("A")) --> (JsEdge(None, None), n(JsNode("B")))), Iterable.empty)
 
   def main(args: Array[String]): Unit = {

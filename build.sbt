@@ -98,7 +98,7 @@ lazy val graphml = (crossProject in file(".") / "graphml")
     libraryDependencies ++= Seq(
       "com.flowtick" %%% "xmls" % xmlsV
     )
-  ).dependsOn(core, layout)
+  ).dependsOn(core, layout, cats)
 
 lazy val graphmlJS = graphml.js
 lazy val graphmlJVM = graphml.jvm

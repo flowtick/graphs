@@ -1,12 +1,12 @@
 package com.flowtick.graphs.algorithm
 
-import com.flowtick.graphs.{ EdgeType, Graph }
+import com.flowtick.graphs.{ Edge, Graph }
 
 import scala.collection.mutable
 
-class DepthFirstSearch[G[_, _, _], E[_, _], V, N, M](
+class DepthFirstSearch[G[_, _, _], V, N, M](
   initialNodes: Iterable[N],
-  graph: G[E[V, N], N, M])(implicit graphType: Graph[G], edgeType: EdgeType[E]) extends Traversal[N] {
+  graph: G[V, N, M])(implicit graphType: Graph[G]) extends Traversal[N] {
   override def run: Seq[N] = {
     val visited = mutable.Map[N, Boolean]()
     val visitedList = mutable.ListBuffer[N]()

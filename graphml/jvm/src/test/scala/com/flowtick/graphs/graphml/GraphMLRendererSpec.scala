@@ -9,7 +9,7 @@ import scala.xml.Elem
 
 class GraphMLRendererSpec extends FlatSpec with Matchers {
   "GraphRenderer" should "render default graph" in new GraphMLRenderer {
-    val newGraph = defaultGraph.from(Set(n("A") --> n("B")))
+    val newGraph = directedGraph.from(Set(n("A") --> n("B")))
 
     val xml: Elem = render(newGraph, JGraphXLayouter)
 

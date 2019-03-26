@@ -1,14 +1,41 @@
 package com.flowtick.graphs.graphml
 
-import com.flowtick.graphs.{ EdgeType, GraphBuilder, Identifiable }
+import com.flowtick.graphs.{ Edge, GraphBuilder, Identifiable }
 import xmls.XMLS
 
 import scala.collection.mutable
 import scala.util._
 import scala.xml.{ Node, Text }
 
-class GraphMLImporter[G[_, _, _], ET[_, _]](implicit builder: GraphBuilder[G], edge: EdgeType[ET], identifiable: Identifiable[GraphMLNode]) {
-  def fromXml(graphml: String): Either[Throwable, G[ET[GraphMLEdge, GraphMLNode], GraphMLNode, GraphMLGraph]] =
+object GraphMLImporter {
+  def fromXml[G[_, _, _], V, N](graphml: String)(implicit
+    builder: GraphBuilder[G],
+    identifiable: Identifiable[GraphMLNode[N]]): Either[Throwable, G[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph]] = {
+    def parseGraphNode(graphNode: scala.xml.Node, keys: Seq[GraphMLKey]): G[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph] = {
+      val edgeXmlNodes = new mutable.ListBuffer[scala.xml.Node]()
+      val nodes: mutable.Map[String, GraphMLNode[N]] = parseGraphNodes(graphNode, keys, edgeXmlNodes)
+
+      val edges: mutable.Seq[Edge[GraphMLEdge[V], GraphMLNode[N]]] = edgeXmlNodes.flatMap { edgeNode =>
+        val edgeId = singleAttributeValue("id", edgeNode).getOrElse("edge")
+
+        for {
+          source <- singleAttributeValue("source", edgeNode)
+          target <- singleAttributeValue("target", edgeNode)
+          sourceNode <- nodes.get(source)
+          targetNode <- nodes.get(target)
+        } yield {
+          val properties = parseProperties(edgeNode, keys)
+          Edge[GraphMLEdge[V], GraphMLNode[N]](GraphMLEdge(
+            edgeId,
+            ???,
+            extractEdgeLabel(properties),
+            properties), sourceNode, targetNode)
+        }
+      }
+
+      builder.withValue(GraphMLGraph(id = singleAttributeValue("id", graphNode)))(edges, nodes.values)
+    }
+
     XMLS.parse(graphml) match {
       case Right(rootElem) if rootElem.label.toLowerCase == "graphml" =>
         rootElem.child.find(_.label.toLowerCase == "graph") match {
@@ -18,6 +45,7 @@ class GraphMLImporter[G[_, _, _], ET[_, _]](implicit builder: GraphBuilder[G], e
       case Right(nonGraphMl) => Left(new IllegalArgumentException(s"parsed elem is not a graphml element: $nonGraphMl"))
       case Left(error) => Left(error)
     }
+  }
 
   protected def singleAttributeValue(attributeName: String, node: scala.xml.Node): Option[String] = {
     node.attribute(attributeName).getOrElse(Seq.empty).headOption.map(_.text)
@@ -56,41 +84,17 @@ class GraphMLImporter[G[_, _, _], ET[_, _]](implicit builder: GraphBuilder[G], e
     }
   }
 
-  protected def parseGraphNode(graphNode: scala.xml.Node, keys: Seq[GraphMLKey]): G[ET[GraphMLEdge, GraphMLNode], GraphMLNode, GraphMLGraph] = {
-    val edgeXmlNodes = new mutable.ListBuffer[scala.xml.Node]()
-    val nodes: mutable.Map[String, GraphMLNode] = parseGraphNodes(graphNode, keys, edgeXmlNodes)
-
-    val edges: mutable.Seq[ET[GraphMLEdge, GraphMLNode]] = edgeXmlNodes.flatMap { edgeNode =>
-      val edgeId = singleAttributeValue("id", edgeNode).getOrElse("edge")
-
-      for {
-        source <- singleAttributeValue("source", edgeNode)
-        target <- singleAttributeValue("target", edgeNode)
-        sourceNode <- nodes.get(source)
-        targetNode <- nodes.get(target)
-      } yield {
-        val properties = parseProperties(edgeNode, keys)
-        edge.apply[GraphMLEdge, GraphMLNode](GraphMLEdge(
-          edgeId,
-          extractEdgeLabel(properties),
-          properties), sourceNode, targetNode)
-      }
-    }
-
-    builder.withValue(GraphMLGraph(id = singleAttributeValue("id", graphNode)))(edges, nodes.values)
-  }
-
-  protected def parseGraphNodes(
+  protected def parseGraphNodes[N](
     graphNode: scala.xml.Node,
     keys: Seq[GraphMLKey],
-    edgeXmlNodes: mutable.ListBuffer[scala.xml.Node]): mutable.HashMap[String, GraphMLNode] = {
-    val nodes = new mutable.HashMap[String, GraphMLNode]()
+    edgeXmlNodes: mutable.ListBuffer[scala.xml.Node]): mutable.HashMap[String, GraphMLNode[N]] = {
+    val nodes = new mutable.HashMap[String, GraphMLNode[N]]()
 
     graphNode.child.zipWithIndex.foreach {
       case (node: scala.xml.Node, _: Int) if node.label == "node" =>
         val id = singleAttributeValue("id", node).getOrElse(node.label)
         val nodeProperties = parseProperties(node, keys)
-        val graphNode = GraphMLNode(id, extractNodeLabel(nodeProperties), nodeProperties)
+        val graphNode = GraphMLNode[N](id, ???, extractNodeLabel(nodeProperties), nodeProperties)
         nodes.put(id, graphNode)
 
         node.child.foreach {

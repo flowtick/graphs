@@ -3,7 +3,7 @@ package com.flowtick.graphs
 /**
  * Type class to define an identifier for a node type as string.
  *
- * Mainly used for serialisation purposes
+ * Similar to the Show type class but mainly used for serialisation purposes
  *
  * @tparam T the node type
  */
@@ -28,92 +28,80 @@ trait Labeled[E, L] {
   def label(edge: E): Option[L]
 }
 
-trait EdgeType[ET[_, _]] {
-  def apply[V, N](
-    value: V,
-    head: N,
-    tail: N): ET[V, N]
+final case class Edge[V, N](value: V, head: N, tail: N) {
+  override def toString: String = {
+    val valueString = if (value != Unit) s"[$value]" else ""
 
-  def value[V, N](edge: ET[V, N]): V
-
-  def head[V, N](edge: ET[V, N]): N
-  def tail[V, N](edge: ET[V, N]): N
+    s"$head --> $tail$valueString"
+  }
 }
 
 // #graph
 trait Graph[G[_, _, _]] {
-  def value[ET[_, _], V, N, M](graph: G[ET[V, N], N, M]): M
+  def value[V, N, M](graph: G[V, N, M]): M
 
-  def edges[ET[_, _], V, N, M](graph: G[ET[V, N], N, M]): Iterable[ET[V, N]]
+  def edges[V, N, M](graph: G[V, N, M]): Iterable[Edge[V, N]]
 
-  def nodes[ET[_, _], V, N, M](graph: G[ET[V, N], N, M]): Iterable[N]
+  def nodes[V, N, M](graph: G[V, N, M]): Iterable[N]
 
-  def incoming[ET[_, _], V, N, M](graph: G[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]]
+  def incoming[V, N, M](graph: G[V, N, M]): scala.collection.Map[N, Iterable[Edge[V, N]]]
 
-  def outgoing[ET[_, _], V, N, M](graph: G[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]]
+  def outgoing[V, N, M](graph: G[V, N, M]): scala.collection.Map[N, Iterable[Edge[V, N]]]
 
-  def predecessors[ET[_, _], V, N, M](node: N, graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
-    incoming(graph).getOrElse(node, Iterable.empty).view.map(edgeType.head)
+  def predecessors[V, N, M](node: N, graph: G[V, N, M]): Iterable[N] =
+    incoming(graph).getOrElse(node, Iterable.empty).view.map(_.head)
 
-  def successors[ET[_, _], V, N, M](node: N, graph: G[ET[V, N], N, M])(implicit edgeType: EdgeType[ET]): Iterable[N] =
-    outgoing(graph).getOrElse(node, Iterable.empty).view.map(edgeType.tail)
+  def successors[V, N, M](node: N, graph: G[V, N, M]): Iterable[N] =
+    outgoing(graph).getOrElse(node, Iterable.empty).view.map(_.tail)
 }
 // #graph
 
 trait GraphBuilder[G[_, _, _]] {
-  def empty[ET[_, _], V, N, M](meta: M): G[ET[V, N], N, M] = build[ET, V, N, M](meta, Iterable.empty, Iterable.empty, Map.empty, Map.empty)
+  def empty[V, N, M](meta: M): G[V, N, M] = build[V, N, M](meta, Iterable.empty, Iterable.empty, Map.empty, Map.empty)
 
-  def withValue[ET[_, _], V, N, M](value: M)(edges: Iterable[ET[V, N]], nodes: Iterable[N])(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, M] =
+  def withValue[V, N, M](value: M)(edges: Iterable[Edge[V, N]], nodes: Iterable[N]): G[V, N, M] =
     create(value, nodes, edges, None)
 
-  def of[ET[_, _], V, N, M](value: M, nodes: Option[Iterable[N]] = None)(edges: ET[V, N]*)(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, M] = create(value, nodes.getOrElse(Iterable.empty), edges, None)
+  def of[V, N, M](value: M, nodes: Option[Iterable[N]] = None)(edges: Edge[V, N]*): G[V, N, M] =
+    create(value, nodes.getOrElse(Iterable.empty), edges, None)
 
-  def from[ET[_, _], V, N, M](edges: Iterable[ET[V, N]], nodes: Option[Iterable[N]] = None)(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, Unit] =
+  def from[V, N, M](edges: Iterable[Edge[V, N]], nodes: Option[Iterable[N]] = None): G[V, N, Unit] =
     create((), nodes.getOrElse(Iterable.empty), edges, None)
 
-  def build[ET[_, _], V, N, M](
+  def build[V, N, M](
     value: M,
-    edges: Iterable[ET[V, N]],
+    edges: Iterable[Edge[V, N]],
     nodes: Iterable[N],
-    incoming: scala.collection.Map[N, Iterable[ET[V, N]]],
-    outgoing: scala.collection.Map[N, Iterable[ET[V, N]]]): G[ET[V, N], N, M]
+    incoming: scala.collection.Map[N, Iterable[Edge[V, N]]],
+    outgoing: scala.collection.Map[N, Iterable[Edge[V, N]]]): G[V, N, M]
 
-  def create[ET[_, _], V, N, M](
+  def ordering[V, N]: Ordering[Edge[V, N]]
+
+  def create[V, N, M](
     value: M,
     nodes: Iterable[N],
-    edges: Iterable[ET[V, N]],
-    ordering: Option[Ordering[ET[V, N]]] = None)(implicit edgeType: EdgeType[ET]): G[ET[V, N], N, M] = {
+    edges: Iterable[Edge[V, N]],
+    customOrdering: Option[Ordering[Edge[V, N]]] = None): G[V, N, M] = {
     import scala.collection.mutable
 
     // order edges by ascending tail id, this is needed for stable algorithms
-    implicit val edgeOrdering: Ordering[ET[V, N]] = ordering.getOrElse(new Ordering[ET[V, N]] {
-      override def compare(x: ET[V, N], y: ET[V, N]): Int = {
-        val xid = edgeType.head(x).toString + edgeType.tail(x).toString
-        val yid = edgeType.head(y).toString + edgeType.tail(y).toString
+    implicit val edgeOrdering: Ordering[Edge[V, N]] = customOrdering.getOrElse(ordering)
 
-        xid.compareTo(yid)
-      }
-    })
-
-    val incoming: mutable.HashMap[N, mutable.ListBuffer[ET[V, N]]] = mutable.HashMap[N, mutable.ListBuffer[ET[V, N]]]()
-    val outgoing: mutable.HashMap[N, mutable.ListBuffer[ET[V, N]]] = mutable.HashMap[N, mutable.ListBuffer[ET[V, N]]]()
+    val incoming: mutable.HashMap[N, mutable.ListBuffer[Edge[V, N]]] = mutable.HashMap[N, mutable.ListBuffer[Edge[V, N]]]()
+    val outgoing: mutable.HashMap[N, mutable.ListBuffer[Edge[V, N]]] = mutable.HashMap[N, mutable.ListBuffer[Edge[V, N]]]()
 
     val nodes = mutable.HashSet[N]()
 
     edges.foreach { edge =>
-      val head = edgeType.head(edge)
+      val head = edge.head
       outgoing.put(head, outgoing.getOrElse(head, mutable.ListBuffer.empty) += edge)
       nodes += head
 
-      val tail = edgeType.tail(edge)
+      val tail = edge.tail
       incoming.put(tail, incoming.getOrElse(tail, mutable.ListBuffer.empty) += edge)
       nodes += tail
     }
 
     build(value, edges, nodes, incoming, outgoing)
   }
-}
-
-object Graph {
-  def apply[G[_, _, _]](implicit graph: Graph[G]): Graph[G] = graph
 }

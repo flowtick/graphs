@@ -3,7 +3,7 @@ package com.flowtick.graphs.layout
 import java.util
 
 import com.flowtick.graphs.layout.GraphLayout.NodeLayout
-import com.flowtick.graphs.{ EdgeType, Graph, Identifiable, Labeled }
+import com.flowtick.graphs.{ Edge, Graph, Identifiable, Labeled }
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
 import com.mxgraph.model.{ mxCell, mxGeometry, mxGraphModel }
 import com.mxgraph.view.mxGraph
@@ -13,14 +13,13 @@ import scala.collection.mutable
 
 object JGraphXLayouter extends GraphLayout {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
-  override def layout[G[_, _, _], E[_, _], V, N, M](
-    g: G[E[V, N], N, M],
+  override def layout[G[_, _, _], V, N, M](
+    g: G[V, N, M],
     shape: N => Option[ShapeDefinition])(implicit
     identifiable: Identifiable[N],
     graphType: Graph[G],
-    edgeType: EdgeType[E],
-    edgeLabel: Labeled[E[V, N], String]): NodeLayout[N] = node => {
-    new JGraphXLayout[G, E, V, N, M]().layout(g, shape)
+    edgeLabel: Labeled[Edge[V, N], String]): NodeLayout[N] = node => {
+    new JGraphXLayout[G, V, N, M]().layout(g, shape)
       .getModel.asInstanceOf[mxGraphModel]
       .getCells.asScala.mapValues(cell => JGraphXCell(cell.asInstanceOf[mxCell])).get(identifiable.id(node))
   }
@@ -40,13 +39,12 @@ final case class JGraphXCell(cell: mxCell) extends Cell {
   override def geometry: Geometry = JGraphGeometry(cell.getGeometry)
 }
 
-class JGraphXLayout[G[_, _, _], E[_, _], V, N, M](implicit
+class JGraphXLayout[G[_, _, _], V, N, M](implicit
   identifiable: Identifiable[N],
   graphType: Graph[G],
-  edgeType: EdgeType[E],
-  edgeLabel: Labeled[E[V, N], String]) {
+  edgeLabel: Labeled[Edge[V, N], String]) {
 
-  def layout(graph: G[E[V, N], N, M], shapeDefinition: N => Option[ShapeDefinition]): mxGraph = {
+  def layout(graph: G[V, N, M], shapeDefinition: N => Option[ShapeDefinition]): mxGraph = {
     val layoutGraph = graphToMxGraph(graph, shapeDefinition)
 
     new mxHierarchicalLayout(layoutGraph).execute(layoutGraph.getDefaultParent)
@@ -54,7 +52,7 @@ class JGraphXLayout[G[_, _, _], E[_, _], V, N, M](implicit
   }
 
   @SuppressWarnings(Array("org.wartremover.warts.Null"))
-  private def graphToMxGraph(graph: G[E[V, N], N, M], shapeSpec: N => Option[ShapeDefinition]): mxGraph = {
+  private def graphToMxGraph(graph: G[V, N, M], shapeSpec: N => Option[ShapeDefinition]): mxGraph = {
     val mxGraph = new mxGraph
     mxGraph.getModel.beginUpdate()
 
@@ -92,9 +90,9 @@ class JGraphXLayout[G[_, _, _], E[_, _], V, N, M](implicit
       mxGraph.setCellStyle(id, Array[AnyRef](vertex))
     }
 
-    graphType.edges(graph).foreach { edge: E[V, N] =>
-      val sourceId = identifiable.id(edgeType.head(edge))
-      val targetId = identifiable.id(edgeType.tail(edge))
+    graphType.edges(graph).foreach { edge: Edge[V, N] =>
+      val sourceId = identifiable.id(edge.head)
+      val targetId = identifiable.id(edge.tail)
       val edgeId = s"$sourceId-$targetId"
 
       mxGraph.insertEdge(

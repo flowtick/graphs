@@ -8,7 +8,7 @@ import org.scalatest.{ FlatSpec, Matchers }
 class DepthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
   "Dfs" should "traverse in depth first manner" in {
 
-    val graph = defaultGraph.from(Seq(
+    val graph = directedGraph.from(Seq(
       n("1") --> n("2"),
       n("1") --> n("3"),
 

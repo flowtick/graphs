@@ -10,11 +10,11 @@ import scala.xml.Elem
 
 class JsGraphMLImportSpec extends FlatSpec with Matchers {
   "GraphRenderer" should "import graph from XML" in new GraphMLRenderer {
-    val graph = defaultGraph.from(Seq(
+    val graph = directedGraph.from(Seq(
       n("A") --> n("B")))
 
     val xml: Elem = render(graph, GraphLayout.none)
 
-    new GraphMLImporter[DefaultGraph, Edge]().fromXml(xml.toString).isRight should be(true)
+    GraphMLImporter.fromXml[DefaultGraph, Unit, String](xml.toString).isRight should be(true)
   }
 }

@@ -1,5 +1,6 @@
 package com.flowtick.graphs.graphml
 
+import com.flowtick.graphs.Edge
 import com.flowtick.graphs.layout.JGraphXLayouter
 import org.scalatest.{ FlatSpec, Matchers }
 import com.flowtick.graphs.defaults._
@@ -7,19 +8,22 @@ import com.flowtick.graphs.defaults.directed._
 
 import scala.xml.Elem
 
+case class FooNode(foo: String)
+
 class GraphMLImporterSpec extends FlatSpec with Matchers {
   "GraphML Importer" should "import rendered XML" in {
-    val testEdge = n(graphMlNode("A", nodeProperty("foo", "bar", typeHint = Option("string")))) -->
-      n(graphMlNode("B"))
+    val testEdge: Edge[Unit, GraphMLNode[Option[FooNode]]] =
+      n(graphMlNode("A", Option(FooNode("bar")))) --> n(graphMlNode("B", None))
 
-    val testGraph = defaultGraph.from(Seq(
+    val testGraph = directedGraph.from(Seq(
       testEdge))
     val xml: Elem = new GraphMLRenderer().render(testGraph, JGraphXLayouter)
 
-    val imported: Either[Throwable, DefaultGraph[Edge[GraphMLEdge, GraphMLNode], GraphMLNode, GraphMLGraph]] = new GraphMLImporter[DefaultGraph, Edge]().fromXml(xml.toString)
+    val imported: Either[Throwable, DefaultGraph[GraphMLEdge[Unit], GraphMLNode[Option[FooNode]], GraphMLGraph]] =
+      GraphMLImporter.fromXml[DefaultGraph, Unit, Option[FooNode]](xml.toString)
 
     imported.right.foreach { graphml =>
-      val importedNodes = defaultGraph.nodes(graphml).toList.sortBy(_.id)
+      val importedNodes = directedGraph.nodes(graphml).toList.sortBy(_.id)
       importedNodes should have size 2
 
       importedNodes.headOption match {
@@ -36,7 +40,7 @@ class GraphMLImporterSpec extends FlatSpec with Matchers {
           bNode.properties.get("graphics") should be(defined)
       }
 
-      val importedEdges = defaultGraph.edges(graphml)
+      val importedEdges = directedGraph.edges(graphml)
       importedEdges should have size 1
       importedEdges.headOption match {
         case Some(edge) =>
@@ -50,17 +54,17 @@ class GraphMLImporterSpec extends FlatSpec with Matchers {
 
   it should "import xml created by yed with node and edge properties" in {
     val cities = io.Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("yed-cities.graphml"))
-    val imported = new GraphMLImporter[DefaultGraph, Edge]().fromXml(cities.getLines().mkString)
+    val imported = GraphMLImporter.fromXml[DefaultGraph, Double, String](cities.getLines().mkString)
     imported.right.toOption match {
       case Some(graphml) =>
-        defaultGraph.nodes(graphml).find(_.id == "n0") match {
+        directedGraph.nodes(graphml).find(_.id == "n0") match {
           case Some(n0) =>
             n0.id should be("n0")
             n0.label should be(Some("Karlsruhe"))
           case _ => fail("unable to find node n0")
         }
 
-        defaultGraph.edges(graphml).map(_.value).find(_.id == "e1") match {
+        directedGraph.edges(graphml).map(_.value).find(_.id == "e1") match {
           case Some(e1) =>
             e1.properties.get("d7") should be(Some(GraphMLProperty(GraphMLKey("d7", Some("Property 1"), Some("string"), Some("edge"), None), "test")))
             e1.label should be(Some("42"))

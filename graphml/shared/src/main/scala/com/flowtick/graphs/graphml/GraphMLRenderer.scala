@@ -1,19 +1,19 @@
 package com.flowtick.graphs.graphml
 
 import com.flowtick.graphs.layout.{ DefaultGeometry, GraphLayout, ShapeDefinition }
-import com.flowtick.graphs.{ EdgeType, Graph, Identifiable, Labeled }
+import com.flowtick.graphs.{ Edge, Graph, Identifiable, Labeled }
 
 import scala.xml.{ Elem, Text }
 
 class GraphMLRenderer {
-  def render[G[_, _, _], E[_, _], V, N, M](
-    g: G[E[V, N], N, M],
+  def render[G[_, _, _], V, N, M](
+    g: G[V, N, M],
     layouter: GraphLayout,
-    shapeDefinition: N => Option[ShapeDefinition] = (_: N) => None)(implicit graph: Graph[G], edgeType: EdgeType[E], identifiable: Identifiable[N], edgeLabel: Labeled[E[V, N], String]): Elem = {
-    val layout = layouter.layout[G, E, V, N, M](g, shapeDefinition)
+    shapeDefinition: N => Option[ShapeDefinition] = (_: N) => None)(implicit graph: Graph[G], identifiable: Identifiable[N], edgeLabel: Labeled[Edge[V, N], String]): Elem = {
+    val layout = layouter.layout[G, V, N, M](g, shapeDefinition)
 
     def nodeProperties(aNode: N): Map[String, GraphMLProperty] = (aNode match {
-      case GraphMLNode(_, _, properties) => properties
+      case GraphMLNode(_, _, _, properties) => properties
       case _ => Map.empty[String, GraphMLProperty]
     }) + ("graphics" -> nodeGraphicsProperty(aNode, identifiable.id(aNode), shapeDefinition(aNode)))
 
@@ -71,8 +71,8 @@ class GraphMLRenderer {
 
     def edgesXml = {
       graph.edges(g).flatMap { edge =>
-        val source = edgeType.head(edge)
-        val target = edgeType.tail(edge)
+        val source = edge.head
+        val target = edge.tail
         <edge id={ identifiable.id(source) + "-" + identifiable.id(target) } source={ identifiable.id(source) } target={ identifiable.id(target) }/>
       }
     }

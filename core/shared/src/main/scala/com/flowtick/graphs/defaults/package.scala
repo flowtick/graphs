@@ -18,51 +18,68 @@ package object defaults {
    * @tparam E
    * @tparam N
    */
-  final case class DefaultGraph[E, N, M](
+  final case class DefaultGraph[V, N, M](
     private[defaults] val value: M,
-    private[defaults] val edges: Iterable[E],
+    private[defaults] val edges: Iterable[Edge[V, N]],
     private[defaults] val nodes: Iterable[N],
-    private[defaults] val incoming: scala.collection.Map[N, Iterable[E]],
-    private[defaults] val outgoing: scala.collection.Map[N, Iterable[E]])
+    private[defaults] val incoming: scala.collection.Map[N, Iterable[Edge[V, N]]],
+    private[defaults] val outgoing: scala.collection.Map[N, Iterable[Edge[V, N]]])
 
-  final case class Edge[V, N](value: V, head: N, tail: N) {
-    override def toString: String = {
-      val valueString = if (value != Unit) s"[$value]" else ""
+  private[defaults] class DefaultOrdering[V, N] extends Ordering[Edge[V, N]] {
+    override def compare(x: Edge[V, N], y: Edge[V, N]): Int = {
+      val xid = x.head.toString + x.tail.toString
+      val yid = y.head.toString + y.tail.toString
 
-      s"$head --> $tail$valueString"
+      xid.compareTo(yid)
     }
   }
 
-  class DefaultGraphInstance[G[_, _, _]] extends Graph[DefaultGraph] with GraphBuilder[DefaultGraph] {
-    override def edges[ET[_, _], V, N, M](graph: DefaultGraph[ET[V, N], N, M]): Iterable[ET[V, N]] =
+  private[defaults] trait DefaultGraphBase extends Graph[DefaultGraph] with GraphBuilder[DefaultGraph] {
+    override def edges[V, N, M](graph: DefaultGraph[V, N, M]): Iterable[Edge[V, N]] =
       graph.edges
 
-    override def incoming[ET[_, _], V, N, M](
-      graph: DefaultGraph[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]] =
+    override def incoming[V, N, M](
+      graph: DefaultGraph[V, N, M]): scala.collection.Map[N, Iterable[Edge[V, N]]] =
       graph.incoming
 
-    override def outgoing[ET[_, _], V, N, M](
-      graph: DefaultGraph[ET[V, N], N, M]): scala.collection.Map[N, Iterable[ET[V, N]]] =
+    override def outgoing[V, N, M](
+      graph: DefaultGraph[V, N, M]): scala.collection.Map[N, Iterable[Edge[V, N]]] =
       graph.outgoing
 
-    override def nodes[ET[_, _], V, N, M](graph: DefaultGraph[ET[V, N], N, M]): Iterable[N] =
+    override def nodes[V, N, M](graph: DefaultGraph[V, N, M]): Iterable[N] =
       graph.nodes
 
-    override def build[ET[_, _], V, N, M](
+    override def build[V, N, M](
       value: M,
-      edges: Iterable[ET[V, N]],
+      edges: Iterable[Edge[V, N]],
       nodes: Iterable[N],
-      incoming: scala.collection.Map[N, Iterable[ET[V, N]]],
-      outgoing: scala.collection.Map[N, Iterable[ET[V, N]]]): DefaultGraph[ET[V, N], N, M] = DefaultGraph(value, edges, nodes, incoming, outgoing)
+      incoming: scala.collection.Map[N, Iterable[Edge[V, N]]],
+      outgoing: scala.collection.Map[N, Iterable[Edge[V, N]]]): DefaultGraph[V, N, M] = DefaultGraph(value, edges, nodes, incoming, outgoing)
 
-    override def value[ET[_, _], V, N, M](graph: DefaultGraph[ET[V, N], N, M]): M = graph.value
+    override def value[V, N, M](graph: DefaultGraph[V, N, M]): M = graph.value
+
+    override def ordering[V, N]: Ordering[Edge[V, N]] = new DefaultOrdering
+  }
+
+  private[defaults] class DirectedGraph extends DefaultGraphBase
+
+  private[defaults] class UndirectedGraph extends DefaultGraphBase {
+    override def build[V, N, M](
+      value: M,
+      edges: Iterable[Edge[V, N]],
+      nodes: Iterable[N],
+      incoming: collection.Map[N, Iterable[Edge[V, N]]],
+      outgoing: collection.Map[N, Iterable[Edge[V, N]]]): DefaultGraph[V, N, M] = {
+      val mergedEdgesByNode = (incoming foldLeft outgoing)(
+        (acc, v) => acc + (v._1 -> (v._2 ++ acc.getOrElse(v._1, Iterable.empty))))
+
+      super.build(value, edges, nodes, mergedEdgesByNode, mergedEdgesByNode)
+    }
   }
 
   // #default_graph
 
   def n[X](value: X, label: Option[String] = None) = Node[X](value, label)
-
-  implicit def defaultGraph[G[_, _, _]] = new DefaultGraphInstance[G]
 
   implicit def identifiableString[X]: Identifiable[String] = new Identifiable[String] {
     override def id(string: String): String = string
@@ -84,27 +101,26 @@ package object defaults {
     override def label(number: T): Option[String] = Some(numeric.toDouble(number).toString)
   }
 
-  implicit def labeledEdge[E[_, _], V, N](implicit edge: EdgeType[E], labeled: Labeled[V, String]): Labeled[E[V, N], String] = new Labeled[E[V, N], String] {
-    override def label(e: E[V, N]): Option[String] = labeled.label(edge.value(e))
+  implicit def labeledEdge[V, N](implicit labeled: Labeled[V, String]): Labeled[Edge[V, N], String] = new Labeled[Edge[V, N], String] {
+    override def label(e: Edge[V, N]): Option[String] = labeled.label(e.value)
   }
 
   object directed {
-    implicit object edge extends EdgeType[Edge] {
-      override def apply[V, N](
-        value: V,
-        head: N,
-        tail: N): Edge[V, N] = Edge(value, head, tail)
-
-      override def value[V, N](edge: Edge[V, N]): V = edge.value
-
-      override def head[V, N](edge: Edge[V, N]): N = edge.head
-      override def tail[V, N](edge: Edge[V, N]): N = edge.tail
-    }
-
     implicit class DirectedEdgeBuilder[X](node: Node[X]) {
       def -->[V](value: V, to: Node[X]): Edge[V, X] = Edge[V, X](value, node.value, to.value)
       def -->[V](to: Node[X]): Edge[Unit, X] = Edge[Unit, X]((), node.value, to.value)
     }
+
+    implicit val directedGraph: DirectedGraph = new DirectedGraph
+  }
+
+  object undirected {
+    implicit class UndirectedEdgeBuilder[X](node: Node[X]) {
+      def ~~~[V](value: V, to: Node[X]): Edge[V, X] = Edge[V, X](value, node.value, to.value)
+      def ~~~[V](to: Node[X]): Edge[Unit, X] = Edge[Unit, X]((), node.value, to.value)
+    }
+
+    implicit val undirectedGraph: UndirectedGraph = new UndirectedGraph
   }
 
 }

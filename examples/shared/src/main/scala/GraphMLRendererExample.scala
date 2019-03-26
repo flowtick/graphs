@@ -2,13 +2,13 @@ import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.defaults.directed._
 import com.flowtick.graphs.graphml.{ GraphMLImporter, GraphMLRenderer }
 import com.flowtick.graphs.layout.{ GraphLayout, ShapeDefinition }
-import com.flowtick.graphs.{ EdgeType, Graph, Identifiable, Labeled }
+import com.flowtick.graphs.{ Edge, Graph, Identifiable, Labeled }
 
 trait GraphMLRendererExample {
   def layout: GraphLayout
 
-  def toXml[G[_, _, _], E[_, _], V, N, M](g: G[E[V, N], N, M])(implicit graph: Graph[G], edgeType: EdgeType[E], identifiable: Identifiable[N], edgeLabel: Labeled[E[V, N], String]): String = {
-    val graphXml = new GraphMLRenderer().render[G, E, V, N, M](
+  def toXml[G[_, _, _], V, N, M](g: G[V, N, M])(implicit graph: Graph[G], identifiable: Identifiable[N], edgeLabel: Labeled[Edge[V, N], String]): String = {
+    val graphXml = new GraphMLRenderer().render[G, V, N, M](
       g,
       layout,
       (_: N) => Some(ShapeDefinition(rounded = true, color = "#AAAAAA")))
@@ -17,6 +17,6 @@ trait GraphMLRendererExample {
   }
 
   val writtenXml = toXml(DijkstraGraph.cities)
-  println(new GraphMLImporter[DefaultGraph, Edge]().fromXml(writtenXml))
+  println(GraphMLImporter.fromXml[DefaultGraph, Unit, Unit](writtenXml))
   // Right(DefaultGraph(GraphMLGraph(Some(G)),ListBuffer(GraphMLNode(Frankfurt,Some(Frankfurt),Map(graphics -> ...
 }
