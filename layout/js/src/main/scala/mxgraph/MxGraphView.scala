@@ -1,16 +1,16 @@
 package mxgraph
 
 import com.flowtick.graphs._
+import com.flowtick.graphs.defaults._
 import org.scalajs.dom.Element
 
 // $COVERAGE-OFF$ coverage disabled here due to https://github.com/scoverage/scalac-scoverage-plugin/issues/196
 @SuppressWarnings(Array("org.wartremover.warts.Null"))
 object MxGraphView {
-  def create[G[_, _, _]](
+  def create(
     container: Element,
-    graph: G[JsEdge, JsNode, JsGraph],
+    graph: Graph[JsEdge, JsNode, JsGraph],
     layout: MxGraph => MxGraph = hierarchicalLayout)(implicit
-    graphType: Graph[G],
     nodeId: Identifiable[JsNode],
     edgeLabel: Labeled[Edge[JsEdge, JsNode], String]): MxGraph = {
     MxEvent.disableContextMenu(container)
@@ -33,7 +33,7 @@ object MxGraphView {
 
     try {
       val parent = viewGraph.getDefaultParent()
-      val nodeCells: Map[JsNode, MxCell] = graphType.nodes[JsEdge, JsNode, JsGraph](graph).map { node =>
+      val nodeCells: Map[JsNode, MxCell] = graph.nodes.map { node =>
         val id = nodeId.id(node)
 
         (node, viewGraph.insertVertex(
@@ -46,7 +46,7 @@ object MxGraphView {
           height = 25))
       }.toMap
 
-      graphType.edges(graph).map { edge =>
+      graph.edges.map { edge =>
         val id = edge.value.toString
         (edge, viewGraph.insertEdge(
           parent = parent,
@@ -88,9 +88,7 @@ object MxGraphView {
     viewGraph
   }
 
-  def toGraph[G[_, _, _]](meta: JsGraph, view: MxGraph)(implicit
-    builder: GraphBuilder[G],
-    identifiable: Identifiable[JsNode]): G[JsEdge, JsNode, JsGraph] = {
+  def toGraph[G[_, _, _]](meta: JsGraph, view: MxGraph)(implicit identifiable: Identifiable[JsNode]): Graph[JsEdge, JsNode, JsGraph] = {
 
     val nodes = view.getModel().getChildVertices(view.getDefaultParent()).map(nodeCell => JsNode(nodeCell.getId()))
     val edges = view.getModel().getChildEdges(view.getDefaultParent()).map(edgeCell => {
@@ -100,7 +98,7 @@ object MxGraphView {
         JsNode(edgeCell.target.get.getId()))
     })
 
-    builder.create[JsEdge, JsNode, JsGraph](meta, nodes, edges)
+    Graph.create[JsEdge, JsNode, JsGraph](meta, nodes, edges)
   }
 }
 // $COVERAGE-ON$

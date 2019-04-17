@@ -1,14 +1,14 @@
 package com.flowtick.graphs.algorithm
 
+import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
 import org.scalamock.scalatest.proxy.MockFactory
 import org.scalatest.{ FlatSpec, Matchers }
 
 class BreadthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
   "Bfs" should "traverse in breadth first manner" in {
 
-    val graph = directedGraph.from(Seq(
+    val graph = Graph.from(Seq(
       n("1") --> n("2"),
       n("1") --> n("3"),
 

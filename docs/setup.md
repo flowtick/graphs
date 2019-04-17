@@ -14,6 +14,6 @@ Using the [ammonite REPL](http://ammonite.io) you can quickly play around with (
 ```scala
 import $ivy.`com.flowtick:graphs-core_2.12:$version$`, com.flowtick.graphs.defaults._, com.flowtick.graphs.defaults.directed._ 
 
-defaultGraph.from(Seq(n("1") --> n("2")))
+Graph.from(Seq(n("1") --> n("2")))
 ```
 @@@

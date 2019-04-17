@@ -5,9 +5,7 @@ import com.flowtick.graphs._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class DijkstraShortestPath[G[_, _, _], V, N, M](graph: G[V, N, M])(implicit
-  graphType: Graph[G],
-  numeric: Numeric[V]) {
+class DijkstraShortestPath[V, N, M](graph: Graph[V, N, M])(implicit numeric: Numeric[V]) {
 
   /**
    * determine the shortest path from start to end,
@@ -29,7 +27,7 @@ class DijkstraShortestPath[G[_, _, _], V, N, M](graph: G[V, N, M])(implicit
 
     val queue = mutable.PriorityQueue.empty[N]
 
-    graphType.nodes(graph).foreach { node =>
+    graph.nodes.foreach { node =>
       if (node == start) {
         distanceMap.put(start, 0)
       } else {
@@ -43,7 +41,7 @@ class DijkstraShortestPath[G[_, _, _], V, N, M](graph: G[V, N, M])(implicit
       val current = queue.dequeue()
       val currentDistance: Double = distanceMap(current)
       if (currentDistance != Double.NaN) {
-        graphType.outgoing(graph).getOrElse(current, Iterable.empty).foreach { edge =>
+        graph.outgoing(current).foreach { edge =>
           val weight = numeric.toDouble(edge.value)
           val newDist = currentDistance + weight
 

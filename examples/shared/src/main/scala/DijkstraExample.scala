@@ -5,7 +5,7 @@ import com.flowtick.graphs.algorithm._
 object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
   // #cities
-  val cities = directedGraph.from(Set(
+  val cities = Graph.from(Set(
     n("Frankfurt") --> (85, n("Mannheim")),
     n("Frankfurt") --> (217, n("Wuerzburg")),
     n("Frankfurt") --> (173, n("Kassel")),

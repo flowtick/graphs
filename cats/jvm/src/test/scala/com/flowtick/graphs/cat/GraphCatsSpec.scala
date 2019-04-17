@@ -1,7 +1,6 @@
 package com.flowtick.graphs.cat
 
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
 import cats.implicits._
 import com.flowtick.graphs.Identifiable
 import org.scalatest.{ FlatSpec, Matchers }
@@ -12,18 +11,18 @@ class GraphCatsSpec extends FlatSpec with Matchers {
   "Graph Monoid" should "combine graphs" in {
     type NumberNodeGraph = DefaultGraph[Unit, Int, Unit]
 
-    val graphA: NumberNodeGraph = directedGraph.from(Set(
+    val graphA: NumberNodeGraph = Graph.from(Set(
       n(1) --> n(2),
       n(2) --> n(3)))
 
-    val graphB: NumberNodeGraph = directedGraph.from(Set(
+    val graphB: NumberNodeGraph = Graph.from(Set(
       n(2) --> n(3),
       n(4) --> n(3),
       n(4) --> n(5)))
 
     val combined = graphA |+| graphB
 
-    directedGraph.edges(combined) should contain theSameElementsAs Seq(
+    defaultGraph.edges(combined) should contain theSameElementsAs Seq(
       n(1) --> n(2),
       n(2) --> n(3),
       n(4) --> n(3),
@@ -33,17 +32,17 @@ class GraphCatsSpec extends FlatSpec with Matchers {
   it should "map over node values" in {
     type WeightedGraph = DefaultGraph[Double, Int, Unit]
 
-    val graph = directedGraph.from(Set(
+    val graph = Graph.from(Set(
       n(1) --> (1.2, n(2)),
       n(2) --> (1.3, n(2))))
 
     val doubleStringGraph = graphNodeFunctor[DefaultGraph, Double, Int, Unit].map(graph)(node => (node * 2).toString)
 
-    directedGraph.nodes(doubleStringGraph) should be(Set("2", "4"))
+    defaultGraph.nodes(doubleStringGraph) should be(Set("2", "4"))
 
-    directedGraph.outgoing(doubleStringGraph).get("2").map(_.toList) should be(Some(List(
+    defaultGraph.outgoing(doubleStringGraph).get("2").map(_.toList) should be(Some(List(
       n("2") --> (1.2, n("4")))))
-    directedGraph.outgoing(doubleStringGraph).get("4").map(_.toList) should be(Some(List(
+    defaultGraph.outgoing(doubleStringGraph).get("4").map(_.toList) should be(Some(List(
       n("4") --> (1.3, n("4")))))
   }
 

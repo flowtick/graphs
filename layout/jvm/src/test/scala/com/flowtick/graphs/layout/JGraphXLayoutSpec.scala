@@ -2,8 +2,8 @@ package com.flowtick.graphs.layout
 
 import java.io.{ FileOutputStream, OutputStream }
 
+import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
 import com.mxgraph.view.mxGraph
 import org.scalatest.FlatSpec
 
@@ -11,12 +11,12 @@ import scala.util.Try
 
 class JGraphXLayoutSpec extends FlatSpec {
   "JGraphX layout" should "layout simple graph and save it" in {
-    val graph = directedGraph.from(Set(
+    val graph = Graph.from(Set(
       n("A") --> n("B"),
       n("B") --> n("C"),
       n("D") --> n("A")))
 
-    val layoutedGraph = new JGraphXLayout[DefaultGraph, Unit, String, Unit].layout(graph, _ => None)
+    val layoutedGraph = new JGraphXLayout[Unit, String, Unit].layout(graph, _ => None)
     saveGraph("simple", layoutedGraph)
   }
 
@@ -26,7 +26,7 @@ class JGraphXLayoutSpec extends FlatSpec {
   }
 
   it should "layout city graph" in {
-    val cities = directedGraph.from(Set(
+    val cities = Graph.from(Set(
       n("Frankfurt") --> (85, n("Mannheim")),
       n("Frankfurt") --> (217, n("Wuerzburg")),
       n("Frankfurt") --> (173, n("Kassel")),
@@ -39,7 +39,7 @@ class JGraphXLayoutSpec extends FlatSpec {
       n("Karlsruhe") --> (250, n("Augsburg")),
       n("Augsburg") --> (84, n("Muenchen"))))
 
-    val layoutedGraph = new JGraphXLayout[DefaultGraph, Int, String, Unit].layout(
+    val layoutedGraph = new JGraphXLayout[Int, String, Unit].layout(
       cities,
       _ => Some(ShapeDefinition(50, 70, rounded = true, color = "#FF0000", shapeType = "ellipse")))
 

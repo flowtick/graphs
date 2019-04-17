@@ -3,7 +3,7 @@ import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.defaults.directed._
 
 trait DfsExample {
-  val graph = directedGraph.from(Set(
+  val graph = Graph.from(Set(
     n("1") --> n("2"),
     n("1") --> n("9"),
 

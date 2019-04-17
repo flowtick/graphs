@@ -1,6 +1,7 @@
 package com.flowtick.graphs.graphml
 
-import com.flowtick.graphs.{ Edge, GraphBuilder, Identifiable }
+import com.flowtick.graphs.{ Edge, Graph, Identifiable }
+import com.flowtick.graphs.defaults._
 import xmls.XMLS
 
 import scala.collection.mutable
@@ -8,10 +9,8 @@ import scala.util._
 import scala.xml.{ Node, Text }
 
 object GraphMLImporter {
-  def fromXml[G[_, _, _], V, N](graphml: String)(implicit
-    builder: GraphBuilder[G],
-    identifiable: Identifiable[GraphMLNode[N]]): Either[Throwable, G[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph]] = {
-    def parseGraphNode(graphNode: scala.xml.Node, keys: Seq[GraphMLKey]): G[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph] = {
+  def fromXml[V, N](graphml: String)(implicit identifiable: Identifiable[GraphMLNode[N]]): Either[Throwable, Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph]] = {
+    def parseGraphNode(graphNode: scala.xml.Node, keys: Seq[GraphMLKey]): Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph] = {
       val edgeXmlNodes = new mutable.ListBuffer[scala.xml.Node]()
       val nodes: mutable.Map[String, GraphMLNode[N]] = parseGraphNodes(graphNode, keys, edgeXmlNodes)
 
@@ -33,7 +32,7 @@ object GraphMLImporter {
         }
       }
 
-      builder.withValue(GraphMLGraph(id = singleAttributeValue("id", graphNode)))(edges, nodes.values)
+      Graph.create(GraphMLGraph(id = singleAttributeValue("id", graphNode)), nodes.values, edges)
     }
 
     XMLS.parse(graphml) match {

@@ -28,7 +28,7 @@ object GraphsJs {
     MxGraphView.toGraph[DefaultGraph](JsGraph(None), mxGraph)
 
   @JSExport
-  def exampleGraph: DefaultGraph[JsEdge, JsNode, JsGraph] = directedGraph.withValue(JsGraph(Some("example")))(Seq(
+  def exampleGraph: DefaultGraph[JsEdge, JsNode, JsGraph] = defaultGraph.withValue(JsGraph(Some("example")))(Seq(
     n(JsNode("A")) --> (JsEdge(None, None), n(JsNode("B")))), Iterable.empty)
 
   def main(args: Array[String]): Unit = {

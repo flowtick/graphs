@@ -1,7 +1,7 @@
 package com.flowtick.graphs.graphml
 
+import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
 import com.flowtick.graphs.layout.JGraphXLayouter
 import org.scalatest.{ FlatSpec, Matchers }
 
@@ -9,7 +9,7 @@ import scala.xml.Elem
 
 class GraphMLRendererSpec extends FlatSpec with Matchers {
   "GraphRenderer" should "render default graph" in new GraphMLRenderer {
-    val newGraph = directedGraph.from(Set(n("A") --> n("B")))
+    val newGraph = Graph.from(Set(n("A") --> n("B")))
 
     val xml: Elem = render(newGraph, JGraphXLayouter)
 

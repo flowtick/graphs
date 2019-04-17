@@ -15,7 +15,7 @@ class GraphMLImporterSpec extends FlatSpec with Matchers {
     val testEdge: Edge[Unit, GraphMLNode[Option[FooNode]]] =
       n(graphMlNode("A", Option(FooNode("bar")))) --> n(graphMlNode("B", None))
 
-    val testGraph = directedGraph.from(Seq(
+    val testGraph = Graph.from(Seq(
       testEdge))
     val xml: Elem = new GraphMLRenderer().render(testGraph, JGraphXLayouter)
 
@@ -23,7 +23,7 @@ class GraphMLImporterSpec extends FlatSpec with Matchers {
       GraphMLImporter.fromXml[DefaultGraph, Unit, Option[FooNode]](xml.toString)
 
     imported.right.foreach { graphml =>
-      val importedNodes = directedGraph.nodes(graphml).toList.sortBy(_.id)
+      val importedNodes = defaultGraph.nodes(graphml).toList.sortBy(_.id)
       importedNodes should have size 2
 
       importedNodes.headOption match {
@@ -40,7 +40,7 @@ class GraphMLImporterSpec extends FlatSpec with Matchers {
           bNode.properties.get("graphics") should be(defined)
       }
 
-      val importedEdges = directedGraph.edges(graphml)
+      val importedEdges = defaultGraph.edges(graphml)
       importedEdges should have size 1
       importedEdges.headOption match {
         case Some(edge) =>
@@ -57,14 +57,14 @@ class GraphMLImporterSpec extends FlatSpec with Matchers {
     val imported = GraphMLImporter.fromXml[DefaultGraph, Double, String](cities.getLines().mkString)
     imported.right.toOption match {
       case Some(graphml) =>
-        directedGraph.nodes(graphml).find(_.id == "n0") match {
+        defaultGraph.nodes(graphml).find(_.id == "n0") match {
           case Some(n0) =>
             n0.id should be("n0")
             n0.label should be(Some("Karlsruhe"))
           case _ => fail("unable to find node n0")
         }
 
-        directedGraph.edges(graphml).map(_.value).find(_.id == "e1") match {
+        defaultGraph.edges(graphml).map(_.value).find(_.id == "e1") match {
           case Some(e1) =>
             e1.properties.get("d7") should be(Some(GraphMLProperty(GraphMLKey("d7", Some("Property 1"), Some("string"), Some("edge"), None), "test")))
             e1.label should be(Some("42"))

@@ -13,13 +13,12 @@ import scala.collection.mutable
 
 object JGraphXLayouter extends GraphLayout {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
-  override def layout[G[_, _, _], V, N, M](
-    g: G[V, N, M],
+  override def layout[V, N, M](
+    g: Graph[V, N, M],
     shape: N => Option[ShapeDefinition])(implicit
     identifiable: Identifiable[N],
-    graphType: Graph[G],
     edgeLabel: Labeled[Edge[V, N], String]): NodeLayout[N] = node => {
-    new JGraphXLayout[G, V, N, M]().layout(g, shape)
+    new JGraphXLayout[V, N, M]().layout(g, shape)
       .getModel.asInstanceOf[mxGraphModel]
       .getCells.asScala.mapValues(cell => JGraphXCell(cell.asInstanceOf[mxCell])).get(identifiable.id(node))
   }
@@ -39,12 +38,11 @@ final case class JGraphXCell(cell: mxCell) extends Cell {
   override def geometry: Geometry = JGraphGeometry(cell.getGeometry)
 }
 
-class JGraphXLayout[G[_, _, _], V, N, M](implicit
+class JGraphXLayout[V, N, M](implicit
   identifiable: Identifiable[N],
-  graphType: Graph[G],
   edgeLabel: Labeled[Edge[V, N], String]) {
 
-  def layout(graph: G[V, N, M], shapeDefinition: N => Option[ShapeDefinition]): mxGraph = {
+  def layout(graph: Graph[V, N, M], shapeDefinition: N => Option[ShapeDefinition]): mxGraph = {
     val layoutGraph = graphToMxGraph(graph, shapeDefinition)
 
     new mxHierarchicalLayout(layoutGraph).execute(layoutGraph.getDefaultParent)
@@ -52,7 +50,7 @@ class JGraphXLayout[G[_, _, _], V, N, M](implicit
   }
 
   @SuppressWarnings(Array("org.wartremover.warts.Null"))
-  private def graphToMxGraph(graph: G[V, N, M], shapeSpec: N => Option[ShapeDefinition]): mxGraph = {
+  private def graphToMxGraph(graph: Graph[V, N, M], shapeSpec: N => Option[ShapeDefinition]): mxGraph = {
     val mxGraph = new mxGraph
     mxGraph.getModel.beginUpdate()
 
@@ -68,7 +66,7 @@ class JGraphXLayout[G[_, _, _], V, N, M](implicit
 
     val vertices = mutable.Map[String, Object]()
 
-    graphType.nodes(graph).foreach { node =>
+    graph.nodes.foreach { node =>
       val id = identifiable.id(node)
       val displayName = id
       val width = shapeSpec(node).map(_.width).getOrElse(30)
@@ -90,7 +88,7 @@ class JGraphXLayout[G[_, _, _], V, N, M](implicit
       mxGraph.setCellStyle(id, Array[AnyRef](vertex))
     }
 
-    graphType.edges(graph).foreach { edge: Edge[V, N] =>
+    graph.edges.foreach { edge: Edge[V, N] =>
       val sourceId = identifiable.id(edge.head)
       val targetId = identifiable.id(edge.tail)
       val edgeId = s"$sourceId-$targetId"

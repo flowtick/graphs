@@ -6,18 +6,18 @@ import com.flowtick.graphs.{ Edge, Graph, Identifiable, Labeled }
 import scala.xml.{ Elem, Text }
 
 class GraphMLRenderer {
-  def render[G[_, _, _], V, N, M](
-    g: G[V, N, M],
+  def render[V, N, M](
+    g: Graph[V, N, M],
     layouter: GraphLayout,
-    shapeDefinition: N => Option[ShapeDefinition] = (_: N) => None)(implicit graph: Graph[G], identifiable: Identifiable[N], edgeLabel: Labeled[Edge[V, N], String]): Elem = {
-    val layout = layouter.layout[G, V, N, M](g, shapeDefinition)
+    shapeDefinition: N => Option[ShapeDefinition] = (_: N) => None)(implicit identifiable: Identifiable[N], edgeLabel: Labeled[Edge[V, N], String]): Elem = {
+    val layout = layouter.layout[V, N, M](g, shapeDefinition)
 
     def nodeProperties(aNode: N): Map[String, GraphMLProperty] = (aNode match {
       case GraphMLNode(_, _, _, properties) => properties
       case _ => Map.empty[String, GraphMLProperty]
     }) + ("graphics" -> nodeGraphicsProperty(aNode, identifiable.id(aNode), shapeDefinition(aNode)))
 
-    def dataKeys: Iterable[Elem] = graph.nodes(g).flatMap(nodeProperties(_).values).map { property: GraphMLProperty =>
+    def dataKeys: Iterable[Elem] = g.nodes.flatMap(nodeProperties(_).values).map { property: GraphMLProperty =>
       <key id={ property.key.id } for={ property.key.targetHint.map(Text(_)) } yfiles.type={ property.key.yfilesType.map(Text(_)) } attr.type={ property.key.typeHint.map(Text(_)) }/>
     }
 
@@ -70,7 +70,7 @@ class GraphMLRenderer {
     }
 
     def edgesXml = {
-      graph.edges(g).flatMap { edge =>
+      g.edges.flatMap { edge =>
         val source = edge.head
         val target = edge.tail
         <edge id={ identifiable.id(source) + "-" + identifiable.id(target) } source={ identifiable.id(source) } target={ identifiable.id(target) }/>
@@ -78,7 +78,7 @@ class GraphMLRenderer {
     }
 
     def nodesXml =
-      graph.nodes(g).map { node =>
+      g.nodes.map { node =>
         <node id={ identifiable.id(node) }>
           { dataValues(node) }
         </node>
