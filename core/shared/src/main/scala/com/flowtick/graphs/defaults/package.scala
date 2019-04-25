@@ -1,17 +1,6 @@
 package com.flowtick.graphs
 
 package object defaults {
-  private[defaults] class DefaultOrdering[V, N] extends Ordering[Edge[V, N]] {
-    override def compare(x: Edge[V, N], y: Edge[V, N]): Int = {
-      val xid = x.head.toString + x.tail.toString
-      val yid = y.head.toString + y.tail.toString
-
-      xid.compareTo(yid)
-    }
-  }
-
-  implicit def defaultOrdering[V, N]: Ordering[Edge[V, N]] = new DefaultOrdering
-
   def n[X](value: X, label: Option[String] = None) = Node[X](value, label)
 
   implicit def identifiableString[X]: Identifiable[String] = new Identifiable[String] {
@@ -41,8 +30,5 @@ package object defaults {
   implicit class EdgeBuilder[X](node: Node[X]) {
     def -->[V](value: V, to: Node[X]): Edge[V, X] = Edge[V, X](value, node.value, to.value)
     def -->[V](to: Node[X]): Edge[Unit, X] = Edge[Unit, X]((), node.value, to.value)
-
-    def ~~~[V](value: V, to: Node[X]): Edge[V, X] = -->[V](value, to)
-    def ~~~[V](to: Node[X]): Edge[Unit, X] = -->[V](to)
   }
 }

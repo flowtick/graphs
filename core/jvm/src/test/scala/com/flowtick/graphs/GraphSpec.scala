@@ -10,7 +10,7 @@ class GraphSpec extends FlatSpec with Matchers {
     n("C") --> n("D"),
     n("D") --> n("A"),
     n("A") --> n("C"),
-    n("B") --> n("D")))
+    n("B") --> n("D")), Some(List("X")))
 
   "Graph" should "provide incoming edges for nodes" in {
     testGraph.incoming("A") should contain theSameElementsAs List(
@@ -45,11 +45,15 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   it should "get the predecessors for a node" in {
-    testGraph.predecessors("A").toList should be(List("D"))
+    testGraph.predecessors("A") should be(Set("D"))
   }
 
   it should "get the successors for a node" in {
-    testGraph.successors("A").toList should be(List("B", "C"))
+    testGraph.successors("A") should be(Set("B", "C"))
+  }
+
+  it should "return the all the nodes of a graph" in {
+    testGraph.nodes should be(Set("D", "A", "C", "X", "B"))
   }
 
 }

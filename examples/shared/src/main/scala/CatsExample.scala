@@ -1,11 +1,11 @@
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
 import com.flowtick.graphs.cat.instances._
 import cats.implicits._
 import cats.kernel.Monoid
+import com.flowtick.graphs.Graph
 
 trait CatsExample {
-  implicit val monoid = Monoid[DefaultGraph[Unit, String, Unit]]
+  implicit val monoid = Monoid[Graph[Unit, String, Unit]]
 
   val someGraph = Graph.from(Set(
     n("1") --> n("2"),
@@ -21,6 +21,6 @@ trait CatsExample {
 
   val combined = monoid.combine(someGraph, anotherGraph)
 
-  println(defaultGraph.edges(combined))
+  println(combined.edges)
   // Set(4 --> 3[()], 4 --> 5[()], 1 --> 2[()], 2 --> 3[()], 2 --> 4[()])
 }

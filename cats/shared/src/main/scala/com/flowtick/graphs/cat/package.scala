@@ -12,10 +12,15 @@ package object cat {
   class ContextMonoid[N, V] extends Monoid[scala.collection.Map[N, NodeContext[V, N]]] {
     override def empty: collection.Map[N, NodeContext[V, N]] = Map.empty
 
-    override def combine(x: collection.Map[N, NodeContext[V, N]], y: collection.Map[N, NodeContext[V, N]]): collection.Map[N, NodeContext[V, N]] = {
-      // FIXME
-      x ++ y
-    }
+    override def combine(x: collection.Map[N, NodeContext[V, N]], y: collection.Map[N, NodeContext[V, N]]): collection.Map[N, NodeContext[V, N]] =
+      (for {
+        key <- (x.keysIterator ++ y.keysIterator).toIterable
+      } yield {
+        val xContext: NodeContext[V, N] = x.getOrElse(key, NodeContext.empty)
+        val yContext: NodeContext[V, N] = y.getOrElse(key, NodeContext.empty)
+
+        (key, NodeContext(xContext.incoming ++ yContext.incoming, xContext.outgoing ++ yContext.outgoing))
+      }).toMap
   }
 
   class GraphMonoid[V, N, M](implicit metaMonoid: Monoid[M], contextMonoid: Monoid[scala.collection.Map[N, NodeContext[V, N]]]) extends Monoid[Graph[V, N, M]] {
@@ -61,7 +66,7 @@ package object cat {
       identifiable: Identifiable[N],
       metaMonoid: Monoid[M]) = new GraphMonoid[V, N, M]
 
-    implicit def graphNodeFunctor[G[_, _, _], V, N, M](implicit
+    implicit def graphNodeFunctor[V, N, M](implicit
       identifiable: Identifiable[N],
       edgeNodeFunctor: Functor[({ type f[x] = Edge[V, x] })#f]) = new GraphNodeFunctor[V, N, M]
 

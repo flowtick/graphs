@@ -1,5 +1,5 @@
+import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
 
 trait SimpleGraphExample {
   val graph = Graph.from(Set(
@@ -7,6 +7,6 @@ trait SimpleGraphExample {
     n("B") --> n("C"),
     n("D") --> n("A")))
 
-  println(defaultGraph.edges(graph))
+  println(graph.edges)
   // Set(A --> B[()], B --> C[()], D --> A[()])
 }

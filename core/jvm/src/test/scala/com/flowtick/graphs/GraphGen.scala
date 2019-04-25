@@ -1,7 +1,5 @@
 package com.flowtick.graphs
 
-import defaults._
-
 import org.scalacheck.Gen
 
 object GraphGen {

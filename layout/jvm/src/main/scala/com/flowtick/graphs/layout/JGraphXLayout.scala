@@ -13,12 +13,10 @@ import scala.collection.mutable
 
 object JGraphXLayouter extends GraphLayout {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
-  override def layout[V, N, M](
-    g: Graph[V, N, M],
-    shape: N => Option[ShapeDefinition])(implicit
+  override def layout[V, N, M](g: Graph[V, N, M])(implicit
     identifiable: Identifiable[N],
     edgeLabel: Labeled[Edge[V, N], String]): NodeLayout[N] = node => {
-    new JGraphXLayout[V, N, M]().layout(g, shape)
+    new JGraphXLayout[V, N, M]().layout(g)
       .getModel.asInstanceOf[mxGraphModel]
       .getCells.asScala.mapValues(cell => JGraphXCell(cell.asInstanceOf[mxCell])).get(identifiable.id(node))
   }
@@ -35,22 +33,22 @@ final case class JGraphGeometry(geometry: mxGeometry) extends Geometry {
 }
 
 final case class JGraphXCell(cell: mxCell) extends Cell {
-  override def geometry: Geometry = JGraphGeometry(cell.getGeometry)
+  override def geometry: Option[Geometry] = Option(cell.getGeometry).map(JGraphGeometry)
 }
 
 class JGraphXLayout[V, N, M](implicit
   identifiable: Identifiable[N],
   edgeLabel: Labeled[Edge[V, N], String]) {
 
-  def layout(graph: Graph[V, N, M], shapeDefinition: N => Option[ShapeDefinition]): mxGraph = {
-    val layoutGraph = graphToMxGraph(graph, shapeDefinition)
+  def layout(graph: Graph[V, N, M]): mxGraph = {
+    val layoutGraph = graphToMxGraph(graph)
 
     new mxHierarchicalLayout(layoutGraph).execute(layoutGraph.getDefaultParent)
     layoutGraph
   }
 
   @SuppressWarnings(Array("org.wartremover.warts.Null"))
-  private def graphToMxGraph(graph: Graph[V, N, M], shapeSpec: N => Option[ShapeDefinition]): mxGraph = {
+  private def graphToMxGraph(graph: Graph[V, N, M]): mxGraph = {
     val mxGraph = new mxGraph
     mxGraph.getModel.beginUpdate()
 
@@ -69,21 +67,16 @@ class JGraphXLayout[V, N, M](implicit
     graph.nodes.foreach { node =>
       val id = identifiable.id(node)
       val displayName = id
-      val width = shapeSpec(node).map(_.width).getOrElse(30)
-      val height = shapeSpec(node).map(_.height).getOrElse(30)
+      val width = 30
+      val height = 30
       val vertex = mxGraph.insertVertex(mxGraph.getDefaultParent, id, displayName, 0, 0, width, height)
       vertices.put(id, vertex)
 
       val style = new util.HashMap[String, Object]()
-      shapeSpec(node).foreach(shape => {
-        style.put(mxConstants.STYLE_FILLCOLOR, shape.color)
-        style.put(mxConstants.STYLE_ROUNDED, shape.rounded.toString)
-        style.put(mxConstants.STYLE_SHAPE, shape.shapeType.toLowerCase match {
-          case "ellipse" => mxConstants.SHAPE_ELLIPSE
-          case "cloud" => mxConstants.SHAPE_CLOUD
-          case _ => mxConstants.SHAPE_RECTANGLE
-        })
-      })
+      style.put(mxConstants.STYLE_FILLCOLOR, "#FFFFFF")
+      style.put(mxConstants.STYLE_ROUNDED, "true")
+      style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE)
+
       mxGraph.getStylesheet.putCellStyle(id, style)
       mxGraph.setCellStyle(id, Array[AnyRef](vertex))
     }

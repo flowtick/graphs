@@ -16,6 +16,6 @@ class TopologicalSortSpec extends FlatSpec with Matchers {
       n("Socken") --> n("Schuhe")))
 
     clothes.topologicalSort should equal(
-      List("Unterhemd", "Socken", "Pullover", "Unterhose", "Hose", "Mantel", "Schuhe"))
+      List("Unterhemd", "Unterhose", "Pullover", "Hose", "Mantel", "Socken", "Schuhe"))
   }
 }

@@ -1,5 +1,5 @@
+import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
 import com.flowtick.graphs.algorithm._
 
 trait TopologicalSortingExample {

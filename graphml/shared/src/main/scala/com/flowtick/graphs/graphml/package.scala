@@ -6,6 +6,7 @@ import cats.data.Validated._
 import cats.syntax._
 import cats.implicits._
 import shapeless._
+import shapeless.ops.record._
 
 import scala.xml.NodeSeq
 
@@ -21,14 +22,15 @@ package object graphml {
 
   trait Datatype[T] extends Serializer[T] with Deserializer[T]
 
-  object Datatype extends ProductTypeClassCompanion[Datatype] {
-    object typeClass extends ProductTypeClass[Datatype] {
+  object Datatype extends LabelledProductTypeClassCompanion[Datatype] {
+    object typeClass extends LabelledProductTypeClass[Datatype] {
       def emptyProduct: Datatype[HNil] = new Datatype[HNil] {
         def serialize(value: HNil): NodeSeq = Nil
         def deserialize(from: NodeSeq) = Valid(HNil)
       }
 
       def product[H, T <: HList](
+        name: String,
         dh: Datatype[H],
         dt: Datatype[T]): Datatype[H :: T] = new Datatype[H :: T] {
         def serialize(value: H :: T): NodeSeq =
@@ -51,21 +53,90 @@ package object graphml {
   }
 
   implicit object DatatypeString extends Datatype[String] {
-    def serialize(value: String) = <s>{ value }</s>
-    def deserialize(from: NodeSeq) = from match {
-      case <s>{ value }</s> => value.text.validNel
+    def serialize(value: String): NodeSeq = <value>{ value }</value>
+
+    def deserialize(from: NodeSeq): Validated[NonEmptyList[Throwable], String] = from match {
+      case <value>{ value }</value> => value.text.validNel
       case _ => new RuntimeException("Bad string XML").invalidNel
     }
+  }
+
+  implicit object DatatypeUnit extends Datatype[Unit] {
+    def serialize(value: Unit): NodeSeq = <!-- unit -->
+    def deserialize(from: NodeSeq): Validated[NonEmptyList[Throwable], Unit] = valid()
+  }
+
+  implicit def optionalDataType[T](implicit dataType: Datatype[T]): Datatype[Option[T]] = new Datatype[Option[T]] {
+    def serialize(value: Option[T]): NodeSeq = value match {
+      case None => <!-- empty optional -->
+      case Some(actualValue) => dataType.serialize(actualValue)
+    }
+
+    def deserialize(from: NodeSeq): Validated[NonEmptyList[Throwable], Option[T]] = dataType.deserialize(from).map(Option(_))
+  }
+
+  implicit def doubleDataType(implicit stringDataType: Datatype[String]): Datatype[Double] = new Datatype[Double] {
+    def serialize(value: Double): NodeSeq = stringDataType.serialize(value.toString)
+    def deserialize(from: NodeSeq): Validated[NonEmptyList[Throwable], Double] = stringDataType.deserialize(from).map(stringValue => stringValue.toDouble)
+  }
+
+  implicit def genericNodeDataType[T, Repr <: HList](implicit identifiable: Identifiable[GraphMLNode[T]], generic: Generic.Aux[T, Repr]): Datatype[GraphMLNode[T]] = new Datatype[GraphMLNode[T]] {
+    def serialize(node: GraphMLNode[T]): NodeSeq = {
+
+      val genericNodeValues: Seq[GraphMLProperty] = generic.to(node.value).runtimeList.zipWithIndex.map {
+        case (value, index) => GraphMLProperty(GraphMLKey(s"value_$index"), value)
+      }
+
+      val propertiesData = (genericNodeValues ++ node.properties).map { property =>
+        <data key={ property.key.id }>{ property.value }</data>
+      }
+
+      // format: OFF
+      Seq(<node id={ identifiable.id(node) }>
+            { propertiesData }
+
+            <data key="graphics">
+              <y:ShapeNode>
+                <y:Geometry height={ node.geometry.map(_.height).getOrElse(30).toString } width={ node.geometry.map(_.width).getOrElse(30).toString } x={ node.geometry.map(_.x).getOrElse(0).toString } y={ node.geometry.map(_.y).getOrElse(0).toString }/>
+                <y:Fill color={ node.shape.map(_.color).getOrElse("#FFFFFF") } transparent="false"/>
+                <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
+                <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true">{ node.label.getOrElse(node.id) }<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
+                  <y:ModelParameter>
+                    <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+                  </y:ModelParameter>
+                </y:NodeLabel>
+                <y:Shape type={
+                  node.shape.map(_.shapeType).map {
+                    case "rectangle" if node.shape.exists(_.rounded) => "roundrectangle"
+                    case other @ _ => other
+                  }.getOrElse("rectangle")
+                }/>
+              </y:ShapeNode>
+            </data>
+          </node>)
+      // format: ON
+    }
+
+    def deserialize(from: NodeSeq): Validated[NonEmptyList[Throwable], GraphMLNode[T]] = ???
   }
 
   def nodeProperty(id: String, value: Any, typeHint: Option[String] = None) =
     GraphMLProperty(GraphMLKey(id, targetHint = Some("node"), typeHint = typeHint), value)
 
-  def graphMlNode[N](id: String, value: N, properties: GraphMLProperty*): GraphMLNode[N] =
-    GraphMLNode(id, value, None, properties.map(prop => (prop.key.id, prop)).toMap)
+  def ml[N](value: N, id: Option[String] = None, properties: Seq[GraphMLProperty] = Seq.empty): GraphMLNode[N] =
+    GraphMLNode(id.getOrElse(value.toString), value, None, properties)
 
-  implicit def identifiable[N]: Identifiable[GraphMLNode[N]] = new Identifiable[GraphMLNode[N]] {
+  implicit class EdgeBuilder[X](node: GraphMLNode[X]) {
+    def -->[V](value: V, to: GraphMLNode[X]): Edge[GraphMLEdge[V], GraphMLNode[X]] = Edge[GraphMLEdge[V], GraphMLNode[X]](GraphMLEdge(s"${node.id}-${to.id}", value), node, to)
+    def -->[V](to: GraphMLNode[X]): Edge[GraphMLEdge[Unit], GraphMLNode[X]] = Edge[GraphMLEdge[Unit], GraphMLNode[X]](GraphMLEdge(s"${node.id}-${to.id}", ()), node, to)
+  }
+
+  implicit def graphMLNodeIdentifiable[N]: Identifiable[GraphMLNode[N]] = new Identifiable[GraphMLNode[N]] {
     override def id(node: GraphMLNode[N]): String = node.id
+  }
+
+  implicit def graphMLEdgeLabel[V, N]: Labeled[Edge[GraphMLEdge[V], GraphMLNode[N]], String] = new Labeled[Edge[GraphMLEdge[V], GraphMLNode[N]], String] {
+    override def label(edge: Edge[GraphMLEdge[V], GraphMLNode[N]]): Option[String] = Some(edge.value.id)
   }
 
 }

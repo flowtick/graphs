@@ -16,7 +16,7 @@ class JGraphXLayoutSpec extends FlatSpec {
       n("B") --> n("C"),
       n("D") --> n("A")))
 
-    val layoutedGraph = new JGraphXLayout[Unit, String, Unit].layout(graph, _ => None)
+    val layoutedGraph = new JGraphXLayout[Unit, String, Unit].layout(graph)
     saveGraph("simple", layoutedGraph)
   }
 
@@ -39,9 +39,7 @@ class JGraphXLayoutSpec extends FlatSpec {
       n("Karlsruhe") --> (250, n("Augsburg")),
       n("Augsburg") --> (84, n("Muenchen"))))
 
-    val layoutedGraph = new JGraphXLayout[Int, String, Unit].layout(
-      cities,
-      _ => Some(ShapeDefinition(50, 70, rounded = true, color = "#FF0000", shapeType = "ellipse")))
+    val layoutedGraph = new JGraphXLayout[Int, String, Unit].layout(cities)
 
     saveGraph("cities", layoutedGraph)
   }

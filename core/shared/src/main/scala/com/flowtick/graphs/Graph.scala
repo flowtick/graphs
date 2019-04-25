@@ -41,11 +41,11 @@ final case class Edge[V, N](value: V, head: N, tail: N) {
 }
 
 final case class NodeContext[V, N](
-  incoming: List[Edge[V, N]],
-  outgoing: List[Edge[V, N]])
+  incoming: Set[Edge[V, N]],
+  outgoing: Set[Edge[V, N]])
 
 object NodeContext {
-  def empty[V, N]: NodeContext[V, N] = NodeContext[V, N](List.empty, List.empty)
+  def empty[V, N]: NodeContext[V, N] = NodeContext[V, N](Set.empty, Set.empty)
 }
 
 // #graph
@@ -53,33 +53,31 @@ object NodeContext {
 final case class Graph[V, N, M](
   value: M,
   edges: Iterable[Edge[V, N]],
-  nodeContext: scala.collection.Map[N, NodeContext[V, N]]) {
+  private[graphs] val nodeContext: scala.collection.Map[N, NodeContext[V, N]]) {
   lazy val nodes: Iterable[N] = nodeContext.keys
 
-  def outgoing(node: N): List[Edge[V, N]] = nodeContext.get(node).map(_.outgoing).getOrElse(List.empty)
+  def outgoing(node: N): Set[Edge[V, N]] = nodeContext.get(node).map(_.outgoing).getOrElse(Set.empty)
 
-  def incoming(node: N): List[Edge[V, N]] = nodeContext.get(node).map(_.incoming).getOrElse(List.empty)
+  def incoming(node: N): Set[Edge[V, N]] = nodeContext.get(node).map(_.incoming).getOrElse(Set.empty)
 
-  def predecessors(node: N): Iterable[N] =
-    nodeContext.getOrElse(node, NodeContext.empty[V, N]).incoming.view.map(_.head)
+  def predecessors(node: N): Set[N] = incoming(node).map(_.head)
 
-  def successors(node: N): Iterable[N] =
-    nodeContext.getOrElse(node, NodeContext.empty[V, N]).outgoing.view.map(_.tail)
+  def successors(node: N): Set[N] = outgoing(node).map(_.tail)
 }
 
 object Graph {
   def empty[V, N, M](meta: M): Graph[V, N, M] = Graph[V, N, M](meta, Iterable.empty, Map.empty)
 
-  def of[V, N, M](value: M, nodes: Option[Iterable[N]] = None)(edges: Iterable[Edge[V, N]])(implicit edgeOrdering: Ordering[Edge[V, N]]): Graph[V, N, M] =
+  def of[V, N, M](value: M, nodes: Option[Iterable[N]] = None)(edges: Iterable[Edge[V, N]]): Graph[V, N, M] =
     create(value, nodes.getOrElse(Iterable.empty), edges)
 
-  def from[V, N, M](edges: Iterable[Edge[V, N]], nodes: Option[Iterable[N]] = None)(implicit edgeOrdering: Ordering[Edge[V, N]]): Graph[V, N, Unit] =
+  def from[V, N, M](edges: Iterable[Edge[V, N]], nodes: Option[Iterable[N]] = None): Graph[V, N, Unit] =
     create((), nodes.getOrElse(Iterable.empty), edges)
 
   def create[V, N, M](
     value: M,
     nodes: Iterable[N],
-    edges: Iterable[Edge[V, N]])(implicit edgeOrdering: Ordering[Edge[V, N]]): Graph[V, N, M] = {
+    edges: Iterable[Edge[V, N]]): Graph[V, N, M] = {
     import scala.collection.mutable
 
     val nodeContext = mutable.HashMap[N, NodeContext[V, N]]()
@@ -92,12 +90,12 @@ object Graph {
       val head = edge.head
       val headContext = nodeContext.getOrElse(head, NodeContext.empty[V, N])
 
-      nodeContext.put(head, headContext.copy(outgoing = headContext.outgoing :+ edge))
+      nodeContext.put(head, headContext.copy(outgoing = headContext.outgoing + edge))
 
       val tail = edge.tail
       val tailContext = nodeContext.getOrElse(tail, NodeContext.empty[V, N])
 
-      nodeContext.put(tail, tailContext.copy(incoming = tailContext.incoming :+ edge))
+      nodeContext.put(tail, tailContext.copy(incoming = tailContext.incoming + edge))
     }
 
     Graph(value, edges, nodeContext)
