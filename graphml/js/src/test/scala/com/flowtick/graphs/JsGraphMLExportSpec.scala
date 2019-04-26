@@ -1,14 +1,14 @@
 package com.flowtick.graphs
 
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.graphml.GraphMLSerializer
+import com.flowtick.graphs.graphml.GraphMLDatatype
 import com.flowtick.graphs.layout.GraphLayout
 import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.xml.Elem
 
 class JsGraphMLExportSpec extends FlatSpec with Matchers {
-  "GraphRenderer" should "render default graph" in new GraphMLSerializer {
+  "GraphRenderer" should "render default graph" in new GraphMLDatatype {
     val graph = Graph.from(Seq(
       n("A") --> n("B")))
 

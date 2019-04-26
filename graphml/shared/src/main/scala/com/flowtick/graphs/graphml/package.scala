@@ -1,19 +1,21 @@
 package com.flowtick.graphs
 
-import cats._
-import cats.data._
 import cats.data.Validated._
-import cats.syntax._
+import cats.data._
 import cats.implicits._
 import shapeless._
-import shapeless.ops.record._
+import shapeless.ops.record.Keys
+import shapeless.ops.traversable.FromTraversable
+import shapeless.ops.traversable.FromTraversable._
 
+import scala.collection.GenTraversable
 import scala.xml.NodeSeq
 
 package object graphml {
 
   trait Serializer[T] {
     def serialize(value: T): NodeSeq
+    def keys: Seq[GraphMLKey] = Seq.empty
   }
 
   trait Deserializer[T] {
@@ -80,45 +82,7 @@ package object graphml {
     def deserialize(from: NodeSeq): Validated[NonEmptyList[Throwable], Double] = stringDataType.deserialize(from).map(stringValue => stringValue.toDouble)
   }
 
-  implicit def genericNodeDataType[T, Repr <: HList](implicit identifiable: Identifiable[GraphMLNode[T]], generic: Generic.Aux[T, Repr]): Datatype[GraphMLNode[T]] = new Datatype[GraphMLNode[T]] {
-    def serialize(node: GraphMLNode[T]): NodeSeq = {
-
-      val genericNodeValues: Seq[GraphMLProperty] = generic.to(node.value).runtimeList.zipWithIndex.map {
-        case (value, index) => GraphMLProperty(GraphMLKey(s"value_$index"), value)
-      }
-
-      val propertiesData = (genericNodeValues ++ node.properties).map { property =>
-        <data key={ property.key.id }>{ property.value }</data>
-      }
-
-      // format: OFF
-      Seq(<node id={ identifiable.id(node) }>
-            { propertiesData }
-
-            <data key="graphics">
-              <y:ShapeNode>
-                <y:Geometry height={ node.geometry.map(_.height).getOrElse(30).toString } width={ node.geometry.map(_.width).getOrElse(30).toString } x={ node.geometry.map(_.x).getOrElse(0).toString } y={ node.geometry.map(_.y).getOrElse(0).toString }/>
-                <y:Fill color={ node.shape.map(_.color).getOrElse("#FFFFFF") } transparent="false"/>
-                <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-                <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true">{ node.label.getOrElse(node.id) }<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
-                  <y:ModelParameter>
-                    <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
-                  </y:ModelParameter>
-                </y:NodeLabel>
-                <y:Shape type={
-                  node.shape.map(_.shapeType).map {
-                    case "rectangle" if node.shape.exists(_.rounded) => "roundrectangle"
-                    case other @ _ => other
-                  }.getOrElse("rectangle")
-                }/>
-              </y:ShapeNode>
-            </data>
-          </node>)
-      // format: ON
-    }
-
-    def deserialize(from: NodeSeq): Validated[NonEmptyList[Throwable], GraphMLNode[T]] = ???
-  }
+  implicit def graphMLNodeDataType[T, Repr <: HList](implicit genericValue: shapeless.LabelledGeneric.Aux[T, Repr], keys: Keys[Repr]): GraphMLNodeDatatype[T, Repr] = new GraphMLNodeDatatype[T, Repr]()
 
   def nodeProperty(id: String, value: Any, typeHint: Option[String] = None) =
     GraphMLProperty(GraphMLKey(id, targetHint = Some("node"), typeHint = typeHint), value)

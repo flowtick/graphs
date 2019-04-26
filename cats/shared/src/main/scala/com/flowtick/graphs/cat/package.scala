@@ -1,6 +1,6 @@
 package com.flowtick.graphs
 
-import cats.{ Contravariant, Functor, Monoid }
+import cats.{ Contravariant, Functor, Monoid, Semigroup }
 
 package object cat {
 
