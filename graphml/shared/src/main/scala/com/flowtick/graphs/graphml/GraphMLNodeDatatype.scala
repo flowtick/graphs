@@ -6,13 +6,27 @@ import com.flowtick.graphs.Identifiable
 import shapeless.ops.record.Keys
 import shapeless._
 
-import scala.util.Try
 import scala.xml.{ Node, NodeBuffer, NodeSeq }
 
-class GraphMLNodeDatatype[T, Repr <: HList](implicit
-  identifiable: Identifiable[GraphMLNode[T]],
-  genericValue: LabelledGeneric.Aux[T, Repr],
-  genericValueKeys: Keys[Repr]) extends Datatype[GraphMLNode[T]] {
+/**
+  * @param identifiable
+  * @param genericValue
+  * @param fromList
+  * @param genericValueKeys
+  * @tparam T
+  * @tparam Repr the representation as labelled generic
+  * @tparam FromRepr the representation as generic
+  *
+  * see FromList to understand why we need two representations
+  *
+  * the good news is that an implicit LabelledGeneric will also be provide an implicit Generic
+  *
+  */
+class GraphMLNodeDatatype[T, Repr <: HList, FromRepr <: HList](implicit
+                                                               identifiable: Identifiable[GraphMLNode[T]],
+                                                               genericValue: LabelledGeneric.Aux[T, Repr],
+                                                               fromList: FromList[T, FromRepr],
+                                                               genericValueKeys: Keys[Repr]) extends Datatype[GraphMLNode[T]] {
   override def keys: Seq[GraphMLKey] =
     genericValueKeys().runtimeList.map { case sym: Symbol => GraphMLKey(id = sym.name, targetHint = Some("node"), typeHint = Some("string")) } ++
       Seq(GraphMLKey(id = "graphics", targetHint = Some("node"), yfilesType = Some("nodegraphics")))
@@ -51,14 +65,14 @@ class GraphMLNodeDatatype[T, Repr <: HList](implicit
         val id = GraphMLDatatype.singleAttributeValue("id", node).getOrElse(node.label)
         val nodeProperties = GraphMLDatatype.parseProperties(node, keys)
 
-        Try {
-          val valueList = nodeProperties.filterNot(_.key.yfilesType.isDefined).foldRight(HNil: HList) {
-            case (GraphMLProperty(_, value: NodeBuffer), values) => values.::(value.mkString(""))
-            case (GraphMLProperty(_, value: Any), values) => values.::(value)
-          }.asInstanceOf[Repr]
+        val valueList: Seq[Any] = nodeProperties.filterNot(_.key.yfilesType.isDefined).map {
+          case GraphMLProperty(_, value: NodeBuffer) => value.mkString("")
+          case GraphMLProperty(_, value: Any) => value
+        }
 
-          genericValue.from(valueList)
-        }.map(value => validNel(GraphMLNode[T](id, value, extractNodeLabel(nodeProperties), nodeProperties))).getOrElse(invalidNel(new IllegalStateException(s"unable to create node representation from $nodeProperties")))
+        fromList(valueList)
+          .map(value => validNel(GraphMLNode[T](id, value, extractNodeLabel(nodeProperties), nodeProperties)))
+          .getOrElse(invalidNel(new IllegalStateException(s"unable to create node representation from $nodeProperties")))
 
       case None => invalidNel(new IllegalArgumentException(s"invalid node xml $from"))
     }

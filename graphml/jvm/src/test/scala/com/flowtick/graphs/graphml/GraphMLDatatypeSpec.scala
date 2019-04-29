@@ -3,12 +3,6 @@ package com.flowtick.graphs.graphml
 import cats.data.Validated.Valid
 import com.flowtick.graphs.Graph
 import org.scalatest.{ FlatSpec, Matchers }
-import shapeless._
-import shapeless.Typeable
-import shapeless.Typeable._
-import shapeless.ops.traversable.FromTraversable
-import shapeless.ops.traversable.FromTraversable._
-import shapeless.ops.traversable.FromTraversable._
 
 case class TestNode(first: String, second: String)
 

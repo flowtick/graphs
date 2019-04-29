@@ -6,12 +6,29 @@ import cats.implicits._
 import shapeless._
 import shapeless.ops.record.Keys
 import shapeless.ops.traversable.FromTraversable
-import shapeless.ops.traversable.FromTraversable._
 
 import scala.collection.GenTraversable
 import scala.xml.NodeSeq
 
 package object graphml {
+
+  /**
+    * there is no default Typeable for LabelledGeneric (more precisely the KeyTags),
+    * so we need to fallback to the generic representation of T to create the value from a list.
+    *
+    * @param generic
+    * @param typeable
+    * @param fromTraversable
+    * @tparam T
+    * @tparam Repr
+    */
+  class FromList[T, Repr <: HList](implicit generic: Generic.Aux[T, Repr], typeable: Typeable[Repr], fromTraversable: FromTraversable[Repr]) {
+    import shapeless.syntax.std.traversable._
+
+    def apply(l: GenTraversable[_]): Option[T] = {
+      l.toHList[Repr].map(generic.from)
+    }
+  }
 
   trait Serializer[T] {
     def serialize(value: T): NodeSeq
@@ -82,7 +99,9 @@ package object graphml {
     def deserialize(from: NodeSeq): Validated[NonEmptyList[Throwable], Double] = stringDataType.deserialize(from).map(stringValue => stringValue.toDouble)
   }
 
-  implicit def graphMLNodeDataType[T, Repr <: HList](implicit genericValue: shapeless.LabelledGeneric.Aux[T, Repr], keys: Keys[Repr]): GraphMLNodeDatatype[T, Repr] = new GraphMLNodeDatatype[T, Repr]()
+  implicit def genericFromList[T, Repr <: HList](implicit generic: Generic.Aux[T, Repr], typeable: Typeable[Repr], fromTraversable: FromTraversable[Repr]): FromList[T, Repr] = new FromList[T, Repr]
+
+  implicit def graphMLNodeDataType[T, Repr <: HList, FromRepr <: HList](implicit genericValue: shapeless.LabelledGeneric.Aux[T, Repr], keys: Keys[Repr], fromList: FromList[T, FromRepr]): GraphMLNodeDatatype[T, Repr, FromRepr] = new GraphMLNodeDatatype[T, Repr, FromRepr]
 
   def nodeProperty(id: String, value: Any, typeHint: Option[String] = None) =
     GraphMLProperty(GraphMLKey(id, targetHint = Some("node"), typeHint = typeHint), value)
