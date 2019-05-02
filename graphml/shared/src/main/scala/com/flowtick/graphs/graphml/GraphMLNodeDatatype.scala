@@ -6,29 +6,30 @@ import com.flowtick.graphs.Identifiable
 import shapeless.ops.record.Keys
 import shapeless._
 
+import scala.reflect.ClassTag
 import scala.xml.{ Node, NodeBuffer, NodeSeq }
 
 /**
-  * @param identifiable
-  * @param genericValue
-  * @param fromList
-  * @param genericValueKeys
-  * @tparam T
-  * @tparam Repr the representation as labelled generic
-  * @tparam FromRepr the representation as generic
-  *
-  * see FromList to understand why we need two representations
-  *
-  * the good news is that an implicit LabelledGeneric will also be provide an implicit Generic
-  *
-  */
+ * @param identifiable
+ * @param genericValue
+ * @param fromList
+ * @param genericValueKeys
+ * @tparam T
+ * @tparam Repr the representation as labelled generic
+ * @tparam FromRepr the representation as generic
+ *
+ * see FromList to understand why we need two representations
+ *
+ * the good news is that an implicit LabelledGeneric will also be provide an implicit Generic
+ *
+ */
 class GraphMLNodeDatatype[T, Repr <: HList, FromRepr <: HList](implicit
-                                                               identifiable: Identifiable[GraphMLNode[T]],
-                                                               genericValue: LabelledGeneric.Aux[T, Repr],
-                                                               fromList: FromList[T, FromRepr],
-                                                               genericValueKeys: Keys[Repr]) extends Datatype[GraphMLNode[T]] {
+  identifiable: Identifiable[GraphMLNode[T]],
+  genericValue: LabelledGeneric.Aux[T, Repr],
+  fromList: FromList[T, FromRepr],
+  genericValueKeys: Keys[Repr], classTag: ClassTag[T]) extends Datatype[GraphMLNode[T]] {
   override def keys: Seq[GraphMLKey] =
-    genericValueKeys().runtimeList.map { case sym: Symbol => GraphMLKey(id = sym.name, targetHint = Some("node"), typeHint = Some("string")) } ++
+    genericValueKeys().runtimeList.map { case sym: Symbol => GraphMLKey(id = sym.name, targetHint = Some("node"), typeHint = Some("string"), graphsType = Some(classTag.toString())) } ++
       Seq(GraphMLKey(id = "graphics", targetHint = Some("node"), yfilesType = Some("nodegraphics")))
 
   def serialize(node: GraphMLNode[T]): NodeSeq = {
@@ -58,27 +59,28 @@ class GraphMLNodeDatatype[T, Repr <: HList, FromRepr <: HList](implicit
     // format: ON
   }
 
-  @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
-  override def deserialize(from: NodeSeq): ValidatedNel[Throwable, GraphMLNode[T]] =
+  override def deserialize(from: NodeSeq, graphKeys: scala.collection.Map[String, GraphMLKey]): ValidatedNel[Throwable, GraphMLNode[T]] =
     from.headOption match {
       case Some(node) =>
         val id = GraphMLDatatype.singleAttributeValue("id", node).getOrElse(node.label)
-        val nodeProperties = GraphMLDatatype.parseProperties(node, keys)
+        val nodeProperties = GraphMLDatatype.parseProperties(node)
 
-        val valueList: Seq[Any] = nodeProperties.filterNot(_.key.yfilesType.isDefined).map {
+        val valueList: Seq[Any] = nodeProperties.filter(prop => graphKeys.get(prop.key).exists(_.graphsType.isDefined)).map {
           case GraphMLProperty(_, value: NodeBuffer) => value.mkString("")
           case GraphMLProperty(_, value: Any) => value
         }
 
+        val nonValueProps = nodeProperties.filterNot(prop => graphKeys.get(prop.key).exists(_.graphsType.isDefined))
+
         fromList(valueList)
-          .map(value => validNel(GraphMLNode[T](id, value, extractNodeLabel(nodeProperties), nodeProperties)))
-          .getOrElse(invalidNel(new IllegalStateException(s"unable to create node representation from $nodeProperties")))
+          .map(value => validNel(GraphMLNode[T](id, value, extractNodeLabel(nodeProperties, graphKeys), nonValueProps)))
+          .getOrElse(invalidNel(new IllegalStateException(s"unable to create node representation from properties: ${nodeProperties.toList} for node: $node")))
 
       case None => invalidNel(new IllegalArgumentException(s"invalid node xml $from"))
     }
 
-  protected def extractNodeLabel(properties: Seq[GraphMLProperty]): Option[String] = {
-    properties.find(_.key.yfilesType.exists(_ == "nodegraphics")).flatMap { nodeGraphics =>
+  protected def extractNodeLabel(properties: Seq[GraphMLProperty], keys: scala.collection.Map[String, GraphMLKey]): Option[String] = {
+    properties.find(prop => keys.get(prop.key).exists(_.yfilesType.exists(_ == "nodegraphics"))).flatMap { nodeGraphics =>
       nodeGraphics.value match {
         case xml: Seq[scala.xml.Node @unchecked] =>
           val nodeLabel: Option[Node] = xml.foldLeft(Seq.empty[scala.xml.Node])((a, b) => a ++ b.nonEmptyChildren).find(_.label == "NodeLabel")

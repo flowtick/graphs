@@ -18,7 +18,7 @@ object CustomGraphExampleApp extends CustomGraphExample with App
 object DfsExampleApp extends DfsExample with App
 
 @JSExportTopLevel("graphml")
-object GraphMLRendererExampleApp extends GraphMLRendererExample with App {
+object GraphMLRendererExampleApp extends GraphMLExample with App {
   override lazy val layout = GraphLayout.none
 }
 

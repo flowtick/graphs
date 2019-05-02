@@ -8,9 +8,10 @@ final case class GraphMLKey(
   name: Option[String] = None,
   typeHint: Option[String] = None,
   targetHint: Option[String] = None,
-  yfilesType: Option[String] = None)
+  yfilesType: Option[String] = None,
+  graphsType: Option[String] = None)
 
-final case class GraphMLProperty(key: GraphMLKey, value: Any)
+final case class GraphMLProperty(key: String, value: Any)
 
 final case class GraphMLNode[N](
   id: String,
@@ -28,7 +29,8 @@ final case class GraphMLEdge[V](
 
 final case class GraphMLGraph[M](
   meta: M,
-  id: Option[String])
+  id: Option[String],
+  keys: Seq[GraphMLKey])
 
 object GraphMLGraph {
   def apply[V, N, M](
@@ -36,6 +38,6 @@ object GraphMLGraph {
     meta: M,
     edges: Iterable[Edge[GraphMLEdge[V], GraphMLNode[N]]],
     nodes: Option[Iterable[GraphMLNode[N]]] = None): Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[M]] = {
-    Graph.of(GraphMLGraph(meta, id = Some(id)), nodes)(edges)
+    Graph.of(GraphMLGraph(meta, id = Some(id), keys = Seq.empty), nodes)(edges)
   }
 }

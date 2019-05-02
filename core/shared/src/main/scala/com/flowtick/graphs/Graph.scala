@@ -42,7 +42,13 @@ final case class Edge[V, N](value: V, head: N, tail: N) {
 
 final case class NodeContext[V, N](
   incoming: Set[Edge[V, N]],
-  outgoing: Set[Edge[V, N]])
+  outgoing: Set[Edge[V, N]]) {
+  def map[B, C](nodeFn: N => B, valueFn: V => C): NodeContext[C, B] = {
+    NodeContext(
+      incoming.map(edge => Edge(valueFn(edge.value), nodeFn(edge.head), nodeFn(edge.tail))),
+      outgoing.map(edge => Edge(valueFn(edge.value), nodeFn(edge.head), nodeFn(edge.tail))))
+  }
+}
 
 object NodeContext {
   def empty[V, N]: NodeContext[V, N] = NodeContext[V, N](Set.empty, Set.empty)

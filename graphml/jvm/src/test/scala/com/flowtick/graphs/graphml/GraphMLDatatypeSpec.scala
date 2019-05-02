@@ -4,6 +4,8 @@ import cats.data.Validated.Valid
 import com.flowtick.graphs.Graph
 import org.scalatest.{ FlatSpec, Matchers }
 
+import scala.collection.immutable
+
 case class TestNode(first: String, second: String)
 
 class GraphMLDatatypeSpec extends FlatSpec with Matchers {
@@ -21,7 +23,6 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
   "GraphRenderer" should "render simple graph" in {
     testDataType.serialize(testGraph).headOption match {
       case Some(xml) =>
-        println(xml)
         prettyPrint(xml)
 
         xml.headOption shouldBe defined
@@ -34,14 +35,6 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
     }
   }
 
-  /*it should "render weighted graph" in {
-    val weigthed: Graph[GraphMLEdge[Double], GraphMLNode[TestNode], GraphMLGraph[Unit]] = GraphMLGraph("weighted", (), Set(ml(TestNode("A", "B"), id = Some("1")) --> (42.0, ml(TestNode("C", "D"), id = Some("2")))))
-
-    new GraphMLDatatype[Unit, TestNode, Unit]().serialize(weigthed).headOption match {
-      case Some(xml) => prettyPrint(xml)
-    }
-  }*/
-
   it should "serialize a product" in {
     case class Foo(bar: String, baz: Double)
 
@@ -51,39 +44,40 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
 
     fooXml.toString should be(<value>bar</value><value>42.0</value>.mkString(""))
 
-    val deserialized = fooDataType.deserialize(fooXml)
+    val deserialized = fooDataType.deserialize(fooXml, Map.empty)
 
     deserialized should be(Valid(Foo("bar", 42.0)))
   }
 
   it should "deserialize rendered XML" in {
-    val imported = testDataType.fromXml(testDataType.serialize(testGraph).mkString(""))
+    val imported = fromGraphML[Unit, TestNode, Unit](testDataType.serialize(testGraph).mkString(""))
 
     imported.right.foreach { graphml =>
-      val importedNodes = graphml.nodes.toList.sortBy(_.id)
+      val importedNodes: immutable.Seq[GraphMLNode[TestNode]] = graphml.nodes.toList.sortBy(_.id)
       importedNodes should have size 2
 
       importedNodes.headOption match {
         case Some(aNode) =>
-          aNode.id should be("A")
-          aNode.properties.find(_.key.id == "foo") should be(Some(GraphMLProperty(GraphMLKey("foo", None, Some("string"), Some("node"), None), "bar")))
-          aNode.properties.find(_.key.id == "graphics") should be(defined)
+          aNode.id should be("1")
+          aNode.value should be(TestNode("A", "B"))
+          aNode.properties.find(_.key == "graphics") should be(defined)
         case _ => fail()
       }
 
       importedNodes(1) match {
         case bNode =>
-          bNode.id should be("B")
-          bNode.properties.find(_.key.id == "graphics") should be(defined)
+          bNode.id should be("2")
+          bNode.value should be(TestNode("C", "D"))
+          bNode.properties.find(_.key == "graphics") should be(defined)
       }
 
       val importedEdges = graphml.edges
       importedEdges should have size 1
       importedEdges.headOption match {
         case Some(edge) =>
-          edge.value.id should be("A-B")
-          edge.head.id should be("A")
-          edge.tail.id should be("B")
+          edge.value.id should be("1-2")
+          edge.head.id should be("1")
+          edge.tail.id should be("2")
         case None => fail
       }
     }
@@ -91,9 +85,10 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
 
   it should "import xml created by yed with node and edge properties" in {
     val cities = io.Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("yed-cities.graphml"))
-    val imported = testDataType.fromXml(cities.getLines().mkString)
-    imported.right.toOption match {
-      case Some(graphml) =>
+    val imported = fromGraphML[Unit, Unit, Unit](cities.getLines().mkString)
+
+    imported match {
+      case Right(graphml) =>
         graphml.nodes.find(_.id == "n0") match {
           case Some(n0) =>
             n0.id should be("n0")
@@ -103,11 +98,11 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
 
         graphml.edges.map(_.value).find(_.id == "e1") match {
           case Some(e1) =>
-            e1.properties.find(_.key.id == "d7") should be(Some(GraphMLProperty(GraphMLKey("d7", Some("Property 1"), Some("string"), Some("edge"), None), "test")))
+            e1.properties.find(_.key == "d7") should be(Some(GraphMLProperty("d7", "test")))
             e1.label should be(Some("42"))
           case _ => fail("unable to find edge e1")
         }
-      case _ => fail("no graph imported")
+      case Left(errors) => fail(s"error during parsing: $errors")
     }
   }
 
