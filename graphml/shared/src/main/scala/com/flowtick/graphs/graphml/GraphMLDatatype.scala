@@ -26,9 +26,10 @@ private[graphml] object PartialParsedGraph {
 class GraphMLDatatype[V, N, M](implicit
   identifiable: Identifiable[GraphMLNode[N]],
   edgeLabel: Labeled[Edge[GraphMLEdge[Unit], GraphMLNode[N]], String],
-  nodeDataType: Datatype[GraphMLNode[N]]) extends Datatype[Graph[GraphMLEdge[Unit], GraphMLNode[N], GraphMLGraph[Unit]]] {
+  nodeDataType: Datatype[GraphMLNode[N]],
+  edgeDataType: Datatype[GraphMLEdge[V]]) extends Datatype[Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[Unit]]] {
 
-  override def serialize(g: Graph[GraphMLEdge[Unit], GraphMLNode[N], GraphMLGraph[Unit]]): NodeSeq = {
+  override def serialize(g: Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[Unit]]): NodeSeq = {
 
     def nodeKeys: Iterable[Node] = g.value.keys.map { key: GraphMLKey =>
       // format: OFF
@@ -63,8 +64,9 @@ class GraphMLDatatype[V, N, M](implicit
     // format: ON
   }
 
-  override def deserialize(from: NodeSeq, graphKeys: scala.collection.Map[String, GraphMLKey]): ValidatedNel[Throwable, Graph[GraphMLEdge[Unit], GraphMLNode[N], GraphMLGraph[Unit]]] = {
-    def parseGraphML(root: scala.xml.Node): ValidatedNel[Throwable, Graph[GraphMLEdge[Unit], GraphMLNode[N], GraphMLGraph[Unit]]] =
+  override def deserialize(from: NodeSeq,
+                           graphKeys: scala.collection.Map[String, GraphMLKey]): ValidatedNel[Throwable, Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[Unit]]] = {
+    def parseGraphML(root: scala.xml.Node): ValidatedNel[Throwable, Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[Unit]]] =
       root.child.find(_.label == "graph").map { graphNode =>
         parseGraphNodes(graphNode, graphKeys: scala.collection.Map[String, GraphMLKey]).map { parsedGraph =>
           Graph.create(GraphMLGraph[Unit]((), parsedGraph.id, graphKeys.values.toSeq), parsedGraph.nodes.values, parseEdges(parsedGraph.edgesXml, parsedGraph.nodes, graphKeys))
@@ -80,26 +82,29 @@ class GraphMLDatatype[V, N, M](implicit
   protected def parseEdges(
     edgeXmlNodes: Seq[scala.xml.Node],
     nodes: scala.collection.Map[String, GraphMLNode[N]],
-    keys: scala.collection.Map[String, GraphMLKey]): Seq[Edge[GraphMLEdge[Unit], GraphMLNode[N]]] =
+    keys: scala.collection.Map[String, GraphMLKey]): Seq[Edge[GraphMLEdge[V], GraphMLNode[N]]] =
     edgeXmlNodes.flatMap { edgeNode =>
       val edgeId = GraphMLDatatype.singleAttributeValue("id", edgeNode).getOrElse("edge")
 
-      for {
-        source <- GraphMLDatatype.singleAttributeValue("source", edgeNode)
-        target <- GraphMLDatatype.singleAttributeValue("target", edgeNode)
-        sourceNode <- nodes.get(source)
-        targetNode <- nodes.get(target)
-      } yield {
-        val properties = GraphMLDatatype.parseProperties(edgeNode)
+      edgeDataType.deserialize(edgeNode.child, keys).map { edgeValue =>
+        for {
+          source <- GraphMLDatatype.singleAttributeValue("source", edgeNode)
+          target <- GraphMLDatatype.singleAttributeValue("target", edgeNode)
+          sourceNode <- nodes.get(source)
+          targetNode <- nodes.get(target)
+        } yield {
+          val properties = GraphMLDatatype.parseProperties(edgeNode)
 
-        val mlEdge = GraphMLEdge(
-          edgeId,
-          (),
-          extractEdgeLabel(properties, keys),
-          properties)
+          val mlEdge = GraphMLEdge(
+            edgeId,
+            ,
+            extractEdgeLabel(properties, keys),
+            properties)
 
-        Edge[GraphMLEdge[Unit], GraphMLNode[N]](mlEdge, sourceNode, targetNode)
-      }
+          Edge[GraphMLEdge[V], GraphMLNode[N]](edgeValue, sourceNode, targetNode)
+        }
+      }.orElse(invalidNel())
+
     }
 
   protected def extractEdgeLabel(properties: Seq[GraphMLProperty], keys: scala.collection.Map[String, GraphMLKey]): Option[String] = {
