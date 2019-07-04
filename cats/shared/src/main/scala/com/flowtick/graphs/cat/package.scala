@@ -1,6 +1,6 @@
 package com.flowtick.graphs
 
-import cats.{ Contravariant, Functor, Monoid, Semigroup }
+import cats.{ Contravariant, Functor, Monoid }
 
 package object cat {
 
@@ -27,7 +27,7 @@ package object cat {
     override def empty: Graph[V, N, M] = Graph.empty(metaMonoid.empty)
 
     override def combine(x: Graph[V, N, M], y: Graph[V, N, M]): Graph[V, N, M] =
-      Graph[V, N, M](metaMonoid.combine(x.value, y.value), x.edges ++ y.edges, contextMonoid.combine(x.nodeContext, y.nodeContext))
+      Graph[V, N, M](metaMonoid.combine(x.value, y.value), contextMonoid.combine(x.nodeContext, y.nodeContext))
   }
 
   class EdgeValueFunctor[N] extends Functor[({ type f[x] = Edge[x, N] })#f] {
@@ -45,12 +45,10 @@ package object cat {
 
   class GraphNodeFunctor[V, N, M](implicit
     identifiable: Identifiable[N],
-    edgeNodeFunctor: Functor[({ type f[x] = Edge[V, x] })#f],
     nodeContextFunctor: Functor[({ type f[x] = NodeContext[V, x] })#f]) extends Functor[({ type f[x] = Graph[V, x, M] })#f] {
     override def map[A, B](fa: Graph[V, A, M])(f: A => B): Graph[V, B, M] = {
       Graph[V, B, M](
         fa.value,
-        fa.edges.map(edgeNodeFunctor.map(_)(f)),
         fa.nodeContext.map {
           case (node, context) => (f(node), nodeContextFunctor.map(context)(f))
         })

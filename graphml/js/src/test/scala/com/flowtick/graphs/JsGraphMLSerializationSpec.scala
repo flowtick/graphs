@@ -21,12 +21,14 @@ class JsGraphMLSerializationSpec extends FlatSpec with Matchers {
 
         xml.descendant.filter(_.label == "node").flatMap(_.attribute("id").map(_.text)) should contain theSameElementsAs List("B", "A")
         xml.descendant.filter(_.label == "edge").flatMap(_.attribute("id").map(_.text)) should be(List("A-B"))
+      case None => fail
     }
   }
 
   it should "import graph from XML" in {
     testDataType.serialize(testGraph).headOption match {
       case Some(xml) => fromGraphML[Unit, Unit, Unit](xml.toString()).isRight should be(true)
+      case None => fail
     }
   }
 }

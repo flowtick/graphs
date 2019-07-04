@@ -43,10 +43,10 @@ final case class Edge[V, N](value: V, head: N, tail: N) {
 final case class NodeContext[V, N](
   incoming: Set[Edge[V, N]],
   outgoing: Set[Edge[V, N]]) {
-  def map[B, C](nodeFn: N => B, valueFn: V => C): NodeContext[C, B] = {
+  def map[B, C](nodeFn: N => B, edgeFn: Edge[V, N] => C): NodeContext[C, B] = {
     NodeContext(
-      incoming.map(edge => Edge(valueFn(edge.value), nodeFn(edge.head), nodeFn(edge.tail))),
-      outgoing.map(edge => Edge(valueFn(edge.value), nodeFn(edge.head), nodeFn(edge.tail))))
+      incoming.map(edge => Edge(edgeFn(edge), nodeFn(edge.head), nodeFn(edge.tail))),
+      outgoing.map(edge => Edge(edgeFn(edge), nodeFn(edge.head), nodeFn(edge.tail))))
   }
 }
 
@@ -55,12 +55,14 @@ object NodeContext {
 }
 
 // #graph
-
 final case class Graph[V, N, M](
   value: M,
-  edges: Iterable[Edge[V, N]],
   private[graphs] val nodeContext: scala.collection.Map[N, NodeContext[V, N]]) {
   lazy val nodes: Iterable[N] = nodeContext.keys
+
+  lazy val edges: Iterable[Edge[V, N]] = nodeContext.iterator.flatMap {
+    case (_, context) => context.incoming.iterator
+  }.toIterable
 
   def outgoing(node: N): Set[Edge[V, N]] = nodeContext.get(node).map(_.outgoing).getOrElse(Set.empty)
 
@@ -72,7 +74,7 @@ final case class Graph[V, N, M](
 }
 
 object Graph {
-  def empty[V, N, M](meta: M): Graph[V, N, M] = Graph[V, N, M](meta, Iterable.empty, Map.empty)
+  def empty[V, N, M](meta: M): Graph[V, N, M] = Graph[V, N, M](meta, Map.empty)
 
   def of[V, N, M](value: M, nodes: Option[Iterable[N]] = None)(edges: Iterable[Edge[V, N]]): Graph[V, N, M] =
     create(value, nodes.getOrElse(Iterable.empty), edges)
@@ -104,7 +106,7 @@ object Graph {
       nodeContext.put(tail, tailContext.copy(incoming = tailContext.incoming + edge))
     }
 
-    Graph(value, edges, nodeContext)
+    Graph(value, nodeContext)
   }
 }
 

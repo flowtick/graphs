@@ -11,7 +11,7 @@ final case class GraphMLKey(
   yfilesType: Option[String] = None,
   graphsType: Option[String] = None)
 
-final case class GraphMLProperty(key: String, value: Any)
+final case class GraphMLProperty(key: String, value: Any, typeHint: Option[String] = None)
 
 final case class GraphMLNode[N](
   id: String,
@@ -24,6 +24,8 @@ final case class GraphMLNode[N](
 final case class GraphMLEdge[V](
   id: String,
   value: V,
+  source: Option[String],
+  target: Option[String],
   label: Option[String] = None,
   properties: Seq[GraphMLProperty] = Seq.empty)
 

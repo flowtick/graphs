@@ -1,8 +1,11 @@
+import com.flowtick.graphs.Graph
+import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.graphml._
 
 trait GraphMLExample {
-  val graphXml: scala.xml.NodeSeq = DijkstraGraph.cities.toGraphML.xml
+  val graphMLCities: Graph[GraphMLEdge[Int], GraphMLNode[String], GraphMLGraph[Unit]] = DijkstraGraph.cities.toGraphML()
 
-  println(fromGraphML[Unit, Unit, Unit](graphXml.toString()))
-  // Right(DefaultGraph(GraphMLGraph(Some(G)),ListBuffer(GraphMLNode(Frankfurt,Some(Frankfurt),Map(graphics -> ...
+  println(fromGraphML[Int, String, Unit](graphMLCities.xml.toString()))
+  println(graphMLCities)
+  // Graph(GraphMLGraph((),Some(G),List()),Map(GraphMLNode(Erfurt,Erfurt, ...
 }

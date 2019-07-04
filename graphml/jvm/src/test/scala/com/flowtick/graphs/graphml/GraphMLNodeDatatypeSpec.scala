@@ -18,14 +18,14 @@ class GraphMLNodeDatatypeSpec extends FlatSpec with Matchers {
     val deserialized: ValidatedNel[Throwable, GraphMLNode[SomeNodeValue]] = fooDataType.deserialize(serialized, fooDataType.keys.map(key => (key.id, key)).toMap)
 
     val expectedXml = <node id="test">
-                        <data key="one">foo</data><data key="two">bar</data>
-                        <data key="graphics">
+                        <data key="node_one" type="string">foo</data><data key="node_two" type="string">bar</data>
+                        <data key="node_graphics">
                           <y:ShapeNode>
                             <y:Geometry height="30" width="30" x="0" y="0"/>
                             <y:Fill color="#FFFFFF" transparent="false"/>
                             <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
                             <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true">
-                              test<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
+                              <![CDATA[test]]><y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
                               <y:ModelParameter>
                                 <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
                               </y:ModelParameter>

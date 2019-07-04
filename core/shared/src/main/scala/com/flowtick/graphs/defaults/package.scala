@@ -3,7 +3,11 @@ package com.flowtick.graphs
 package object defaults {
   def n[X](value: X, label: Option[String] = None) = Node[X](value, label)
 
-  implicit def identifiableString[X]: Identifiable[String] = new Identifiable[String] {
+  implicit val identifiableUnit: Identifiable[Unit] = new Identifiable[Unit] {
+    override def id(string: Unit): String = "()"
+  }
+
+  implicit val identifiableString: Identifiable[String] = new Identifiable[String] {
     override def id(string: String): String = string
   }
 
@@ -11,11 +15,11 @@ package object defaults {
     override def id(number: N): String = numeric.toDouble(number).toString
   }
 
-  implicit def unitLabel: Labeled[Unit, String] = new Labeled[Unit, String] {
+  implicit val unitLabel: Labeled[Unit, String] = new Labeled[Unit, String] {
     override def label(edge: Unit): Option[String] = None
   }
 
-  implicit def stringLabel: Labeled[String, String] = new Labeled[String, String] {
+  implicit val stringLabel: Labeled[String, String] = new Labeled[String, String] {
     override def label(string: String): Option[String] = Some(string)
   }
 
