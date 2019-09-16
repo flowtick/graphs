@@ -23,7 +23,7 @@
 <title>cats support · graphs</title>
 <link rel="stylesheet" href="assets/stylesheets/application.451f80e5.css">
 <link rel="stylesheet" href="assets/stylesheets/application-palette.22915126.css">
-<meta name="theme-color" content="#03a9f4" />
+<meta name="theme-color" content="#4caf50" />
 <link rel="stylesheet" href="lib/material__tabs/dist/mdc.tabs.min.css">
 <link rel="stylesheet" href="lib/prettify/prettify.css">
 <script src="assets/javascripts/modernizr.1aa3b519.js"></script>
@@ -37,8 +37,8 @@ code,kbd,pre{font-family:"Iosevka","Courier New",Courier,monospace}
 <link rel="stylesheet" href="assets/stylesheets/paradox-material-theme.css">
 </head>
 <body
-data-md-color-primary="light-blue"
-data-md-color-accent="light-blue"
+data-md-color-primary="green"
+data-md-color-accent="green"
 >
 <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
 <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -152,7 +152,7 @@ flowtick/graphs
 <ul style="display: none">
 <li class="md-nav__item md-version" id="project.version">
 <label class="md-nav__link" for="__version">
-<i class="md-icon" title="Version">label_outline</i> 0.2.2
+<i class="md-icon" title="Version">label_outline</i> 0.2.3
 </label>
 </li>
 </ul>
@@ -165,24 +165,24 @@ flowtick/graphs
 <h2><a href="#cats-support" name="cats-support" class="anchor"><span class="anchor-link"></span></a>cats support</h2>
 <p><code>graphs</code> implements some typeclass instances to allow basic operations like combining graphs.</p>
 <p>You need to add the <code>graphs-cats</code> dependency to use that:</p>
-<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-cats&quot; % &quot;0.2.2&quot;
+<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-cats&quot; % &quot;0.2.3&quot;
 </code></pre>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.2.2/examples/src/main/scala/CatsApp.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
-import com.flowtick.graphs.cat._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.2.3/examples/shared/src/main/scala/CatsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.cat.instances._
 import cats.implicits._
 import cats.kernel.Monoid
+import com.flowtick.graphs.Graph
 
-object CatsApp extends App {
-  implicit val monoid: Monoid[DefaultGraph[Edge[Unit, String], String, Unit]] = graphMonoid
+trait CatsExample {
+  implicit val monoid = Monoid[Graph[Unit, String, Unit]]
 
-  val someGraph = defaultGraph.from(Set(
+  val someGraph = Graph.from(Set(
     n(&quot;1&quot;) --&gt; n(&quot;2&quot;),
 
     n(&quot;2&quot;) --&gt; n(&quot;3&quot;),
     n(&quot;2&quot;) --&gt; n(&quot;4&quot;)))
 
-  val anotherGraph = defaultGraph.from(Set(
+  val anotherGraph = Graph.from(Set(
     n(&quot;2&quot;) --&gt; n(&quot;3&quot;),
 
     n(&quot;4&quot;) --&gt; n(&quot;3&quot;),
@@ -190,20 +190,20 @@ object CatsApp extends App {
 
   val combined = monoid.combine(someGraph, anotherGraph)
 
-  println(defaultGraph.edges(combined))
+  println(combined.edges)
   // Set(4 --&gt; 3[()], 4 --&gt; 5[()], 1 --&gt; 2[()], 2 --&gt; 3[()], 2 --&gt; 4[()])
 }</code></pre>
 <p>Which computes the following combination of graphs:</p>
 <p><img src="monoid-example.png" alt="monoid example" /></p>
 </div>
 <div>
-<a href="https://github.com/flowtick/graphs/tree/v0.2.2/docs/cats.md" title="Edit this page" class="md-source-file md-edit">
+<a href="https://github.com/flowtick/graphs/tree/v0.2.3/docs/cats.md" title="Edit this page" class="md-source-file md-edit">
 Edit this page
 </a>
 </div>
 <div class="print-only">
 <span class="md-source-file md-version">
-0.2.2
+0.2.3
 </span>
 </div>
 </article>
