@@ -1,4 +1,4 @@
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.5.1")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.6.0")
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.28")
 addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.1")
 addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.4.2")
