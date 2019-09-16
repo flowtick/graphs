@@ -1,5 +1,3 @@
-import com.flowtick.graphs.layout.GraphLayout
-
 import scala.scalajs.js.annotation.JSExportTopLevel
 
 @JSExportTopLevel("dijkstra")
@@ -18,9 +16,7 @@ object CustomGraphExampleApp extends CustomGraphExample with App
 object DfsExampleApp extends DfsExample with App
 
 @JSExportTopLevel("graphml")
-object GraphMLRendererExampleApp extends GraphMLRendererExample with App {
-  override lazy val layout = GraphLayout.none
-}
+object GraphMLRendererExampleApp extends GraphMLExample with App
 
 @JSExportTopLevel("simple")
 object SimpleGraphExampleApp extends SimpleGraphExample with App

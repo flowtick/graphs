@@ -1,9 +1,9 @@
 import ReleaseTransformations._
 
-val mainScalaVersion = "2.12.8"
+val mainScalaVersion = "2.13.0"
 val scalaXmlV = "1.1.1"
-val catsV = "1.5.0"
-val xmlsV = "0.1.9"
+val catsV = "2.0.0"
+val xmlsV = "0.1.10"
 
 lazy val commonSettings = Seq(
   resolvers ++= Seq(
@@ -11,7 +11,7 @@ lazy val commonSettings = Seq(
   ),
   organization := "com.flowtick",
   scalaVersion := mainScalaVersion,
-  crossScalaVersions := Seq(mainScalaVersion, "2.11.12"),
+  crossScalaVersions := Seq(mainScalaVersion, "2.12.10"),
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   releaseCrossBuild := true,
   releaseProcess := Seq[ReleaseStep](
@@ -29,9 +29,9 @@ lazy val commonSettings = Seq(
     pushChanges
   ),
   libraryDependencies ++=
-    "org.scalatest" %%% "scalatest" % "3.0.4" % Test ::
-    "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test ::
-    "org.scalacheck" %% "scalacheck" % "1.14.0" % Test ::
+    "org.scalatest" %%% "scalatest" % "3.0.8" % Test ::
+    "org.scalamock" %% "scalamock" % "4.4.0" % Test ::
+    "org.scalacheck" %% "scalacheck" % "1.14.1-RC2" % Test ::
     Nil,
   wartremoverErrors ++= Warts.unsafe.filterNot(Seq(
     Wart.NonUnitStatements,
@@ -58,7 +58,7 @@ lazy val commonSettings = Seq(
   ),
   autoAPIMappings := true,
   siteSubdirName in ScalaUnidoc := "latest/api",
-  scalacOptions += "-Ypartial-unification",
+  scalacOptions += (if (scalaVersion.value.contains("2.13")) "" else "-Ypartial-unification"),
   coverageExcludedPackages := "<empty>;"
 )
 
@@ -69,7 +69,7 @@ lazy val core = (crossProject in file(".") / "core")
   )
 
 lazy val coreJS = core.js.settings(
-  libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.2"
+  libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.7"
 )
 lazy val coreJVM = core.jvm
 
@@ -98,7 +98,7 @@ lazy val graphml = (crossProject in file(".") / "graphml")
     libraryDependencies ++= Seq(
       "com.flowtick" %%% "xmls" % xmlsV
     )
-  ).dependsOn(core, layout)
+  ).dependsOn(core, layout, cats)
 
 lazy val graphmlJS = graphml.js
 lazy val graphmlJVM = graphml.jvm
@@ -106,7 +106,7 @@ lazy val graphmlJVM = graphml.jvm
 lazy val editor = (crossProject in file(".") / "editor")
   .settings(commonSettings)
   .settings(
-    name := "graphs-editor",
+    name := "graphs-editor"
   ).dependsOn(core, graphml)
 
 lazy val editorJS = editor.js.settings(

@@ -3,7 +3,7 @@ package com.flowtick.graphs.layout
 import java.util
 
 import com.flowtick.graphs.layout.GraphLayout.NodeLayout
-import com.flowtick.graphs.{ EdgeType, Graph, Identifiable, Labeled }
+import com.flowtick.graphs.{ Edge, Graph, Identifiable, Labeled }
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
 import com.mxgraph.model.{ mxCell, mxGeometry, mxGraphModel }
 import com.mxgraph.view.mxGraph
@@ -13,14 +13,10 @@ import scala.collection.mutable
 
 object JGraphXLayouter extends GraphLayout {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
-  override def layout[G[_, _, _], E[_, _], V, N, M](
-    g: G[E[V, N], N, M],
-    shape: N => Option[ShapeDefinition])(implicit
+  override def layout[V, N, M](g: Graph[V, N, M])(implicit
     identifiable: Identifiable[N],
-    graphType: Graph[G],
-    edgeType: EdgeType[E],
-    edgeLabel: Labeled[E[V, N], String]): NodeLayout[N] = node => {
-    new JGraphXLayout[G, E, V, N, M]().layout(g, shape)
+    edgeLabel: Labeled[Edge[V, N], String]): NodeLayout[N] = node => {
+    new JGraphXLayout[V, N, M]().layout(g)
       .getModel.asInstanceOf[mxGraphModel]
       .getCells.asScala.mapValues(cell => JGraphXCell(cell.asInstanceOf[mxCell])).get(identifiable.id(node))
   }
@@ -37,24 +33,22 @@ final case class JGraphGeometry(geometry: mxGeometry) extends Geometry {
 }
 
 final case class JGraphXCell(cell: mxCell) extends Cell {
-  override def geometry: Geometry = JGraphGeometry(cell.getGeometry)
+  override def geometry: Option[Geometry] = Option(cell.getGeometry).map(JGraphGeometry)
 }
 
-class JGraphXLayout[G[_, _, _], E[_, _], V, N, M](implicit
+class JGraphXLayout[V, N, M](implicit
   identifiable: Identifiable[N],
-  graphType: Graph[G],
-  edgeType: EdgeType[E],
-  edgeLabel: Labeled[E[V, N], String]) {
+  edgeLabel: Labeled[Edge[V, N], String]) {
 
-  def layout(graph: G[E[V, N], N, M], shapeDefinition: N => Option[ShapeDefinition]): mxGraph = {
-    val layoutGraph = graphToMxGraph(graph, shapeDefinition)
+  def layout(graph: Graph[V, N, M]): mxGraph = {
+    val layoutGraph = graphToMxGraph(graph)
 
     new mxHierarchicalLayout(layoutGraph).execute(layoutGraph.getDefaultParent)
     layoutGraph
   }
 
   @SuppressWarnings(Array("org.wartremover.warts.Null"))
-  private def graphToMxGraph(graph: G[E[V, N], N, M], shapeSpec: N => Option[ShapeDefinition]): mxGraph = {
+  private def graphToMxGraph(graph: Graph[V, N, M]): mxGraph = {
     val mxGraph = new mxGraph
     mxGraph.getModel.beginUpdate()
 
@@ -70,31 +64,26 @@ class JGraphXLayout[G[_, _, _], E[_, _], V, N, M](implicit
 
     val vertices = mutable.Map[String, Object]()
 
-    graphType.nodes(graph).foreach { node =>
+    graph.nodes.foreach { node =>
       val id = identifiable.id(node)
       val displayName = id
-      val width = shapeSpec(node).map(_.width).getOrElse(30)
-      val height = shapeSpec(node).map(_.height).getOrElse(30)
+      val width = 30
+      val height = 30
       val vertex = mxGraph.insertVertex(mxGraph.getDefaultParent, id, displayName, 0, 0, width, height)
       vertices.put(id, vertex)
 
       val style = new util.HashMap[String, Object]()
-      shapeSpec(node).foreach(shape => {
-        style.put(mxConstants.STYLE_FILLCOLOR, shape.color)
-        style.put(mxConstants.STYLE_ROUNDED, shape.rounded.toString)
-        style.put(mxConstants.STYLE_SHAPE, shape.shapeType.toLowerCase match {
-          case "ellipse" => mxConstants.SHAPE_ELLIPSE
-          case "cloud" => mxConstants.SHAPE_CLOUD
-          case _ => mxConstants.SHAPE_RECTANGLE
-        })
-      })
+      style.put(mxConstants.STYLE_FILLCOLOR, "#FFFFFF")
+      style.put(mxConstants.STYLE_ROUNDED, "true")
+      style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE)
+
       mxGraph.getStylesheet.putCellStyle(id, style)
       mxGraph.setCellStyle(id, Array[AnyRef](vertex))
     }
 
-    graphType.edges(graph).foreach { edge: E[V, N] =>
-      val sourceId = identifiable.id(edgeType.head(edge))
-      val targetId = identifiable.id(edgeType.tail(edge))
+    graph.edges.foreach { edge: Edge[V, N] =>
+      val sourceId = identifiable.id(edge.head)
+      val targetId = identifiable.id(edge.tail)
       val edgeId = s"$sourceId-$targetId"
 
       mxGraph.insertEdge(

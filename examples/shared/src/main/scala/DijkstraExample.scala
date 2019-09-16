@@ -1,11 +1,11 @@
+import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
 import com.flowtick.graphs.algorithm._
 
 object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
   // #cities
-  val cities = defaultGraph.from(Set(
+  val cities: Graph[Int, String, Unit] = Graph.from(Set(
     n("Frankfurt") --> (85, n("Mannheim")),
     n("Frankfurt") --> (217, n("Wuerzburg")),
     n("Frankfurt") --> (173, n("Kassel")),

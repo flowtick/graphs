@@ -18,30 +18,28 @@ algorithm to find the shortest path between two nodes.
 
 ## Core Types
 
-In `graphs` the core type is the graph type-class:
+In `graphs` the core type is the `Graph` type-class:
 
 @@snip [Graph.scala](../core/shared/src/main/scala/com/flowtick/graphs/Graph.scala){ #graph }
 
 You can see that is a type constructor with a higher-kinded type `G` for a graph type that has 3 _holes_ (type parameters) in it: 
-`G[_, _, _]`  and a second higher-kinded type with 2 parameters: `ET[_, _]` which is the edge type.
+`G[_, _, _]` .
 
 This allows to parametrize the graphs: 
 
-* by the edge type which defines the relation between nodes
-* by the value type of the edges
-* by the value type of the node
-* by the value type of the graph (to allow carry it some meta information like a description or groups of nodes)
+* by the value type of the edges (usually named `V`) 
+* by the value type of the node (usually named `N`)
+* by the value type of the graph (usually named `M`) 
 
-The edge type is parametrized by the edge value type and the node value type.
+The later allows to carry some meta information like a description or groups / layers of nodes.
 
-In the methods of the type-class you see how the type parameters are applied to the type constructors: 
-`G[ET[V, N], N, M]` which can be read as 
-*a graph with value M and edge type ET of edge values V connecting nodes of type N*.
+In the methods of the type class you see how the type parameters are applied to the type constructors: 
+`G[V, N, M]` which can be read as 
+*a graph with value M and edge values V connecting nodes of type N*.
 
 ## Custom Graph Types
 
-Since the graph type itself is parametrized, you can just plug in your types. 
-You only need to define how nodes can be identified:
+Since the graph type itself is parametrized, you can just plug in your types:
 
 @@snip [CustomGraphApp.scala](../examples/shared/src/main/scala/CustomGraphExample.scala){#custom_graph}
 

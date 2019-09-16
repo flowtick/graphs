@@ -1,9 +1,9 @@
+import com.flowtick.graphs._
 import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
 
 trait BfsExample {
-  val graph = defaultGraph.from(Set(
+  val graph = Graph.from(Set(
     n("A") --> n("D"),
     n("A") --> n("C"),
     n("A") --> n("B"),

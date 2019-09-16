@@ -3,5 +3,7 @@ target
 .idea
 .ensime
 .ensime_cache
+.bloop
+.metals
 ensime-langserver.log
 pc.stdout.log

@@ -5,10 +5,7 @@ import com.flowtick.graphs._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class DijkstraShortestPath[G[_, _, _], E[_, _], V, N, M](graph: G[E[V, N], N, M])(implicit
-  graphType: Graph[G],
-  edgeType: EdgeType[E],
-  numeric: Numeric[V]) {
+class DijkstraShortestPath[V, N, M](graph: Graph[V, N, M])(implicit numeric: Numeric[V]) {
 
   /**
    * determine the shortest path from start to end,
@@ -18,9 +15,9 @@ class DijkstraShortestPath[G[_, _, _], E[_, _], V, N, M](graph: G[E[V, N], N, M]
    * @param end the end node
    * @return Some list of node ids with the shortest path, None if there is no path from start to end
    */
-  def shortestPath(start: N, end: N): Iterable[E[V, N]] = {
+  def shortestPath(start: N, end: N): Iterable[Edge[V, N]] = {
     val distanceMap = mutable.Map.empty[N, Double]
-    val predecessorMap = mutable.Map.empty[N, (N, E[V, N])]
+    val predecessorMap = mutable.Map.empty[N, (N, Edge[V, N])]
 
     implicit val nodePriority: Ordering[N] = new Ordering[N] {
       override def compare(x: N, y: N): Int = {
@@ -30,7 +27,7 @@ class DijkstraShortestPath[G[_, _, _], E[_, _], V, N, M](graph: G[E[V, N], N, M]
 
     val queue = mutable.PriorityQueue.empty[N]
 
-    graphType.nodes(graph).foreach { node =>
+    graph.nodes.foreach { node =>
       if (node == start) {
         distanceMap.put(start, 0)
       } else {
@@ -44,11 +41,11 @@ class DijkstraShortestPath[G[_, _, _], E[_, _], V, N, M](graph: G[E[V, N], N, M]
       val current = queue.dequeue()
       val currentDistance: Double = distanceMap(current)
       if (currentDistance != Double.NaN) {
-        graphType.outgoing(graph).getOrElse(current, Iterable.empty).foreach { edge =>
-          val weight = numeric.toDouble(edgeType.value(edge))
+        graph.outgoing(current).foreach { edge =>
+          val weight = numeric.toDouble(edge.value)
           val newDist = currentDistance + weight
 
-          Some(edgeType.tail(edge)).filter(newDist < distanceMap(_)).foreach { node =>
+          Some(edge.tail).filter(newDist < distanceMap(_)).foreach { node =>
             distanceMap.put(node, newDist)
             predecessorMap.put(node, (current, edge))
             queue.enqueue(node)
@@ -63,8 +60,8 @@ class DijkstraShortestPath[G[_, _, _], E[_, _], V, N, M](graph: G[E[V, N], N, M]
     }
 
     if (predecessorMap.get(end).nonEmpty) {
-      val predecessors = mutable.Stack[(N, E[V, N])]()
-      val predecessorList = ListBuffer.empty[E[V, N]]
+      val predecessors = mutable.Stack[(N, Edge[V, N])]()
+      val predecessorList = ListBuffer.empty[Edge[V, N]]
       predecessorMap.get(end).foreach(predecessors.push)
 
       while (predecessors.nonEmpty) {

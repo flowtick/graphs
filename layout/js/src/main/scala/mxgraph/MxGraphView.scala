@@ -1,19 +1,18 @@
 package mxgraph
 
 import com.flowtick.graphs._
+import com.flowtick.graphs.defaults._
 import org.scalajs.dom.Element
 
 // $COVERAGE-OFF$ coverage disabled here due to https://github.com/scoverage/scalac-scoverage-plugin/issues/196
 @SuppressWarnings(Array("org.wartremover.warts.Null"))
 object MxGraphView {
-  def create[G[_, _, _], E[_, _]](
+  def create(
     container: Element,
-    graph: G[E[JsEdge, JsNode], JsNode, JsGraph],
+    graph: Graph[JsEdge, JsNode, JsGraph],
     layout: MxGraph => MxGraph = hierarchicalLayout)(implicit
-    graphType: Graph[G],
-    edgeType: EdgeType[E],
     nodeId: Identifiable[JsNode],
-    edgeLabel: Labeled[E[JsEdge, JsNode], String]): MxGraph = {
+    edgeLabel: Labeled[Edge[JsEdge, JsNode], String]): MxGraph = {
     MxEvent.disableContextMenu(container)
 
     val viewGraph = new MxGraph(container)
@@ -34,7 +33,7 @@ object MxGraphView {
 
     try {
       val parent = viewGraph.getDefaultParent()
-      val nodeCells: Map[JsNode, MxCell] = graphType.nodes[E, JsEdge, JsNode, JsGraph](graph).map { node =>
+      val nodeCells: Map[JsNode, MxCell] = graph.nodes.map { node =>
         val id = nodeId.id(node)
 
         (node, viewGraph.insertVertex(
@@ -47,14 +46,14 @@ object MxGraphView {
           height = 25))
       }.toMap
 
-      graphType.edges(graph).map { edge =>
-        val id = edgeType.value(edge).toString
+      graph.edges.map { edge =>
+        val id = edge.value.toString
         (edge, viewGraph.insertEdge(
           parent = parent,
           id = id,
           value = edgeLabel.label(edge).orNull,
-          source = nodeCells.get(edgeType.head(edge)).orNull,
-          target = nodeCells.get(edgeType.tail(edge)).orNull))
+          source = nodeCells.get(edge.head).orNull,
+          target = nodeCells.get(edge.tail).orNull))
       }
 
       layout.execute(parent)
@@ -89,20 +88,17 @@ object MxGraphView {
     viewGraph
   }
 
-  def toGraph[G[_, _, _], E[_, _]](meta: JsGraph, view: MxGraph)(implicit
-    builder: GraphBuilder[G],
-    edge: EdgeType[E],
-    identifiable: Identifiable[JsNode]): G[E[JsEdge, JsNode], JsNode, JsGraph] = {
+  def toGraph[G[_, _, _]](meta: JsGraph, view: MxGraph)(implicit identifiable: Identifiable[JsNode]): Graph[JsEdge, JsNode, JsGraph] = {
 
     val nodes = view.getModel().getChildVertices(view.getDefaultParent()).map(nodeCell => JsNode(nodeCell.getId()))
     val edges = view.getModel().getChildEdges(view.getDefaultParent()).map(edgeCell => {
-      edge.apply(
+      Edge(
         JsEdge(Some(edgeCell.getId())),
         JsNode(edgeCell.source.get.getId()),
         JsNode(edgeCell.target.get.getId()))
     })
 
-    builder.create[E, JsEdge, JsNode, JsGraph](meta, nodes, edges)
+    Graph.create[JsEdge, JsNode, JsGraph](meta, nodes, edges)
   }
 }
 // $COVERAGE-ON$

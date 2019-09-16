@@ -1,14 +1,14 @@
 package com.flowtick.graphs.algorithm
 
+import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.defaults.directed._
 import org.scalamock.scalatest.proxy.MockFactory
 import org.scalatest.{ FlatSpec, Matchers }
 
 class DepthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
   "Dfs" should "traverse in depth first manner" in {
 
-    val graph = defaultGraph.from(Seq(
+    val graph = Graph.from(Seq(
       n("1") --> n("2"),
       n("1") --> n("3"),
 
