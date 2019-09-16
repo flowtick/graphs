@@ -1,6 +1,4 @@
 language: scala
-scala: 2.12.8
-jdk: oraclejdk8
 sbt_args: "-J-Xmx2G"
 
 script:
