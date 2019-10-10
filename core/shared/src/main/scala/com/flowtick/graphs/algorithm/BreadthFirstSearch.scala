@@ -20,7 +20,7 @@ class BreadthFirstSearch[V, N, M](
           visitCallbacks.foreach(_.apply(node))
           visitedList += node
 
-          def addAdjacent(nodes: Iterable[N]): Unit = {
+          def addAdjacent(nodes: Iterator[N]): Unit = {
             for (next <- nodes) {
               if (!visited.getOrElse(next, false)) {
                 queue.enqueue(next)

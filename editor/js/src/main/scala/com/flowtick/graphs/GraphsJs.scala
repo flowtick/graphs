@@ -26,7 +26,7 @@ object GraphsJs {
     MxGraphView.toGraph(JsGraph(None), mxGraph)
 
   @JSExport
-  def exampleGraph: Graph[JsEdge, JsNode, JsGraph] = Graph.of(JsGraph(Some("example")))(Seq(
+  def exampleGraph: Graph[JsEdge, JsNode, JsGraph] = Graph.from(JsGraph(Some("example")), edges = Seq(
     n(JsNode("A")) --> (JsEdge(None, None), n(JsNode("B")))))
 
   def main(args: Array[String]): Unit = {

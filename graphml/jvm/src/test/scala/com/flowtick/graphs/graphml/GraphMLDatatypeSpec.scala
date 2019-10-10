@@ -111,7 +111,7 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
   it should "serialize the cities graph" in {
     import com.flowtick.graphs.defaults._
 
-    val cities: Graph[Int, String, Unit] = Graph.from(Set(
+    val cities: Graph[Int, String, Unit] = Graph.fromEdges(Set(
       n("Frankfurt") --> (85, n("Mannheim")),
       n("Frankfurt") --> (217, n("Wuerzburg")),
       n("Frankfurt") --> (173, n("Kassel")),

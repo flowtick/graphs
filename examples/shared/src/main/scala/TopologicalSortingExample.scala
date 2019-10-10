@@ -3,12 +3,12 @@ import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.algorithm._
 
 trait TopologicalSortingExample {
-  lazy val graph = Graph.from(Set(
+  lazy val graph = Graph.fromEdges(Set(
     n("A") --> n("B"),
     n("B") --> n("C"),
     n("D") --> n("A")))
 
-  lazy val clothingDependencies = Graph.from(Set(
+  lazy val clothingDependencies = Graph.fromEdges(Set(
     n("Underpants") --> n("Pants"),
     n("Pants") --> n("Coat"),
     n("Pullover") --> n("Coat"),

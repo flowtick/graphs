@@ -77,7 +77,7 @@ class GraphMLDatatype[V, N, M](implicit
     metaDataType.deserialize(Seq(graph), graphKeys).andThen { meta =>
       parseGraphNodes(graph, graphKeys).andThen { parsedGraph =>
         parseEdges(parsedGraph.edgesXml, parsedGraph.nodes, graphKeys).andThen { edges =>
-          valid(Graph.create(meta, parsedGraph.nodes.values, edges))
+          valid(Graph.from(meta, parsedGraph.nodes.values, edges))
         }
       }
     }

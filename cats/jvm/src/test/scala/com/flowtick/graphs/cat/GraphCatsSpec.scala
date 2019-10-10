@@ -11,11 +11,11 @@ class GraphCatsSpec extends FlatSpec with Matchers {
   "Graph Monoid" should "combine graphs" in {
     type NumberNodeGraph = Graph[Unit, Int, Unit]
 
-    val graphA: NumberNodeGraph = Graph.from(Set(
+    val graphA: NumberNodeGraph = Graph.fromEdges(Set(
       n(1) --> n(2),
       n(2) --> n(3)))
 
-    val graphB: NumberNodeGraph = Graph.from(Set(
+    val graphB: NumberNodeGraph = Graph.fromEdges(Set(
       n(2) --> n(3),
       n(4) --> n(3),
       n(4) --> n(5),
@@ -41,7 +41,7 @@ class GraphCatsSpec extends FlatSpec with Matchers {
   it should "map over node values" in {
     type WeightedGraph = Graph[Double, Int, Unit]
 
-    val graph = Graph.from(Set(
+    val graph = Graph.fromEdges(Set(
       n(1) --> (1.2, n(2)),
       n(2) --> (1.3, n(2))))
 

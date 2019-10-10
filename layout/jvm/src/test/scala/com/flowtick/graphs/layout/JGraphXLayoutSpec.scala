@@ -11,7 +11,7 @@ import scala.util.Try
 
 class JGraphXLayoutSpec extends FlatSpec {
   "JGraphX layout" should "layout simple graph and save it" in {
-    val graph = Graph.from(Set(
+    val graph = Graph.fromEdges(Set(
       n("A") --> n("B"),
       n("B") --> n("C"),
       n("D") --> n("A")))
@@ -26,7 +26,7 @@ class JGraphXLayoutSpec extends FlatSpec {
   }
 
   it should "layout city graph" in {
-    val cities = Graph.from(Set(
+    val cities = Graph.fromEdges(Set(
       n("Frankfurt") --> (85, n("Mannheim")),
       n("Frankfurt") --> (217, n("Wuerzburg")),
       n("Frankfurt") --> (173, n("Kassel")),

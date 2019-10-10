@@ -3,7 +3,7 @@ import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
 
 trait DfsExample {
-  val graph = Graph.from(Set(
+  val graph = Graph.fromEdges(Set(
     n("1") --> n("2"),
     n("1") --> n("9"),
 

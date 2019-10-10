@@ -39,7 +39,7 @@ object GraphMLGraph {
     id: String,
     meta: M,
     edges: Iterable[Edge[GraphMLEdge[V], GraphMLNode[N]]],
-    nodes: Option[Iterable[GraphMLNode[N]]] = None): Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[M]] = {
-    Graph.of(GraphMLGraph(meta, id = Some(id), keys = Seq.empty), nodes)(edges)
+    nodes: Iterable[GraphMLNode[N]] = Iterable.empty): Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[M]] = {
+    Graph.from(GraphMLGraph(meta, id = Some(id), keys = Seq.empty), nodes, edges)
   }
 }
