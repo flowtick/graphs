@@ -14,7 +14,7 @@ package object cat {
 
     override def combine(x: collection.Map[N, NodeContext[V, N]], y: collection.Map[N, NodeContext[V, N]]): collection.Map[N, NodeContext[V, N]] =
       (for {
-        key <- (x.keysIterator ++ y.keysIterator).iterator
+        key <- x.keysIterator ++ y.keysIterator
       } yield {
         val xContext: NodeContext[V, N] = x.getOrElse(key, NodeContext.empty)
         val yContext: NodeContext[V, N] = y.getOrElse(key, NodeContext.empty)
