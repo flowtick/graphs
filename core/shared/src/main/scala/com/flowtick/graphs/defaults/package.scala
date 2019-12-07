@@ -31,8 +31,8 @@ package object defaults {
     override def label(e: Edge[V, N]): Option[String] = labeled.label(e.value)
   }
 
-  implicit class EdgeBuilder[X](node: Node[X]) {
+  implicit class DefaultEdgeBuilder[X](node: Node[X]) {
     def -->[V](value: V, to: Node[X]): Edge[V, X] = Edge[V, X](value, node.value, to.value)
-    def -->[V](to: Node[X]): Edge[Unit, X] = Edge[Unit, X]((), node.value, to.value)
+    def -->(to: Node[X]): Edge[Unit, X] = Edge[Unit, X]((), node.value, to.value)
   }
 }

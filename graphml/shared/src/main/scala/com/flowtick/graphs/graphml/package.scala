@@ -168,9 +168,9 @@ package object graphml {
   def ml[N](value: N, id: Option[String] = None, properties: Seq[GraphMLProperty] = Seq.empty): GraphMLNode[N] =
     GraphMLNode(id.getOrElse(value.toString), value, None, properties)
 
-  implicit class EdgeBuilder[X](node: GraphMLNode[X]) {
+  implicit class GraphMLEdgeBuilder[X](node: GraphMLNode[X]) {
     def -->[V](value: V, to: GraphMLNode[X]): Edge[GraphMLEdge[V], GraphMLNode[X]] = Edge[GraphMLEdge[V], GraphMLNode[X]](GraphMLEdge(s"${node.id}-${to.id}", value, Some(node.id), Some(to.id)), node, to)
-    def -->[V](to: GraphMLNode[X]): Edge[GraphMLEdge[Unit], GraphMLNode[X]] = Edge[GraphMLEdge[Unit], GraphMLNode[X]](GraphMLEdge(s"${node.id}-${to.id}", (), Some(node.id), Some(to.id)), node, to)
+    def -->(to: GraphMLNode[X]): Edge[GraphMLEdge[Unit], GraphMLNode[X]] = Edge[GraphMLEdge[Unit], GraphMLNode[X]](GraphMLEdge(s"${node.id}-${to.id}", (), Some(node.id), Some(to.id)), node, to)
   }
 
   implicit def graphMLNodeIdentifiable[N]: Identifiable[GraphMLNode[N]] = new Identifiable[GraphMLNode[N]] {
