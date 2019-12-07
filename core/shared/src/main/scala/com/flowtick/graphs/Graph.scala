@@ -46,7 +46,7 @@ final case class Edge[V, N](value: V, head: N, tail: N) {
  * @tparam V the value type of the edges
  * @tparam N the value type of the nodes
  */
-case class NodeContext[V, N](
+final case class NodeContext[V, N](
   incoming: Set[Edge[V, N]],
   outgoing: Set[Edge[V, N]]) {
   def map[B, C](nodeFn: N => B, edgeFn: Edge[V, N] => C): NodeContext[C, B] = {
@@ -57,7 +57,7 @@ case class NodeContext[V, N](
 }
 
 object NodeContext {
-  private object EmptyNodeContext extends NodeContext[Any, Any](Set.empty, Set.empty)
+  private val EmptyNodeContext = NodeContext[Any, Any](Set.empty, Set.empty)
 
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   def empty[V, N]: NodeContext[V, N] = EmptyNodeContext.asInstanceOf[NodeContext[V, N]]
@@ -77,15 +77,27 @@ object NodeContext {
  * @tparam N the value type of the nodes
  * @tparam M the value type of the graph
  *
- * To create a graph you need:
- *
- * @param value the value of the graph (of type M)
- * @param nodeContext a mapping of nodes to their context (the incoming and outgoing edges)
  */
 // #graph
-case class Graph[V, N, M](
-  value: M,
-  private[graphs] val nodeContext: scala.collection.Map[N, NodeContext[V, N]]) {
+trait Graph[V, N, M] {
+  def value: M
+
+  def nodeContext: scala.collection.Map[N, NodeContext[V, N]]
+
+  def nodes: Iterable[N]
+
+  def edges: Iterable[Edge[V, N]]
+
+  def outgoing(node: N): Set[Edge[V, N]]
+
+  def incoming(node: N): Set[Edge[V, N]]
+
+  def predecessors(node: N): Iterator[N]
+
+  def successors(node: N): Iterator[N]
+}
+
+abstract class GraphBase[V, N, M] extends Graph[V, N, M] {
   private lazy val lazyNodes: Iterable[N] = nodeContext.keys
 
   /**
@@ -110,11 +122,21 @@ case class Graph[V, N, M](
 }
 // #graph
 
-object Graph {
-  private object EmptyGraph extends Graph[Any, Any, Any]((), Map.empty)
+/**
+ *
+ * @param value the value of the graph (of type M)
+ * @param nodeContext a mapping of nodes to their context (the incoming and outgoing edges)
+ */
+final case class ImmutableGraph[V, N, M](
+  value: M,
+  nodeContext: scala.collection.Map[N, NodeContext[V, N]]) extends GraphBase[V, N, M]
 
-  @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
-  def empty[V, N, M](meta: M): Graph[V, N, M] = EmptyGraph.asInstanceOf[Graph[V, N, M]]
+final case class MutableGraph[V, N, M](
+  value: M,
+  nodeContext: scala.collection.mutable.Map[N, NodeContext[V, N]]) extends GraphBase[V, N, M]
+
+object Graph {
+  def empty[V, N, M](meta: M): Graph[V, N, M] = ImmutableGraph(meta, nodeContext = Map.empty)
 
   def from[V, N, M](
     value: M,
@@ -122,7 +144,7 @@ object Graph {
     edges: Iterable[Edge[V, N]]): Graph[V, N, M] =
     edges.foldLeft {
       nodes.foldLeft(GraphBuilder[V, N, M](value))(_ withNode _)
-    }(_ withEdge _).immutable
+    }(_ withEdge _).build
 
   /**
    * utility method to create a unit typed graph quickly from iterable edges
@@ -161,9 +183,9 @@ final case class MutableGraphBuilder[V, N, M](
     nodeContext.put(node, NodeContext.empty[V, N])
   }
 
-  def mutable = Graph(value, nodeContext)
+  def mutable: Graph[V, N, M] = MutableGraph(value, nodeContext)
 
-  def immutable = Graph(value, nodeContext.toMap)
+  def build: Graph[V, N, M] = ImmutableGraph(value, nodeContext.toMap)
 }
 
 object GraphBuilder {

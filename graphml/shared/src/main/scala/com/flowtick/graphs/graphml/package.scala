@@ -205,7 +205,7 @@ package object graphml {
             }))
       }
 
-      Graph(GraphMLGraph(graph.value, Some("G"), Seq.empty), nodeContext)
+      ImmutableGraph(GraphMLGraph(graph.value, Some("G"), Seq.empty), nodeContext)
     }
   }
 
