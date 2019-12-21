@@ -1,10 +1,25 @@
 language: scala
 sbt_args: "-J-Xmx2G"
 
-script:
-  - sbt clean +test:compile
-  - sbt +test
-  - sbt clean coverage test coverageReport && sbt coverageAggregate
+before_install:
+  - git fetch --tags
+
+stages:
+  - name: test
+  - name: release
+    if: ((branch = master AND type = push) OR (tag IS present)) AND NOT fork
+
+jobs:
+  include:
+    # stage="test" if no stage is specified
+    - name: compile
+      script:
+        - sbt clean +test:compile
+        - sbt +test
+        - sbt clean coverage test coverageReport && sbt coverageAggregate
+    # run ci-release only if previous stages passed
+    - stage: release
+      script: sbt ci-release
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

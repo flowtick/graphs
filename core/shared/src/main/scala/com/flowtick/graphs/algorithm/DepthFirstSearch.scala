@@ -23,7 +23,7 @@ class DepthFirstSearch[V, N, M](
           // to recognize that we completed that node, this will trigger the completion callback branch
           stack.push((node, true))
 
-          def addAdjacent(nodes: Iterable[N]): Unit =
+          def addAdjacent(nodes: Iterator[N]): Unit =
             nodes.foreach { next =>
               if (!visited.getOrElse(next, false)) {
                 stack.push((next, false))

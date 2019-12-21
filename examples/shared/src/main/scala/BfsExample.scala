@@ -3,7 +3,7 @@ import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
 
 trait BfsExample {
-  val graph = Graph.from(Set(
+  val graph = Graph.fromEdges(Set(
     n("A") --> n("D"),
     n("A") --> n("C"),
     n("A") --> n("B"),

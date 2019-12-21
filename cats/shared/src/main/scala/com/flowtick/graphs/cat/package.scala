@@ -14,7 +14,7 @@ package object cat {
 
     override def combine(x: collection.Map[N, NodeContext[V, N]], y: collection.Map[N, NodeContext[V, N]]): collection.Map[N, NodeContext[V, N]] =
       (for {
-        key <- (x.keysIterator ++ y.keysIterator).toIterable
+        key <- x.keysIterator ++ y.keysIterator
       } yield {
         val xContext: NodeContext[V, N] = x.getOrElse(key, NodeContext.empty)
         val yContext: NodeContext[V, N] = y.getOrElse(key, NodeContext.empty)
@@ -27,27 +27,27 @@ package object cat {
     override def empty: Graph[V, N, M] = Graph.empty(metaMonoid.empty)
 
     override def combine(x: Graph[V, N, M], y: Graph[V, N, M]): Graph[V, N, M] =
-      Graph[V, N, M](metaMonoid.combine(x.value, y.value), contextMonoid.combine(x.nodeContext, y.nodeContext))
+      ImmutableGraph[V, N, M](metaMonoid.combine(x.value, y.value), contextMonoid.combine(x.nodeContext, y.nodeContext))
   }
 
-  class EdgeValueFunctor[N] extends Functor[({ type f[x] = Edge[x, N] })#f] {
+  class EdgeValueFunctor[N] extends Functor[({ type E[x] = Edge[x, N] })#E] {
     override def map[A, B](fa: Edge[A, N])(f: A => B): Edge[B, N] = Edge(f(fa.value), fa.head, fa.tail)
   }
 
-  class EdgeNodeFunctor[V] extends Functor[({ type f[x] = Edge[V, x] })#f] {
+  class EdgeNodeFunctor[V] extends Functor[({ type E[x] = Edge[V, x] })#E] {
     override def map[A, B](fa: Edge[V, A])(f: A => B): Edge[V, B] = Edge(fa.value, f(fa.head), f(fa.tail))
   }
 
-  class NodeContextFunctor[V, N](implicit edgeNodeFunctor: Functor[({ type f[x] = Edge[V, x] })#f]) extends Functor[({ type f[x] = NodeContext[V, x] })#f] {
+  class NodeContextFunctor[V, N](implicit edgeNodeFunctor: Functor[({ type E[x] = Edge[V, x] })#E]) extends Functor[({ type E[x] = NodeContext[V, x] })#E] {
     override def map[A, B](fa: NodeContext[V, A])(f: A => B): NodeContext[V, B] =
       NodeContext(fa.incoming.map(edgeNodeFunctor.map(_)(f)), fa.outgoing.map(edgeNodeFunctor.map(_)(f)))
   }
 
   class GraphNodeFunctor[V, N, M](implicit
     identifiable: Identifiable[N],
-    nodeContextFunctor: Functor[({ type f[x] = NodeContext[V, x] })#f]) extends Functor[({ type f[x] = Graph[V, x, M] })#f] {
+    nodeContextFunctor: Functor[({ type E[x] = NodeContext[V, x] })#E]) extends Functor[({ type E[x] = Graph[V, x, M] })#E] {
     override def map[A, B](fa: Graph[V, A, M])(f: A => B): Graph[V, B, M] = {
-      Graph[V, B, M](
+      ImmutableGraph[V, B, M](
         fa.value,
         fa.nodeContext.map {
           case (node, context) => (f(node), nodeContextFunctor.map(context)(f))
@@ -66,9 +66,9 @@ package object cat {
 
     implicit def graphNodeFunctor[V, N, M](implicit
       identifiable: Identifiable[N],
-      edgeNodeFunctor: Functor[({ type f[x] = Edge[V, x] })#f]) = new GraphNodeFunctor[V, N, M]
+      edgeNodeFunctor: Functor[({ type E[x] = Edge[V, x] })#E]) = new GraphNodeFunctor[V, N, M]
 
-    implicit def edgeNodeFunctor[V]: Functor[({ type f[x] = Edge[V, x] })#f] = new EdgeNodeFunctor[V]
+    implicit def edgeNodeFunctor[V]: Functor[({ type E[x] = Edge[V, x] })#E] = new EdgeNodeFunctor[V]
 
     implicit def identifiableContravariant = new IdentifiableContravariant
   }

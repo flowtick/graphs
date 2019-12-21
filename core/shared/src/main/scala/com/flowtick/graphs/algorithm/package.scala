@@ -1,5 +1,7 @@
 package com.flowtick.graphs
 
+import scala.language.higherKinds
+
 package object algorithm {
   implicit class GraphOps[G[_, _, _], V, N, M](graph: Graph[V, N, M])(implicit identifiable: Identifiable[N]) {
     def bfs(startNode: N) = new BreadthFirstSearch[V, N, M](Seq(startNode), graph)

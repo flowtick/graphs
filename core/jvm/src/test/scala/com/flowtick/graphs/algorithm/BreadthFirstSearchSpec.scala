@@ -8,7 +8,7 @@ import org.scalatest.{ FlatSpec, Matchers }
 class BreadthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
   "Bfs" should "traverse in breadth first manner" in {
 
-    val graph = Graph.from(Seq(
+    val graph = Graph.fromEdges(Seq(
       n("1") --> n("2"),
       n("1") --> n("3"),
 

@@ -18,6 +18,6 @@ object GraphGen {
     nodeGen: Gen[N]): Gen[Graph[Option[V], N, M]] = for {
     meta <- metaGen
     edges <- edgesGen[V, N]
-  } yield Graph.of(meta)(edges)
+  } yield Graph.from(meta, edges = edges)
 
 }

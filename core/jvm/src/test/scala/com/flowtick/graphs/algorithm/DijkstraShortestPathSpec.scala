@@ -8,7 +8,7 @@ class DijkstraShortestPathSpec extends FlatSpec with Matchers {
   "Dijkstras algorithm" should "get the shortest path" in {
 
     // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
-    val g = Graph.from(Seq(
+    val g = Graph.fromEdges(Seq(
       n("Frankfurt") --> (85, n("Mannheim")),
       n("Frankfurt") --> (217, n("Wuerzburg")),
       n("Frankfurt") --> (173, n("Kassel")),

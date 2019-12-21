@@ -98,7 +98,7 @@ object MxGraphView {
         JsNode(edgeCell.target.get.getId()))
     })
 
-    Graph.create[JsEdge, JsNode, JsGraph](meta, nodes, edges)
+    Graph.from[JsEdge, JsNode, JsGraph](meta, nodes, edges)
   }
 }
 // $COVERAGE-ON$
