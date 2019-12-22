@@ -152,7 +152,7 @@ flowtick/graphs
 <ul style="display: none">
 <li class="md-nav__item md-version" id="project.version">
 <label class="md-nav__link" for="__version">
-<i class="md-icon" title="Version">label_outline</i> 0.2.3
+<i class="md-icon" title="Version">label_outline</i> 0.2.4
 </label>
 </li>
 </ul>
@@ -165,29 +165,39 @@ flowtick/graphs
 <h2><a href="#graphml-support" name="graphml-support" class="anchor"><span class="anchor-link"></span></a>GraphML support</h2>
 <p><code>graphs</code> supports rendering and loading (currently only on the JVM) of graphs to GraphML XML.</p>
 <p>You need to add the <code>graphs-graphml</code> dependency to use that:</p>
-<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-graphml&quot; % &quot;0.2.3&quot;
+<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-graphml&quot; % &quot;0.2.4&quot;
 </code></pre>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.2.3/examples/shared/src/main/scala/GraphMLExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
-import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.graphml._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.2.4/examples/shared/src/main/scala/GraphMLExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
 
 trait GraphMLExample {
-  val graphMLCities: Graph[GraphMLEdge[Int], GraphMLNode[String], GraphMLGraph[Unit]] = DijkstraGraph.cities.toGraphML()
+  {
+    import com.flowtick.graphs.defaults._
+    import com.flowtick.graphs.graphml._
+    val graphMLCities: Graph[GraphMLEdge[Int], GraphMLNode[String], GraphMLGraph[Unit]] = DijkstraGraph.cities.toGraphML()
 
-  println(fromGraphML[Int, String, Unit](graphMLCities.xml.toString()))
-  println(graphMLCities)
-  // Graph(GraphMLGraph((),Some(G),List()),Map(GraphMLNode(Erfurt,Erfurt, ...
+    println(fromGraphML[Int, String, Unit](graphMLCities.xml.toString()))
+    println(graphMLCities)
+    // ImmutableGraph(GraphMLGraph((),Some(G),List()),Map(GraphMLNode(Erfurt,Erfurt, ...
+  }
+
+  {
+    import com.flowtick.graphs.defaults._
+    import com.flowtick.graphs.graphml._
+    val graph = Graph.fromEdges[Unit, String](Set(n(&quot;A&quot;) --&gt; n(&quot;B&quot;)))
+    val xml = graph.toGraphML().xml
+    println(fromGraphML[Unit, String, Unit](xml.toString))
+  }
 }</code></pre>
 <p>This format is used by the <a href="https://www.yworks.com/products/yed">yed editor</a>, so graphs can be edited and layouted there.</p>
 </div>
 <div>
-<a href="https://github.com/flowtick/graphs/tree/v0.2.3/docs/graphml.md" title="Edit this page" class="md-source-file md-edit">
+<a href="https://github.com/flowtick/graphs/tree/v0.2.4/docs/graphml.md" title="Edit this page" class="md-source-file md-edit">
 Edit this page
 </a>
 </div>
 <div class="print-only">
 <span class="md-source-file md-version">
-0.2.3
+0.2.4
 </span>
 </div>
 </article>

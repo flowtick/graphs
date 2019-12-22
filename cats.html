@@ -152,7 +152,7 @@ flowtick/graphs
 <ul style="display: none">
 <li class="md-nav__item md-version" id="project.version">
 <label class="md-nav__link" for="__version">
-<i class="md-icon" title="Version">label_outline</i> 0.2.3
+<i class="md-icon" title="Version">label_outline</i> 0.2.4
 </label>
 </li>
 </ul>
@@ -165,9 +165,9 @@ flowtick/graphs
 <h2><a href="#cats-support" name="cats-support" class="anchor"><span class="anchor-link"></span></a>cats support</h2>
 <p><code>graphs</code> implements some typeclass instances to allow basic operations like combining graphs.</p>
 <p>You need to add the <code>graphs-cats</code> dependency to use that:</p>
-<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-cats&quot; % &quot;0.2.3&quot;
+<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-cats&quot; % &quot;0.2.4&quot;
 </code></pre>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.2.3/examples/shared/src/main/scala/CatsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.defaults._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.2.4/examples/shared/src/main/scala/CatsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.cat.instances._
 import cats.implicits._
 import cats.kernel.Monoid
@@ -176,19 +176,19 @@ import com.flowtick.graphs.Graph
 trait CatsExample {
   implicit val monoid = Monoid[Graph[Unit, String, Unit]]
 
-  val someGraph = Graph.from(Set(
+  val someGraph: Graph[Unit, String, Unit] = Graph.fromEdges(Set(
     n(&quot;1&quot;) --&gt; n(&quot;2&quot;),
 
     n(&quot;2&quot;) --&gt; n(&quot;3&quot;),
     n(&quot;2&quot;) --&gt; n(&quot;4&quot;)))
 
-  val anotherGraph = Graph.from(Set(
+  val anotherGraph: Graph[Unit, String, Unit] = Graph.fromEdges(Set(
     n(&quot;2&quot;) --&gt; n(&quot;3&quot;),
 
     n(&quot;4&quot;) --&gt; n(&quot;3&quot;),
     n(&quot;4&quot;) --&gt; n(&quot;5&quot;)))
 
-  val combined = monoid.combine(someGraph, anotherGraph)
+  val combined: Graph[Unit, String, Unit] = monoid.combine(someGraph, anotherGraph)
 
   println(combined.edges)
   // Set(4 --&gt; 3[()], 4 --&gt; 5[()], 1 --&gt; 2[()], 2 --&gt; 3[()], 2 --&gt; 4[()])
@@ -197,13 +197,13 @@ trait CatsExample {
 <p><img src="monoid-example.png" alt="monoid example" /></p>
 </div>
 <div>
-<a href="https://github.com/flowtick/graphs/tree/v0.2.3/docs/cats.md" title="Edit this page" class="md-source-file md-edit">
+<a href="https://github.com/flowtick/graphs/tree/v0.2.4/docs/cats.md" title="Edit this page" class="md-source-file md-edit">
 Edit this page
 </a>
 </div>
 <div class="print-only">
 <span class="md-source-file md-version">
-0.2.3
+0.2.4
 </span>
 </div>
 </article>
