@@ -23,4 +23,3 @@ jobs:
     - stage: release
       script:
         - sbt ci-release
-        - sbt ghpagesPushSite

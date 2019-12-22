@@ -19,6 +19,6 @@ paradoxMaterialTheme in Paradox := {
     .withLogoIcon("linear_scale")
 }
 
-git.remoteRepo := "https://github.com/flowtick/graphs.git"
+git.remoteRepo := "git@github.com:flowtick/graphs.git"
 
 addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc)
