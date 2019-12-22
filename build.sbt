@@ -38,13 +38,6 @@ lazy val commonSettings = Seq(
     Wart.DefaultArguments,
     Wart.Any
   ).contains(_)),
-  publishTo := Some(
-    if (isSnapshot.value)
-      Opts.resolver.sonatypeSnapshots
-    else
-      Opts.resolver.sonatypeStaging
-  ),
-  publishMavenStyle := true,
   licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://flowtick.github.io/graphs")),
   scmInfo := Some(
