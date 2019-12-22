@@ -1,6 +1,18 @@
 How to cut a release
 ====================
 
+## CI
+
+graphs is using sbt-ci-release to publish artifacts.
+To create a new release simply create a tag and push it:
+
+```
+git tag -a v0.1.0 -m "v0.1.0"
+git push origin v0.1.0
+```
+
+## Manually
+
 Run 
   
     sbt "+release"
