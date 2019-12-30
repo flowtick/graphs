@@ -98,19 +98,17 @@ trait Graph[V, N, M] {
 }
 
 abstract class GraphBase[V, N, M] extends Graph[V, N, M] {
-  private lazy val lazyNodes: Iterable[N] = nodeContext.keys
-
   /**
-   * TODO (maybe) this could be optimized, in a graph were everything points to one node
-   * this would iterate still everything
+   * TODO (maybe) this could be optimized
+   * in a graph were everything points to one node this would iterate still everything
    */
-  private lazy val lazyEdges: Iterable[Edge[V, N]] = nodeContext.iterator.flatMap {
+  protected def incomingContext: Iterable[Edge[V, N]] = nodeContext.iterator.flatMap {
     case (_, context) => context.incoming.iterator
   }.toIterable
 
-  def nodes: Iterable[N] = lazyNodes
+  def nodes: Iterable[N]
 
-  def edges: Iterable[Edge[V, N]] = lazyEdges
+  def edges: Iterable[Edge[V, N]]
 
   def outgoing(node: N): Set[Edge[V, N]] = nodeContext.get(node).map(_.outgoing).getOrElse(Set.empty)
 
@@ -129,11 +127,23 @@ abstract class GraphBase[V, N, M] extends Graph[V, N, M] {
  */
 final case class ImmutableGraph[V, N, M](
   value: M,
-  nodeContext: scala.collection.Map[N, NodeContext[V, N]]) extends GraphBase[V, N, M]
+  nodeContext: scala.collection.Map[N, NodeContext[V, N]]) extends GraphBase[V, N, M] {
+  private lazy val lazyNodes: Iterable[N] = nodeContext.keys
+
+  private lazy val lazyEdges: Iterable[Edge[V, N]] = incomingContext
+
+  override def nodes: Iterable[N] = lazyNodes
+
+  override def edges: Iterable[Edge[V, N]] = lazyEdges
+}
 
 final case class MutableGraph[V, N, M](
   value: M,
-  nodeContext: scala.collection.mutable.Map[N, NodeContext[V, N]]) extends GraphBase[V, N, M]
+  nodeContext: scala.collection.mutable.Map[N, NodeContext[V, N]]) extends GraphBase[V, N, M] {
+  override def nodes: Iterable[N] = nodeContext.keys
+
+  override def edges: Iterable[Edge[V, N]] = incomingContext
+}
 
 object Graph {
   def empty[V, N, M](meta: M): Graph[V, N, M] = ImmutableGraph(meta, nodeContext = Map.empty)
@@ -183,7 +193,7 @@ final case class MutableGraphBuilder[V, N, M](
     nodeContext.put(node, NodeContext.empty[V, N])
   }
 
-  def mutable: Graph[V, N, M] = MutableGraph(value, nodeContext)
+  def mutable: MutableGraph[V, N, M] = MutableGraph(value, nodeContext)
 
   def build: Graph[V, N, M] = ImmutableGraph(value, nodeContext.toMap)
 }
