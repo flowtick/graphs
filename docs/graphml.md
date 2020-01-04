@@ -1,8 +1,10 @@
 ## GraphML support
 
-`graphs` supports rendering and loading (currently only on the JVM) of graphs to GraphML XML.
+`graphs` supports exporting and loading of graphs to GraphML XML. 
+This format is used by the [yed editor](https://www.yworks.com/products/yed), so graphs can be edited and 
+layouted there.
 
-You need to add the `graphs-graphml` dependency to use that:
+You need to add the `graphs-graphml` dependency to use it:
 
 @@@vars
 ```scala
@@ -10,8 +12,15 @@ libraryDependencies += "com.flowtick" %% "graphs-graphml" % "$version$"
 ```
 @@@
 
-@@snip [SimpleGraphApp.scala](../examples/shared/src/main/scala/GraphMLExample.scala)
+### Conversion to GraphML
 
-This format is used by the [yed editor](https://www.yworks.com/products/yed), so graphs can be edited and 
-layouted there.
+This creates a default graph and converts it to a GraphML graph.
 
+@@snip [SimpleGraphApp.scala](../examples/shared/src/main/scala/GraphMLExample.scala){ #simple-graphml }
+
+### Custom Node Types
+
+Its possible to create GraphML graphs directly using the `ml` edge builder and serialize your own node types, 
+this is implemeted using shapeless:
+
+@@snip [SimpleGraphApp.scala](../examples/shared/src/main/scala/GraphMLExample.scala){ #custom-node-graphml }

@@ -123,7 +123,7 @@ lazy val examples = (crossProject in file("examples"))
       .settings(commonSettings)
       .settings(
         name := "graphs-examples"
-      )
+      ).jsSettings(scalaJSUseMainModuleInitializer := false)
       .dependsOn(core, graphml, cats, layout)
 
 lazy val examplesJS = examples.js

@@ -4,9 +4,7 @@ import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import com.flowtick.graphs.graphml.GraphMLDatatype.parseKeys
-import shapeless._
-import shapeless.ops.record.Keys
-import shapeless.ops.traversable.FromTraversable
+
 import xmls.XMLS
 
 import scala.collection.GenTraversable
@@ -15,32 +13,10 @@ import scala.util.{ Either, Left, Right }
 import scala.xml.NodeSeq
 
 package object graphml {
-
   type GraphMLGraphType[V, N, M] = Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[M]]
 
   final case class ValueWithProperties[T](value: T, properties: Seq[GraphMLProperty] = Seq.empty)
   final case class WrappedValue[T](value: T)
-
-  /**
-   * there is no default Typeable for LabelledGeneric (more precisely the KeyTags),
-   * so we need to fallback to the generic representation of T to create the value from a list.
-   *
-   * @param generic
-   * @param typeable
-   * @param fromTraversable
-   * @tparam T
-   * @tparam Repr
-   */
-  class FromList[T, Repr <: HList](implicit
-    generic: Generic.Aux[T, Repr],
-    typeable: Typeable[Repr],
-    fromTraversable: FromTraversable[Repr]) {
-    import shapeless.syntax.std.traversable._
-
-    def apply(l: GenTraversable[_]): Option[T] = {
-      l.toHList[Repr].map(generic.from)
-    }
-  }
 
   trait Serializer[T] {
     def serialize(value: T): NodeSeq
@@ -51,38 +27,87 @@ package object graphml {
     def deserialize(from: NodeSeq, graphKeys: scala.collection.Map[String, GraphMLKey]): ValidatedNel[Throwable, T]
   }
 
+  trait FromList[T, R] {
+    def apply(l: GenTraversable[_]): Option[T]
+  }
+
   trait Datatype[T] extends Serializer[T] with Deserializer[T]
 
-  object Datatype extends LabelledProductTypeClassCompanion[Datatype] {
-    def apply[T](implicit dt: Datatype[T]): Datatype[T] = dt
+  object generic {
+    import shapeless._
+    import shapeless.ops.record.Keys
+    import shapeless.ops.traversable.FromTraversable
 
-    object typeClass extends LabelledProductTypeClass[Datatype] {
-      def emptyProduct: Datatype[HNil] = new Datatype[HNil] {
-        def serialize(value: HNil): NodeSeq = Nil
-        def deserialize(from: NodeSeq, graphKeys: scala.collection.Map[String, GraphMLKey]) = Valid(HNil)
-      }
+    /**
+     * there is no default Typeable for LabelledGeneric (more precisely the KeyTags),
+     * so we need to fallback to the generic representation of T to create the value from a list.
+     *
+     * @param generic
+     * @param typeable
+     * @param fromTraversable
+     * @tparam T
+     * @tparam Repr
+     */
+    class FromListGeneric[T, Repr <: HList](implicit
+      generic: Generic.Aux[T, Repr],
+      typeable: Typeable[Repr],
+      fromTraversable: FromTraversable[Repr]) extends FromList[T, Repr] {
+      import shapeless.syntax.std.traversable._
 
-      def product[H, T <: HList](
-        name: String,
-        dh: Datatype[H],
-        dt: Datatype[T]): Datatype[H :: T] = new Datatype[H :: T] {
-        def serialize(value: H :: T): NodeSeq =
-          dh.serialize(value.head) ++ dt.serialize(value.tail)
-
-        def deserialize(from: NodeSeq, graphKeys: scala.collection.Map[String, GraphMLKey]): ValidatedNel[Throwable, H :: T] =
-          (
-            from.headOption.map(dh.deserialize(_, graphKeys)).getOrElse(invalidNel[Throwable, H](new IllegalArgumentException("can't serialize empty node sequence"))),
-            dt.deserialize(from.drop(1), graphKeys)).mapN(_ :: _)
-      }
-
-      def project[F, G](
-        instance: => Datatype[G],
-        to: F => G,
-        from: G => F): Datatype[F] = new Datatype[F] {
-        def serialize(value: F): NodeSeq = instance.serialize(to(value))
-        def deserialize(nodes: NodeSeq, graphKeys: scala.collection.Map[String, GraphMLKey]): Validated[NonEmptyList[Throwable], F] = instance.deserialize(nodes, graphKeys).map(from)
+      def apply(l: GenTraversable[_]): Option[T] = {
+        l.toHList[Repr].map(generic.from)
       }
     }
+
+    object Datatype extends LabelledProductTypeClassCompanion[Datatype] {
+      def apply[T](implicit dt: Datatype[T]): Datatype[T] = dt
+
+      object typeClass extends LabelledProductTypeClass[Datatype] {
+        def emptyProduct: Datatype[HNil] = new Datatype[HNil] {
+          def serialize(value: HNil): NodeSeq = Nil
+          def deserialize(from: NodeSeq, graphKeys: scala.collection.Map[String, GraphMLKey]) = Valid(HNil)
+        }
+
+        def product[H, T <: HList](
+          name: String,
+          dh: Datatype[H],
+          dt: Datatype[T]): Datatype[H :: T] = new Datatype[H :: T] {
+          def serialize(value: H :: T): NodeSeq =
+            dh.serialize(value.head) ++ dt.serialize(value.tail)
+
+          def deserialize(from: NodeSeq, graphKeys: scala.collection.Map[String, GraphMLKey]): ValidatedNel[Throwable, H :: T] =
+            (
+              from.headOption.map(dh.deserialize(_, graphKeys)).getOrElse(invalidNel[Throwable, H](new IllegalArgumentException("can't serialize empty node sequence"))),
+              dt.deserialize(from.drop(1), graphKeys)).mapN(_ :: _)
+        }
+
+        def project[F, G](
+          instance: => Datatype[G],
+          to: F => G,
+          from: G => F): Datatype[F] = new Datatype[F] {
+          def serialize(value: F): NodeSeq = instance.serialize(to(value))
+          def deserialize(nodes: NodeSeq, graphKeys: scala.collection.Map[String, GraphMLKey]): Validated[NonEmptyList[Throwable], F] = instance.deserialize(nodes, graphKeys).map(from)
+        }
+      }
+    }
+
+    implicit def genericFromList[T, Repr <: HList](implicit generic: Generic.Aux[T, Repr], typeable: Typeable[Repr], fromTraversable: FromTraversable[Repr]): FromListGeneric[T, Repr] = new FromListGeneric[T, Repr]
+    implicit def stringFromList(implicit generic: Generic.Aux[String, String :: HNil], typeable: Typeable[String :: HNil], fromTraversable: FromTraversable[String :: HNil]): FromListGeneric[String, String :: HNil] = new FromListGeneric[String, String :: HNil]
+
+    implicit def graphMLNodeDataTypeGeneric[T, Repr <: HList, FromRepr <: HList](implicit classTag: ClassTag[T], genericValue: shapeless.LabelledGeneric.Aux[T, Repr], keys: Keys[Repr], fromList: FromListGeneric[T, FromRepr]): Datatype[GraphMLNode[T]] = new GraphMLNodeDatatype[T, Repr, FromRepr]
+    implicit def graphMLEdgeDataTypeGeneric[T, Repr <: HList, FromRepr <: HList](implicit classTag: ClassTag[T], genericValue: shapeless.LabelledGeneric.Aux[T, Repr], keys: Keys[Repr], fromList: FromListGeneric[T, FromRepr]): Datatype[GraphMLEdge[T]] = new GraphMLEdgeDatatype[T, Repr, FromRepr]
+
+    implicit val graphMLUnitNodeDataType: Datatype[GraphMLNode[Unit]] = new GraphMLNodeDatatype[Unit, HNil, HNil]
+    implicit val graphMLUnitEdgeDataType: Datatype[GraphMLEdge[Unit]] = new GraphMLEdgeDatatype[Unit, HNil, HNil]
+
+    implicit val graphMLStringNodeDataType: Datatype[GraphMLNode[String]] = new WrappedNodeDatatype[String]
+    implicit val graphMLStringEdgeDataType: Datatype[GraphMLEdge[String]] = new WrappedEdgeDatatype[String]
+
+    implicit val graphMLIntNodeDataType: Datatype[GraphMLNode[Int]] = new WrappedNodeDatatype[Int]
+    implicit val graphMLIntEdgeDataType: Datatype[GraphMLEdge[Int]] = new WrappedEdgeDatatype[Int]
+
+    implicit val graphMLDoubleNodeDataType: Datatype[GraphMLNode[Double]] = new WrappedNodeDatatype[Double]
+    implicit val graphMLDoubleEdgeDataType: Datatype[GraphMLEdge[Double]] = new WrappedEdgeDatatype[Double]
   }
 
   implicit object DatatypeString extends Datatype[String] {
@@ -113,11 +138,6 @@ package object graphml {
     def deserialize(from: NodeSeq, graphKeys: scala.collection.Map[String, GraphMLKey]): Validated[NonEmptyList[Throwable], Double] = stringDataType.deserialize(from, graphKeys: scala.collection.Map[String, GraphMLKey]).map(stringValue => stringValue.toDouble)
   }
 
-  implicit def genericFromList[T, Repr <: HList](implicit generic: Generic.Aux[T, Repr], typeable: Typeable[Repr], fromTraversable: FromTraversable[Repr]): FromList[T, Repr] = new FromList[T, Repr]
-  implicit def stringFromList(implicit generic: Generic.Aux[String, String :: HNil], typeable: Typeable[String :: HNil], fromTraversable: FromTraversable[String :: HNil]): FromList[String, String :: HNil] = new FromList[String, String :: HNil]
-
-  implicit val graphMLUnitNodeDataType: Datatype[GraphMLNode[Unit]] = new GraphMLNodeDatatype[Unit, HNil, HNil]
-  implicit val graphMLUnitEdgeDataType: Datatype[GraphMLEdge[Unit]] = new GraphMLEdgeDatatype[Unit, HNil, HNil]
   implicit val graphMLUnitMetaDataType: Datatype[GraphMLGraph[Unit]] = new GraphMLMetaDatatype[Unit]
 
   class WrappedNodeDatatype[T](implicit wrapped: Datatype[GraphMLNode[WrappedValue[T]]]) extends Datatype[GraphMLNode[T]] {
@@ -146,18 +166,6 @@ package object graphml {
       wrapped.deserialize(from, graphKeys).map(edge => GraphMLEdge(edge.id, edge.value.value, edge.source, edge.target, edge.label, edge.properties))
   }
 
-  implicit val graphMLStringNodeDataType: Datatype[GraphMLNode[String]] = new WrappedNodeDatatype[String]
-  implicit val graphMLStringEdgeDataType: Datatype[GraphMLEdge[String]] = new WrappedEdgeDatatype[String]
-
-  implicit val graphMLIntNodeDataType: Datatype[GraphMLNode[Int]] = new WrappedNodeDatatype[Int]
-  implicit val graphMLIntEdgeDataType: Datatype[GraphMLEdge[Int]] = new WrappedEdgeDatatype[Int]
-
-  implicit val graphMLDoubleNodeDataType: Datatype[GraphMLNode[Double]] = new WrappedNodeDatatype[Double]
-  implicit val graphMLDoubleEdgeDataType: Datatype[GraphMLEdge[Double]] = new WrappedEdgeDatatype[Double]
-
-  implicit def graphMLNodeDataTypeGeneric[T, Repr <: HList, FromRepr <: HList](implicit classTag: ClassTag[T], genericValue: shapeless.LabelledGeneric.Aux[T, Repr], keys: Keys[Repr], fromList: FromList[T, FromRepr]): Datatype[GraphMLNode[T]] = new GraphMLNodeDatatype[T, Repr, FromRepr]
-  implicit def graphMLEdgeDataTypeGeneric[T, Repr <: HList, FromRepr <: HList](implicit classTag: ClassTag[T], genericValue: shapeless.LabelledGeneric.Aux[T, Repr], keys: Keys[Repr], fromList: FromList[T, FromRepr]): Datatype[GraphMLEdge[T]] = new GraphMLEdgeDatatype[T, Repr, FromRepr]
-
   implicit def graphMLDataType[V, N, M](implicit
     identifiable: Identifiable[GraphMLNode[N]],
     edgeLabel: Labeled[Edge[GraphMLEdge[V], GraphMLNode[N]], String],
@@ -165,8 +173,8 @@ package object graphml {
     edgeDataType: Datatype[GraphMLEdge[V]],
     metaDataType: Datatype[GraphMLGraph[M]]): Datatype[GraphMLGraphType[V, N, M]] = new GraphMLDatatype[V, N, M]
 
-  def ml[N](value: N, id: Option[String] = None, properties: Seq[GraphMLProperty] = Seq.empty): GraphMLNode[N] =
-    GraphMLNode(id.getOrElse(value.toString), value, None, properties)
+  def ml[N](nodeValue: N, id: Option[String] = None, properties: Seq[GraphMLProperty] = Seq.empty): GraphMLNode[N] =
+    GraphMLNode(id.getOrElse(nodeValue.toString), nodeValue, None, properties)
 
   implicit class GraphMLEdgeBuilder[X](node: GraphMLNode[X]) {
     def -->[V](value: V, to: GraphMLNode[X]): Edge[GraphMLEdge[V], GraphMLNode[X]] = Edge[GraphMLEdge[V], GraphMLNode[X]](GraphMLEdge(s"${node.id}-${to.id}", value, Some(node.id), Some(to.id)), node, to)
@@ -187,8 +195,22 @@ package object graphml {
     }
   }
 
+  object ToGraphML {
+    def apply[V, N, M](graph: Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[M]])(implicit graphMLDatatype: Datatype[GraphMLGraphType[V, N, M]]): NodeSeq =
+      graphMLDatatype.serialize(graph)
+  }
+
+  object FromGraphML {
+    def apply[V, N, M](graphml: String)(implicit graphMLDatatype: Datatype[GraphMLGraphType[V, N, M]]): Either[NonEmptyList[Throwable], GraphMLGraphType[V, N, M]] =
+      XMLS.parse(graphml) match {
+        case Right(rootElem) if rootElem.label.toLowerCase == "graphml" => graphMLDatatype.deserialize(Seq(rootElem), parseKeys(rootElem)).toEither
+        case Right(nonGraphMl) => Left(NonEmptyList.of(new IllegalArgumentException(s"parsed elem is not a graphml element: ${nonGraphMl.toString}")))
+        case Left(error) => Left(NonEmptyList.of(error))
+      }
+  }
+
   implicit class GraphMLConverterOps[V, N, M](graph: Graph[V, N, M])(implicit nodeIdentity: Identifiable[N]) {
-    def toGraphML(withEdgeLabels: Boolean = true): GraphMLGraphType[V, N, M] = {
+    def asGraphML(withEdgeLabels: Boolean = true): GraphMLGraphType[V, N, M] = {
       val nodeContext: collection.Map[GraphMLNode[N], NodeContext[GraphMLEdge[V], GraphMLNode[N]]] = graph.nodeContext.map {
         case (node, context) =>
           val nodeId = nodeIdentity.id(node)
@@ -206,14 +228,6 @@ package object graphml {
       }
 
       ImmutableGraph(GraphMLGraph(graph.value, Some("G"), Seq.empty), nodeContext)
-    }
-  }
-
-  def fromGraphML[V, N, M](graphml: String)(implicit graphMLDatatype: Datatype[GraphMLGraphType[V, N, M]]): Either[NonEmptyList[Throwable], GraphMLGraphType[V, N, M]] = {
-    XMLS.parse(graphml) match {
-      case Right(rootElem) if rootElem.label.toLowerCase == "graphml" => graphMLDatatype.deserialize(Seq(rootElem), parseKeys(rootElem)).toEither
-      case Right(nonGraphMl) => Left(NonEmptyList.of(new IllegalArgumentException(s"parsed elem is not a graphml element: ${nonGraphMl.toString}")))
-      case Left(error) => Left(NonEmptyList.of(error))
     }
   }
 

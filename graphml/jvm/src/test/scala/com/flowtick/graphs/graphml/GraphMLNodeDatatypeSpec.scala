@@ -6,6 +6,8 @@ import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.xml.NodeSeq
 
+import generic._
+
 case class SomeNodeValue(one: String, two: String)
 
 class GraphMLNodeDatatypeSpec extends FlatSpec with Matchers {
@@ -37,6 +39,7 @@ class GraphMLNodeDatatypeSpec extends FlatSpec with Matchers {
 
     serialized.headOption match {
       case Some(node) => prettyXml(node) should be(prettyXml(expectedXml))
+      case _ => fail()
     }
 
     deserialized.map(_.value) should be(Valid(SomeNodeValue("foo", "bar")))

@@ -34,7 +34,7 @@ final case class GraphMLGraph[M](
   id: Option[String],
   keys: Seq[GraphMLKey])
 
-object GraphMLGraph {
+object GraphML {
   def apply[V, N, M](
     id: String,
     meta: M,
@@ -42,4 +42,7 @@ object GraphMLGraph {
     nodes: Iterable[GraphMLNode[N]] = Iterable.empty): Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[M]] = {
     Graph.from(GraphMLGraph(meta, id = Some(id), keys = Seq.empty), nodes, edges)
   }
+
+  def fromEdges[V, N](edges: Iterable[Edge[GraphMLEdge[V], GraphMLNode[N]]]): Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[Unit]] =
+    apply("G", (), edges)
 }
