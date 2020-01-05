@@ -1,9 +1,10 @@
 import ReleaseTransformations._
 
-val mainScalaVersion = "2.13.0"
+val mainScalaVersion = "2.13.1"
 val scalaXmlV = "1.1.1"
 val catsV = "2.0.0"
 val xmlsV = "0.1.10"
+val circeVersion = "0.12.3"
 
 lazy val commonSettings = Seq(
   resolvers ++= Seq(
@@ -112,12 +113,26 @@ lazy val cats = (crossProject in file(".") / "cats")
   .settings(
     name := "graphs-cats",
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % catsV
+      "org.typelevel" %%% "cats-core" % catsV % Provided
     )
   ).dependsOn(core)
 
 lazy val catsJS = cats.js
 lazy val catsJVM = cats.jvm
+
+lazy val json = (crossProject in file(".") / "json")
+  .settings(commonSettings)
+  .settings(
+    name := "graphs-json",
+    libraryDependencies ++= Seq(
+      "io.circe" %%% "circe-core",
+      "io.circe" %%% "circe-generic",
+      "io.circe" %%% "circe-parser"
+    ).map(_ % circeVersion % Provided)
+  ).dependsOn(core)
+
+lazy val jsonJS = json.js
+lazy val jsonJVM = json.jvm
 
 lazy val examples = (crossProject in file("examples"))
       .settings(commonSettings)
@@ -136,7 +151,7 @@ lazy val graphs = (project in file("."))
     publishLocal := {},
     publish := {},
     test := {},
-    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(graphmlJS, coreJS, catsJS, layoutJS, editorJS, examplesJS)
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(jsonJS, graphmlJS, coreJS, catsJS, layoutJS, editorJS, examplesJS)
   ).aggregate(
     coreJS,
     coreJVM,
@@ -149,7 +164,9 @@ lazy val graphs = (project in file("."))
     layoutJS,
     layoutJVM,
     editorJS,
-    editorJVM
+    editorJVM,
+    jsonJS,
+    jsonJVM
   )
 
 addCommandAlias("testWithCoverage", ";clean;coverage;test;coverageReport")

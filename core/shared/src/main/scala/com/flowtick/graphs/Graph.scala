@@ -8,7 +8,7 @@ package com.flowtick.graphs
  * @tparam T the node type
  */
 trait Identifiable[-T] {
-  def id(node: T): String
+  def id(value: T): String
 }
 
 object Identifiable {
@@ -41,7 +41,7 @@ final case class Edge[V, N](value: V, head: N, tail: N) {
 /**
  * The context of a node in a graph
  *
- * @param incoming the incoming edges (pointing to that node)
+ * @param incoming the incoming edges (pointing to this node)
  * @param outgoing the outgoing edges (pointing to another node)
  * @tparam V the value type of the edges
  * @tparam N the value type of the nodes

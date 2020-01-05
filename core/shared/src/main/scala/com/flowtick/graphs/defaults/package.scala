@@ -3,6 +3,15 @@ package com.flowtick.graphs
 package object defaults {
   def n[X](value: X, label: Option[String] = None) = Node[X](value, label)
 
+  object id {
+    def edge[V, N] = (edge: Edge[V, N]) =>
+      s"${edge.head.toString}-${edge.tail.toString}"
+
+    implicit val identifiableEdgeString = Identifiable.identify[Edge[_, String]](edge(_))
+
+    implicit val identifiableEdgeInt = Identifiable.identify[Edge[_, Int]](edge(_))
+  }
+
   implicit val identifiableUnit: Identifiable[Unit] = new Identifiable[Unit] {
     override def id(string: Unit): String = "()"
   }
@@ -12,7 +21,11 @@ package object defaults {
   }
 
   implicit def identifiableNumeric[N](implicit numeric: Numeric[N]): Identifiable[N] = new Identifiable[N] {
-    override def id(number: N): String = numeric.toDouble(number).toString
+    override def id(number: N): String = number match {
+      case _: Integer => number.toString
+      case _: Long => number.toString
+      case _ => numeric.toDouble(number).toString
+    }
   }
 
   implicit val unitLabel: Labeled[Unit, String] = new Labeled[Unit, String] {
