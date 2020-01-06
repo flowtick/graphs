@@ -1,20 +1,17 @@
 package com.flowtick.graphs
 
 import io.circe
-import io.circe.Decoder.Result
-import io.circe.{ Decoder, Encoder, HCursor, Json }
+import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
-import io.circe.generic.auto._
+import io.circe.{ Decoder, Encoder, Json }
 
 package object json {
 
   private[json] final case class JsonGraph[V, N, M](
     meta: M,
-    nodes: List[JsonNode[N]],
+    nodes: Map[String, N],
     edges: List[JsonEdge[V]])
-
-  private[json] final case class JsonNode[N](id: String, value: N)
 
   private[json] final case class JsonEdge[V](
     id: String,
@@ -22,7 +19,7 @@ package object json {
     source: String,
     target: String)
 
-  implicit val unitEncoder = new Encoder[Unit] {
+  private implicit val unitEncoder = new Encoder[Unit] {
     override def apply(a: Unit): Json = Json.Null
   }
 
@@ -44,20 +41,21 @@ package object json {
         .toList,
       nodes = graph.nodes
         .iterator
-        .map(node => JsonNode(nodeId.id(node), node))
-        .toList).asJson
+        .map(node => (nodeId.id(node), node))
+        .toMap).asJson
   }
 
   object FromJson {
     def apply[V, N, M](json: String)(implicit
       edgeEncoder: Decoder[V],
       nodeEncoder: Decoder[N],
-      metaEncoder: Decoder[M]) = {
+      metaEncoder: Decoder[M]): Either[circe.Error, Graph[V, N, M]] = {
       decode[JsonGraph[V, N, M]](json).map(jsonGraph => {
         Graph.from(
-          jsonGraph.meta,
-          nodes = jsonGraph.nodes.map(_.value),
-          edges = jsonGraph.edges.map(edge => Edge[V, N](edge.value, ???, ???)))
+          value = jsonGraph.meta,
+          nodes = jsonGraph.nodes.values,
+          // FIXME: this throws if edges reference non existing nodes
+          edges = jsonGraph.edges.map(edge => Edge[V, N](edge.value, jsonGraph.nodes(edge.source), jsonGraph.nodes(edge.target))))
       })
     }
   }

@@ -84,6 +84,9 @@ lazy val graphml = (crossProject in file(".") / "graphml")
   .settings(commonSettings)
   .settings(
     name := "graphs-graphml",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-core" % catsV % Provided
+    )
   ).jvmSettings(
     libraryDependencies ++= Seq(
       "com.flowtick" %% "xmls" % xmlsV
@@ -101,7 +104,7 @@ lazy val editor = (crossProject in file(".") / "editor")
   .settings(commonSettings)
   .settings(
     name := "graphs-editor"
-  ).dependsOn(core, graphml)
+  ).dependsOn(core, graphml, json)
 
 lazy val editorJS = editor.js.settings(
   scalaJSUseMainModuleInitializer := true
@@ -137,7 +140,10 @@ lazy val jsonJVM = json.jvm
 lazy val examples = (crossProject in file("examples"))
       .settings(commonSettings)
       .settings(
-        name := "graphs-examples"
+        name := "graphs-examples",
+        libraryDependencies ++= Seq(
+          "org.typelevel" %%% "cats-core" % catsV
+        )
       ).jsSettings(scalaJSUseMainModuleInitializer := false)
       .dependsOn(core, graphml, cats, layout)
 
