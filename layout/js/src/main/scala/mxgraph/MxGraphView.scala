@@ -33,7 +33,7 @@ object MxGraphView {
 
     try {
       val parent = viewGraph.getDefaultParent()
-      val nodeCells: Map[JsNode, MxCell] = graph.nodes.map { node =>
+      val nodeCells: Map[JsNode, MxCell] = graph.contexts.map { node =>
         val id = nodeId.id(node)
 
         (node, viewGraph.insertVertex(

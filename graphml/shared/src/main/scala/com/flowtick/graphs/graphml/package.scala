@@ -211,7 +211,7 @@ package object graphml {
 
   implicit class GraphMLConverterOps[V, N, M](graph: Graph[V, N, M])(implicit nodeIdentity: Identifiable[N]) {
     def asGraphML(withEdgeLabels: Boolean = true): GraphMLGraphType[V, N, M] = {
-      val nodeContext: collection.Map[GraphMLNode[N], NodeContext[GraphMLEdge[V], GraphMLNode[N]]] = graph.nodeContext.map {
+      val nodeContext: collection.Map[GraphMLNode[N], Node[GraphMLEdge[V], GraphMLNode[N]]] = graph.nodeContext.map {
         case (node, context) =>
           val nodeId = nodeIdentity.id(node)
           (GraphMLNode(nodeId, node, Some(nodeId)), context.map(

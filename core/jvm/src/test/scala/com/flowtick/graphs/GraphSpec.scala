@@ -1,47 +1,51 @@
 package com.flowtick.graphs
 
 import com.flowtick.graphs.defaults._
+
 import org.scalatest.{ FlatSpec, Matchers }
 
 class GraphSpec extends FlatSpec with Matchers {
-  val testGraph: Graph[Unit, String, Unit] = Graph.from(value = (), edges = Seq(
-    n("A") --> n("B"),
-    n("B") --> n("C"),
-    n("C") --> n("D"),
-    n("D") --> n("A"),
-    n("A") --> n("C"),
-    n("B") --> n("D")), nodes = Seq("X"))
+  
+  val testGraph = Graph.fromEdges[Unit, String](Seq(
+    "A" --> "B",
+    "B" --> "C",
+    "C" --> "D",
+    "D" --> "A",
+    "A" --> "C",
+    "B" --> "D"))
 
   "Graph" should "provide incoming edges for nodes" in {
-    testGraph.incoming("A") should contain theSameElementsAs List(
-      n("D") --> n("A"))
+    val incomingA = testGraph.incoming("A")
+    incomingA should contain theSameElementsAs List(
+      "D" --> "A")
 
-    testGraph.incoming("B") should contain theSameElementsAs List(
-      n("A") --> n("B"))
+    val incomingB = testGraph.incoming("B")
+    incomingB should contain theSameElementsAs List(
+      "A" --> "B")
 
     testGraph.incoming("C") should contain theSameElementsAs List(
-      n("B") --> n("C"),
-      n("A") --> n("C"))
+      "B" --> "C",
+      "A" --> "C")
 
     testGraph.incoming("D") should contain theSameElementsAs List(
-      n("C") --> n("D"),
-      n("B") --> n("D"))
+      "C" --> "D",
+      "B" --> "D")
   }
 
   it should "provide outgoing edges for nodes" in {
     testGraph.outgoing("A") should contain theSameElementsAs List(
-      n("A") --> n("B"),
-      n("A") --> n("C"))
+      "A" --> "B",
+      "A" --> "C")
 
     testGraph.outgoing("B") should contain theSameElementsAs List(
-      n("B") --> n("C"),
-      n("B") --> n("D"))
+      "B" --> "C",
+      "B" --> "D")
 
     testGraph.outgoing("C") should contain theSameElementsAs List(
-      n("C") --> n("D"))
+      "C" --> "D")
 
     testGraph.outgoing("D") should contain theSameElementsAs List(
-      n("D") --> n("A"))
+      "D" --> "A")
   }
 
   it should "get the predecessors for a node" in {
@@ -53,7 +57,12 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   it should "return the all the nodes of a graph" in {
-    testGraph.nodes should be(Set("D", "A", "C", "X", "B"))
+    testGraph.nodes should be(Set("A", "B", "C", "D"))
+  }
+
+  it should "return empty iterable for an empty graph" in {
+    val emptyGraph = Graph.empty
+    emptyGraph.edges should be(empty)
   }
 
 }

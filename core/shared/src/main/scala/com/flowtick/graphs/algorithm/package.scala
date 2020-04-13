@@ -1,16 +1,11 @@
 package com.flowtick.graphs
 
-import scala.language.higherKinds
-
 package object algorithm {
-  implicit class GraphOps[G[_, _, _], V, N, M](graph: Graph[V, N, M])(implicit identifiable: Identifiable[N]) {
-    def bfs(startNode: N) = new BreadthFirstSearch[V, N, M](Seq(startNode), graph)
-    def dfs(startNode: N) = new DepthFirstSearch[V, N, M](Seq(startNode), graph)
-    def topologicalSort: List[N] = new TopologicalSort[V, N, M](graph).sort
-    def shortestPath(implicit numeric: Numeric[V]) = new DijkstraShortestPath[V, N, M](graph)
+  implicit class GraphOps[E, N](graph: Graph[E, N]) {
+    def bfs(startNode: N) = new BreadthFirstSearch[E, N](Seq(startNode), graph)
+    def dfs(startNode: N) = new DepthFirstSearch[E, N](Seq(startNode), graph)
+    def topologicalSort: List[N] = new TopologicalSort[E, N](graph).sort
+    def dijkstra(implicit numeric: Numeric[E],
+                 label: Labeled[Edge[E, N], E]) = new DijkstraShortestPath[E, N](graph)
   }
-
-  implicit class Dijkstra[V, N, M](graph: Graph[V, N, M])(implicit
-    numeric: Numeric[V],
-    identifiable: Identifiable[N]) extends DijkstraShortestPath[V, N, M](graph)
 }

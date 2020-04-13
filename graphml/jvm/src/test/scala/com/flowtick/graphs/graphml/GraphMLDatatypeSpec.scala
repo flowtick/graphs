@@ -59,7 +59,7 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
     val imported = FromGraphML[Unit, TestNode, Unit](testDataType.serialize(testGraph).mkString(""))
 
     imported.right.foreach { graphml =>
-      val importedNodes: immutable.Seq[GraphMLNode[TestNode]] = graphml.nodes.toList.sortBy(_.id)
+      val importedNodes: immutable.Seq[GraphMLNode[TestNode]] = graphml.contexts.toList.sortBy(_.id)
       importedNodes should have size 2
 
       importedNodes.headOption match {
@@ -95,7 +95,7 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
 
     imported match {
       case Right(graphml) =>
-        graphml.nodes.find(_.id == "n0") match {
+        graphml.contexts.find(_.id == "n0") match {
           case Some(n0) =>
             n0.id should be("n0")
             n0.label should be(Some("Kassel"))
@@ -137,10 +137,10 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
 
     parsed match {
       case Right(parsedGraph) =>
-        parsedGraph.nodes.find(_.id == "Kassel") should be(graphML.nodes.find(_.id == "Kassel"))
+        parsedGraph.contexts.find(_.id == "Kassel") should be(graphML.nodes.find(_.id == "Kassel"))
         parsedGraph.nodeContext.find(_._1.id == "Kassel") should be(graphML.nodeContext.find(_._1.id == "Kassel"))
 
-        parsedGraph.nodes should contain theSameElementsAs graphML.nodes
+        parsedGraph.contexts should contain theSameElementsAs graphML.nodes
         parsedGraph.nodeContext.values should contain theSameElementsAs graphML.nodeContext.values
 
       case Left(errors) => fail(s"parsing errors ${errors.toString}")

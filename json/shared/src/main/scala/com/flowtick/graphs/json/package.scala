@@ -8,14 +8,13 @@ import io.circe.{ Decoder, Encoder, Json }
 
 package object json {
 
-  private[json] final case class JsonGraph[V, N, M](
-    meta: M,
+  private[json] final case class JsonGraph[E, N](
     nodes: Map[String, N],
-    edges: List[JsonEdge[V]])
+    edges: List[JsonEdge[E]])
 
-  private[json] final case class JsonEdge[V](
+  private[json] final case class JsonEdge[E](
     id: String,
-    value: V,
+    value: E,
     source: String,
     target: String)
 
@@ -24,38 +23,28 @@ package object json {
   }
 
   object ToJson {
-    def apply[V, N, M](graph: Graph[V, N, M])(implicit
-      edgeEncoder: Encoder[V],
-      nodeEncoder: Encoder[N],
-      metaEncoder: Encoder[M],
-      edgeId: Identifiable[Edge[V, N]],
-      nodeId: Identifiable[N]): Json = JsonGraph(
-      meta = graph.value,
-      edges = graph.edges
-        .iterator
-        .map(edge => JsonEdge[V](
-          edgeId.id(edge),
-          edge.value,
-          nodeId.id(edge.head),
-          nodeId.id(edge.tail)))
-        .toList,
+    def apply[E, N](graph: Graph[E, N])(implicit edgeEncoder: Encoder[E],
+                                        nodeEncoder: Encoder[N],
+                                        nodeId: Identifiable[N, String],
+                                        edgeId: Identifiable[Edge[E, N], String]): Json = JsonGraph(
+      edges = graph.edges.map { edge =>
+        JsonEdge(edgeId(edge), edge.value, nodeId(edge.from), nodeId(edge.to))
+      }.toList,
       nodes = graph.nodes
         .iterator
-        .map(node => (nodeId.id(node), node))
+        .map(node => (nodeId(node), node))
         .toMap).asJson
   }
 
   object FromJson {
-    def apply[V, N, M](json: String)(implicit
-      edgeEncoder: Decoder[V],
-      nodeEncoder: Decoder[N],
-      metaEncoder: Decoder[M]): Either[circe.Error, Graph[V, N, M]] = {
-      decode[JsonGraph[V, N, M]](json).map(jsonGraph => {
-        Graph.from(
-          value = jsonGraph.meta,
-          nodes = jsonGraph.nodes.values,
-          // FIXME: this throws if edges reference non existing nodes
-          edges = jsonGraph.edges.map(edge => Edge[V, N](edge.value, jsonGraph.nodes(edge.source), jsonGraph.nodes(edge.target))))
+    def apply[E, N](json: String)(implicit
+      edgeEncoder: Decoder[E],
+      nodeEncoder: Decoder[N]): Either[circe.Error, Graph[E, N]] = {
+      decode[JsonGraph[E, N]](json).map(jsonGraph => {
+        val edges = jsonGraph.edges.map { edge => edge.
+          
+        }
+        jsonGraph.nodes.values.foldLeft(Graph.empty[E, N])(_ withNode _).withEdges(edges)
       })
     }
   }

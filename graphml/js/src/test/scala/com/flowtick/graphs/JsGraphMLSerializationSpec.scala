@@ -32,7 +32,7 @@ class JsGraphMLSerializationSpec extends FlatSpec with Matchers {
       case Some(xml) =>
         val loaded = FromGraphML[Unit, Unit, Unit](xml.toString()).getOrElse(fail())
         loaded.edges.size should be(1)
-        loaded.nodes.size should be(2)
+        loaded.contexts.size should be(2)
       case None => fail
     }
   }

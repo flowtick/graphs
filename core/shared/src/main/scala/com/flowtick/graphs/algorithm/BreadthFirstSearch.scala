@@ -4,9 +4,9 @@ import com.flowtick.graphs.Graph
 
 import scala.collection.mutable
 
-class BreadthFirstSearch[V, N, M](
+class BreadthFirstSearch[E, N](
   initialNodes: Iterable[N],
-  graph: Graph[V, N, M]) extends Traversal[N] {
+  graph: Graph[E, N]) extends Traversal[N] {
   override def run: Seq[N] = {
     val visited = mutable.Map[N, Boolean]()
     val visitedList = mutable.ListBuffer[N]()
@@ -20,7 +20,7 @@ class BreadthFirstSearch[V, N, M](
           visitCallbacks.foreach(_.apply(node))
           visitedList += node
 
-          def addAdjacent(nodes: Iterator[N]): Unit = {
+          def addAdjacent(nodes: Iterable[N]): Unit = {
             for (next <- nodes) {
               if (!visited.getOrElse(next, false)) {
                 queue.enqueue(next)
@@ -38,7 +38,7 @@ class BreadthFirstSearch[V, N, M](
       visitedList.toList
     }
 
-    initialNodes.foreach(queue.enqueue(_))
+    initialNodes.foreach(queue.enqueue)
     traverse
   }
 }

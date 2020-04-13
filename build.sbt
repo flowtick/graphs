@@ -1,6 +1,10 @@
 import ReleaseTransformations._
 
-val mainScalaVersion = "2.13.1"
+val scala212V = "2.12.11"
+val scala213V = "2.13.1"
+val mainScalaVersion = scala213V
+val compatScalaVersion = scala212V
+
 val scalaXmlV = "1.1.1"
 val catsV = "2.0.0"
 val xmlsV = "0.1.10"
@@ -12,7 +16,7 @@ lazy val commonSettings = Seq(
   ),
   organization := "com.flowtick",
   scalaVersion := mainScalaVersion,
-  crossScalaVersions := Seq(mainScalaVersion, "2.12.10"),
+  crossScalaVersions := Seq(mainScalaVersion, compatScalaVersion),
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   releaseCrossBuild := true,
   releaseProcess := Seq[ReleaseStep](
@@ -34,11 +38,11 @@ lazy val commonSettings = Seq(
     "org.scalamock" %% "scalamock" % "4.4.0" % Test ::
     "org.scalacheck" %% "scalacheck" % "1.14.1-RC2" % Test ::
     Nil,
-  wartremoverErrors ++= Warts.unsafe.filterNot(Seq(
-    Wart.NonUnitStatements,
-    Wart.DefaultArguments,
-    Wart.Any
-  ).contains(_)),
+  // wartremoverErrors ++= Warts.unsafe.filterNot(Seq(
+  //   Wart.NonUnitStatements,
+  //   Wart.DefaultArguments,
+  //   Wart.Any
+  // ).contains(_)),
   licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://flowtick.github.io/graphs")),
   scmInfo := Some(
