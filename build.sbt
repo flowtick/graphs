@@ -38,11 +38,6 @@ lazy val commonSettings = Seq(
     "org.scalamock" %% "scalamock" % "4.4.0" % Test ::
     "org.scalacheck" %% "scalacheck" % "1.14.1-RC2" % Test ::
     Nil,
-  // wartremoverErrors ++= Warts.unsafe.filterNot(Seq(
-  //   Wart.NonUnitStatements,
-  //   Wart.DefaultArguments,
-  //   Wart.Any
-  // ).contains(_)),
   licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://flowtick.github.io/graphs")),
   scmInfo := Some(
