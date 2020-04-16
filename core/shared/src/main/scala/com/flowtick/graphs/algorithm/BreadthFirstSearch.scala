@@ -38,7 +38,7 @@ class BreadthFirstSearch[E, N, M](
       visitedList.toList
     }
 
-    initialNodes.foreach(queue.enqueue)
+    initialNodes.foreach(queue.enqueue(_))
     traverse
   }
 }

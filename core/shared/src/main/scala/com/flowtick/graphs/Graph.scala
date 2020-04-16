@@ -65,6 +65,8 @@ final case class GraphInstance[E, N, M](meta: M,
     if (contexts.contains(node)) {
       this
     } else copy(contexts = contexts + (node -> NodeContext(node)))
+
+  override def withMeta[MT](meta: MT): Graph[E, N, MT] = copy(meta = meta)
 }
 
 /**
@@ -107,6 +109,7 @@ trait Graph[E, N, M] {
 
   def withNodes(nodes: Iterable[N]): Graph[E, N, M] = nodes.foldLeft(this)(_ withNode _)
   def withEdges(edges: Iterable[Edge[E, N]]): Graph[E, N, M] = edges.foldLeft(this)(_ + _)
+  def withMeta[MT](meta: MT): Graph[E, N, MT]
 }
 
 // #graph

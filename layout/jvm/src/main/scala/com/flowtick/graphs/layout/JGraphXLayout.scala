@@ -9,17 +9,18 @@ import com.mxgraph.model.{mxCell, mxGeometry, mxGraphModel}
 import com.mxgraph.view.mxGraph
 
 import scala.collection.JavaConverters._
-import scala.collection.{MapView, mutable}
+import scala.collection.mutable
 
 object JGraphXLayouter extends GraphLayout {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   override def layout[E, N, M](g: Graph[E, N, M])(implicit edgeLabel: Labeled[Edge[E, N], String],
                                             edgeId: Identifiable[Edge[E, N], String],
                                             nodeId: Identifiable[N, String]): NodeLayout[N] = {
-    val layoutedCells: MapView[String, JGraphXCell] = new JGraphXLayout[E, N, M]()
+    val layoutedCells: Map[String, JGraphXCell] = new JGraphXLayout[E, N, M]()
       .layout(g)
       .getModel.asInstanceOf[mxGraphModel]
       .getCells.asScala.mapValues(cell => JGraphXCell(cell.asInstanceOf[mxCell]))
+      .toMap
     
     (node: N) => layoutedCells.get(nodeId(node))
   }
