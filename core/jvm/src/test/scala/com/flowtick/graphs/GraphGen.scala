@@ -11,9 +11,13 @@ object GraphGen {
     case ((left, right), value) => Edge(value, left, right)
   }
 
-  def graphGen[E, N](implicit
-    valueGen: Gen[E],
-    nodeGen: Gen[N]): Gen[Graph[E, N]] = for {
+  def graphGen[E, N, M](implicit
+    edgeGen: Gen[E],
+    nodeGen: Gen[N],
+    nodesGen: Gen[List[N]],
+    metaGen: Gen[M]): Gen[Graph[E, N, M]] = for {
+    meta <- metaGen
+    nodes <- nodesGen
     edges <- edgesGen[E, N]
-  } yield Graph.fromEdges(edges)
+  } yield Graph(meta, edges = edges, nodes = nodes)
 }

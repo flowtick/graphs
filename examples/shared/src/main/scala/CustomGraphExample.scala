@@ -6,7 +6,7 @@ trait CustomGraphExample {
   final case class MyNode(id: String, someCustomProperty: String)
 
   val graph = Graph.fromEdges(Set(
-    n(MyNode("first_node", "My first node")) --> n(MyNode("second_node", "My second node"))))
+    MyNode("first_node", "My first node") --> MyNode("second_node", "My second node")))
 
   println(graph.edges)
   // Set(MyNode(first_node,My first node) --> MyNode(second_node,My second node)[()])

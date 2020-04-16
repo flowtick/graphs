@@ -10,7 +10,7 @@ class GraphCatsSpec extends FlatSpec with Matchers {
   import com.flowtick.graphs.cat.instances._
 
   "Graph Monoid" should "combine graphs" in {
-    type NumberNodeGraph = Graph[Unit, Int]
+    type NumberNodeGraph = Graph[Unit, Int, Unit]
 
     val graphA: NumberNodeGraph = Graph.fromEdges(Set(
       1 --> 2,

@@ -4,13 +4,13 @@ import com.flowtick.graphs.defaults._
 
 trait BfsExample {
   val graph = Graph.fromEdges(Set(
-    n("A") --> n("D"),
-    n("A") --> n("C"),
-    n("A") --> n("B"),
-    n("B") --> n("E"),
-    n("B") --> n("F"),
-    n("B") --> n("G"),
-    n("E") --> n("H")))
+    "A" --> "D",
+    "A" --> "C",
+    "A" --> "B",
+    "B" --> "E",
+    "B" --> "F",
+    "B" --> "G",
+    "E" --> "H"))
 
   println(graph.bfs("A").run)
   // List(A, B, C, D, E, F, G, H)

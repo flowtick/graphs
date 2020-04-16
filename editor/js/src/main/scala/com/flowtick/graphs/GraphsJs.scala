@@ -17,8 +17,8 @@ object GraphsJs {
     val container = org.scalajs.dom.window.document.getElementById(containerElementId)
 
     MxGraphView.create(container, graph)(
-      implicitly[Identifiable[JsNode]],
-      implicitly[Labeled[Edge[JsEdge, JsNode], String]])
+      implicitly[Identifiable[JsNode, String]],
+      Labeled.label[Edge[JsEdge, JsNode], Option[String]](edge => edge.value.label))
   }
 
   @JSExport

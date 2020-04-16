@@ -6,21 +6,21 @@ object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
   // #cities
   val cities: Graph[Int, String, Unit] = Graph.fromEdges(Set(
-    n("Frankfurt") --> (85, n("Mannheim")),
-    n("Frankfurt") --> (217, n("Wuerzburg")),
-    n("Frankfurt") --> (173, n("Kassel")),
-    n("Mannheim") --> (80, n("Karlsruhe")),
-    n("Wuerzburg") --> (186, n("Erfurt")),
-    n("Wuerzburg") --> (103, n("Nuernberg")),
-    n("Stuttgart") --> (183, n("Nuernberg")),
-    n("Kassel") --> (502, n("Muenchen")),
-    n("Nuernberg") --> (167, n("Muenchen")),
-    n("Karlsruhe") --> (250, n("Augsburg")),
-    n("Augsburg") --> (84, n("Muenchen"))))
+    "Frankfurt" --> (85, "Mannheim"),
+    "Frankfurt" --> (217, "Wuerzburg"),
+    "Frankfurt" --> (173, "Kassel"),
+    "Mannheim" --> (80, "Karlsruhe"),
+    "Wuerzburg" --> (186, "Erfurt"),
+    "Wuerzburg" --> (103, "Nuernberg"),
+    "Stuttgart" --> (183, "Nuernberg"),
+    "Kassel" --> (502, "Muenchen"),
+    "Nuernberg" --> (167, "Muenchen"),
+    "Karlsruhe" --> (250, "Augsburg"),
+    "Augsburg" --> (84, "Muenchen")))
   // #cities
 }
 
 trait DijkstraExample {
-  println(DijkstraGraph.cities.shortestPath("Frankfurt", "Muenchen"))
+  println(DijkstraGraph.cities.dijkstra.shortestPath("Frankfurt", "Muenchen"))
   // ListBuffer(Frankfurt --> Wuerzburg[217], Wuerzburg --> Nuernberg[103], Nuernberg --> Muenchen[167])
 }

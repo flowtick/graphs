@@ -6,9 +6,8 @@ package object defaults {
       s"${edge.from}-${edge.to}"
     }
 
-  implicit val identifiableString: Identifiable[String, String] = new Identifiable[String, String] {
-    override def apply(string: String): String = string
-  }
+  implicit val identifiableString: Identifiable[String, String] = Identifiable.identity
+  implicit val identifiableUnit: Identifiable[Unit, String] = Identifiable.identify(_ => "()")
 
   object id {
     implicit def int[N]: Identifiable[N, Int] = new Identifiable[N, Int] {
@@ -32,18 +31,25 @@ package object defaults {
     }
   }
 
+  object label {
+    implicit val unitLabel: Labeled[Unit, String] = _ => "()"
+    implicit val intOptLabel: Labeled[Int, Option[String]] = number => Some(number.toString)
+    implicit val intLabel: Labeled[Int, String] = number => number.toString
+
+    implicit def labeledEdgeString[E, N](implicit labeled: Labeled[E, String]): Labeled[Edge[E, N], String] =
+      Labeled.label[Edge[E, N], String](edge => labeled(edge.value))
+
+    implicit val stringOptLabel: Labeled[String, Option[String]] = string => Some(string)
+    implicit def edgeStringOptLabel[E, N](implicit edgeLabel: Labeled[Edge[E, N], String]): Labeled[Edge[E, N], Option[String]] =
+      edge => Some(edgeLabel(edge))
+  }
+
   implicit class DefaultEdgeBuilder[N, I](from: N) {
     def -->[E](value: E, to: N): Edge[E, N] = Edge(value, from, to)
     def -->(to: N): Edge[Unit, N] = Edge((), from, to)
   }
 
-  implicit val unitLabel: Labeled[Unit, String] = new Labeled[Unit, String] {
-    override def apply(edge: Unit): String = "()"
-  }
-
-  implicit val stringLabel: Labeled[String, String] = new Labeled[String, String] {
-    override def apply(string: String): String = string
-  }
+  implicit val stringLabel: Labeled[String, String] = (string: String) => string
 
   implicit def numericEdgeLabel[E, N](implicit numeric: Numeric[E]): Labeled[Edge[E, N], E] = new Labeled[Edge[E, N], E] {
     override def apply(edge: Edge[E, N]): E = edge.value

@@ -41,9 +41,10 @@ final case class Edge[E, N](value: E, from: N, to: N) {
 
 final case class NodeContext[N, E](node: N, incoming: List[Edge[E, N]] = List.empty, outgoing: List[Edge[E, N]] = List.empty)
 
-final case class GraphInstance[E, N](contexts: scala.collection.Map[N, NodeContext[N, E]] = scala.collection.Map.empty[N, NodeContext[N, E]],
-                                     edges: scala.collection.Set[Edge[E, N]] = scala.collection.Set.empty[Edge[E, N]]) extends Graph[E, N] {
-  def +(edge: Edge[E, N]): Graph[E, N] = {
+final case class GraphInstance[E, N, M](meta: M,
+                                        contexts: scala.collection.Map[N, NodeContext[N, E]] = scala.collection.Map.empty[N, NodeContext[N, E]],
+                                        edges: scala.collection.Set[Edge[E, N]] = scala.collection.Set.empty[Edge[E, N]]) extends Graph[E, N, M] {
+  def +(edge: Edge[E, N]): Graph[E, N, M] = {
     val newFromContext: NodeContext[N, E] = contexts.get(edge.from) match {
       case Some(fromContext) => fromContext.copy(outgoing = fromContext.outgoing :+ edge)
       case None => NodeContext(edge.from, outgoing = List(edge))
@@ -60,7 +61,7 @@ final case class GraphInstance[E, N](contexts: scala.collection.Map[N, NodeConte
     )
   }
 
-  override def withNode(node: N): Graph[E, N] =
+  override def withNode(node: N): Graph[E, N, M] =
     if (contexts.contains(node)) {
       this
     } else copy(contexts = contexts + (node -> NodeContext(node)))
@@ -80,7 +81,8 @@ final case class GraphInstance[E, N](contexts: scala.collection.Map[N, NodeConte
  *
  */
 // #graph
-trait Graph[E, N] {
+trait Graph[E, N, M] {
+  def meta: M
   def contexts: scala.collection.Map[N, NodeContext[N, E]]
   def edges: scala.collection.Set[Edge[E, N]]
   def nodes: Iterable[N] = contexts.keys
@@ -100,15 +102,25 @@ trait Graph[E, N] {
   def successors(node: N): Iterable[N] = outgoing(node).map(_.to)
   def predecessors(node: N): Iterable[N] = incoming(node).map(_.from)
 
-  def +(edge: Edge[E, N]): Graph[E, N]
-  def withNode(node: N): Graph[E, N]
-  def withEdges(edges: Iterable[Edge[E, N]]): Graph[E, N] = edges.foldLeft(this)(_ + _)
+  def +(edge: Edge[E, N]): Graph[E, N, M]
+  def withNode(node: N): Graph[E, N, M]
+
+  def withNodes(nodes: Iterable[N]): Graph[E, N, M] = nodes.foldLeft(this)(_ withNode _)
+  def withEdges(edges: Iterable[Edge[E, N]]): Graph[E, N, M] = edges.foldLeft(this)(_ + _)
 }
 
 // #graph
 
 object Graph {
-  def empty[E, N]: Graph[E, N] = GraphInstance[E, N]()
+  def apply[E, N, M](meta: M,
+                     edges: Iterable[Edge[E, N]] = Iterable.empty,
+                     nodes: Iterable[N] = Iterable.empty): Graph[E, N, M] =
+    GraphInstance(meta).withEdges(edges).withNodes(nodes)
+
+  def empty[E, N, M](meta: M): Graph[E, N, M] = GraphInstance[E, N, M](meta)
+
+  def unit[E, N]: Graph[E, N, Unit] = GraphInstance[E, N, Unit](())
+
   /**
    * utility method to create a unit typed graph quickly from iterable edges
    *
@@ -117,6 +129,6 @@ object Graph {
    * @tparam N the node type
    * @return a typed graph with the edges
    */
-  def fromEdges[E, N](edges: Iterable[Edge[E, N]]): Graph[E, N] =
-    edges.foldLeft(empty[E, N])(_ + _)
+  def fromEdges[E, N](edges: Iterable[Edge[E, N]]): Graph[E, N, Unit] =
+    edges.foldLeft(unit[E, N])(_ + _)
 }

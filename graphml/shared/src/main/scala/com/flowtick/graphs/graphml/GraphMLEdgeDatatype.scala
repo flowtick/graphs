@@ -10,7 +10,7 @@ import scala.reflect.ClassTag
 import scala.xml.{ Node, NodeSeq }
 
 class GraphMLEdgeDatatype[V, Repr <: HList, FromRepr <: HList](implicit
-  identifiable: Identifiable[GraphMLNode[V]],
+  identifiable: Identifiable[GraphMLNode[V], String],
   genericValue: LabelledGeneric.Aux[V, Repr],
   fromList: FromList[V, FromRepr],
   genericValueKeys: Keys[Repr],

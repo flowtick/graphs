@@ -40,7 +40,7 @@ object GraphML {
     meta: M,
     edges: Iterable[Edge[GraphMLEdge[V], GraphMLNode[N]]],
     nodes: Iterable[GraphMLNode[N]] = Iterable.empty): Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[M]] = {
-    Graph.from(GraphMLGraph(meta, id = Some(id), keys = Seq.empty), nodes, edges)
+    Graph(GraphMLGraph(meta, id = Some(id), keys = Seq.empty), edges = edges, nodes = nodes)
   }
 
   def fromEdges[V, N](edges: Iterable[Edge[GraphMLEdge[V], GraphMLNode[N]]]): Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[Unit]] =

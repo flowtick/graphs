@@ -11,8 +11,8 @@ object MxGraphView {
     container: Element,
     graph: Graph[JsEdge, JsNode, JsGraph],
     layout: MxGraph => MxGraph = hierarchicalLayout)(implicit
-    nodeId: Identifiable[JsNode],
-    edgeLabel: Labeled[Edge[JsEdge, JsNode], String]): MxGraph = {
+    nodeId: Identifiable[JsNode, String],
+    edgeLabel: Labeled[Edge[JsEdge, JsNode], Option[String]]): MxGraph = {
     MxEvent.disableContextMenu(container)
 
     val viewGraph = new MxGraph(container)
@@ -33,8 +33,8 @@ object MxGraphView {
 
     try {
       val parent = viewGraph.getDefaultParent()
-      val nodeCells: Map[JsNode, MxCell] = graph.contexts.map { node =>
-        val id = nodeId.id(node)
+      val nodeCells: Map[JsNode, MxCell] = graph.nodes.map { node =>
+        val id = nodeId(node)
 
         (node, viewGraph.insertVertex(
           parent = parent,
@@ -51,9 +51,9 @@ object MxGraphView {
         (edge, viewGraph.insertEdge(
           parent = parent,
           id = id,
-          value = edgeLabel.label(edge).orNull,
-          source = nodeCells.get(edge.head).orNull,
-          target = nodeCells.get(edge.tail).orNull))
+          value = edgeLabel(edge).orNull,
+          source = nodeCells.get(edge.from).orNull,
+          target = nodeCells.get(edge.to).orNull))
       }
 
       layout.execute(parent)
@@ -88,7 +88,7 @@ object MxGraphView {
     viewGraph
   }
 
-  def toGraph[G[_, _, _]](meta: JsGraph, view: MxGraph)(implicit identifiable: Identifiable[JsNode]): Graph[JsEdge, JsNode, JsGraph] = {
+  def toGraph[G[_, _, _]](meta: JsGraph, view: MxGraph)(implicit identifiable: Identifiable[JsNode, String]): Graph[JsEdge, JsNode, JsGraph] = {
 
     val nodes = view.getModel().getChildVertices(view.getDefaultParent()).map(nodeCell => JsNode(nodeCell.getId()))
     val edges = view.getModel().getChildEdges(view.getDefaultParent()).map(edgeCell => {
@@ -98,7 +98,7 @@ object MxGraphView {
         JsNode(edgeCell.target.get.getId()))
     })
 
-    Graph.from[JsEdge, JsNode, JsGraph](meta, nodes, edges)
+    Graph[JsEdge, JsNode, JsGraph](meta, edges, nodes)
   }
 }
 // $COVERAGE-ON$

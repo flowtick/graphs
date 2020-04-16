@@ -3,15 +3,16 @@ trait GraphMLExample {
     // #simple-graphml
     import com.flowtick.graphs.Graph
     import com.flowtick.graphs.defaults._
+    import com.flowtick.graphs.defaults.label._
     import com.flowtick.graphs.graphml._
     import com.flowtick.graphs.graphml.generic._
 
     val simple: Graph[Unit, String, Unit] = Graph.fromEdges(Set(
-      n("A") --> n("B"),
-      n("B") --> n("C"),
-      n("D") --> n("A")))
+      "A" --> "B",
+      "B" --> "C",
+      "D" --> "A"))
 
-    val graphML = simple.asGraphML().xml
+    val graphML = simple.asGraphML.xml
     val loaded = FromGraphML[Int, String, Unit](graphML.toString)
     // #simple-graphml
   }
@@ -37,12 +38,13 @@ trait GraphMLExample {
   {
     import com.flowtick.graphs.Graph
     import com.flowtick.graphs.defaults._
+    import com.flowtick.graphs.defaults.label._
     import com.flowtick.graphs.graphml._
     import com.flowtick.graphs.graphml.generic._
 
-    val graph = Graph.fromEdges[Unit, String](Set(n("A") --> n("B")))
+    val graph = Graph.fromEdges[Unit, String](Set("A" --> "B"))
 
-    val xml = graph.asGraphML().xml
+    val xml = graph.asGraphML.xml
     val loaded = FromGraphML[Unit, String, Unit](xml.toString)
   }
 }

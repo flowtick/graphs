@@ -4,9 +4,9 @@ import com.flowtick.graphs.Graph
 
 import scala.collection.mutable
 
-class BreadthFirstSearch[E, N](
+class BreadthFirstSearch[E, N, M](
   initialNodes: Iterable[N],
-  graph: Graph[E, N]) extends Traversal[N] {
+  graph: Graph[E, N, M]) extends Traversal[N] {
   override def run: Seq[N] = {
     val visited = mutable.Map[N, Boolean]()
     val visitedList = mutable.ListBuffer[N]()

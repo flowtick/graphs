@@ -13,10 +13,10 @@ import scala.collection.{MapView, mutable}
 
 object JGraphXLayouter extends GraphLayout {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
-  override def layout[E, N](g: Graph[E, N])(implicit edgeLabel: Labeled[Edge[E, N], String],
+  override def layout[E, N, M](g: Graph[E, N, M])(implicit edgeLabel: Labeled[Edge[E, N], String],
                                             edgeId: Identifiable[Edge[E, N], String],
                                             nodeId: Identifiable[N, String]): NodeLayout[N] = {
-    val layoutedCells: MapView[String, JGraphXCell] = new JGraphXLayout[E, N]()
+    val layoutedCells: MapView[String, JGraphXCell] = new JGraphXLayout[E, N, M]()
       .layout(g)
       .getModel.asInstanceOf[mxGraphModel]
       .getCells.asScala.mapValues(cell => JGraphXCell(cell.asInstanceOf[mxCell]))
@@ -36,9 +36,9 @@ final case class JGraphXCell(cell: mxCell) extends Cell {
   override def geometry: Option[Geometry] = Option(cell.getGeometry).map(JGraphGeometry)
 }
 
-class JGraphXLayout[E, N](implicit edgeLabel: Labeled[Edge[E, N], String], edgeId: Identifiable[Edge[E, N], String], nodeId: Identifiable[N, String]) {
+class JGraphXLayout[E, N, M](implicit edgeLabel: Labeled[Edge[E, N], String], edgeId: Identifiable[Edge[E, N], String], nodeId: Identifiable[N, String]) {
 
-  def layout(graph: Graph[E, N]): mxGraph = {
+  def layout(graph: Graph[E, N, M]): mxGraph = {
     val layoutGraph = graphToMxGraph(graph)
 
     new mxHierarchicalLayout(layoutGraph).execute(layoutGraph.getDefaultParent)
@@ -46,7 +46,7 @@ class JGraphXLayout[E, N](implicit edgeLabel: Labeled[Edge[E, N], String], edgeI
   }
 
   @SuppressWarnings(Array("org.wartremover.warts.Null"))
-  private def graphToMxGraph(graph: Graph[E, N]): mxGraph = {
+  private def graphToMxGraph(graph: Graph[E, N, M]): mxGraph = {
     val mxGraph = new mxGraph
     mxGraph.getModel.beginUpdate()
 

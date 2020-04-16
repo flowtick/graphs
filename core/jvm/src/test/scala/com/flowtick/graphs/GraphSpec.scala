@@ -61,7 +61,7 @@ class GraphSpec extends FlatSpec with Matchers {
   }
 
   it should "return empty iterable for an empty graph" in {
-    val emptyGraph = Graph.empty
+    val emptyGraph = Graph.unit
     emptyGraph.edges should be(empty)
   }
 
