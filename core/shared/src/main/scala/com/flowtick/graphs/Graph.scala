@@ -61,6 +61,10 @@ final case class GraphInstance[M, E, N](meta: M,
     )
   }
 
+  def mapNodes[B](f: N => B): Graph[M, E, B] = edges.map { edge =>
+    edge.copy(from = f(edge.from), to = f(edge.to))
+  }.foldLeft(Graph.empty[M, E, B](meta))(_ + _).withNodes(nodes.map(f))
+
   override def withNode(node: N): Graph[M, E, N] =
     if (contexts.contains(node)) {
       this
@@ -104,8 +108,9 @@ trait Graph[M, E, N] {
   def successors(node: N): Iterable[N] = outgoing(node).map(_.to)
   def predecessors(node: N): Iterable[N] = incoming(node).map(_.from)
 
+  def mapNodes[B](f: N => B): Graph[M, E, B]
+
   def +(edge: Edge[E, N]): Graph[M, E, N]
-  def ++(graph: Graph[M, E, N]): Graph[M, E, N] = withNodes(graph.nodes).withEdges(graph.edges)
   def withNode(node: N): Graph[M, E, N]
 
   def withNodes(nodes: Iterable[N]): Graph[M, E, N] = nodes.foldLeft(this)(_ withNode _)

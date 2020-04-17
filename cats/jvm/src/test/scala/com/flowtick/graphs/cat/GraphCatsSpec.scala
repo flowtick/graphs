@@ -56,10 +56,10 @@ class GraphCatsSpec extends FlatSpec with Matchers {
   }
 
   it should "retain meta" in {
-    val numberGraph: Graph[List[String], Unit, Int] = Graph(List("foo"), edges = Set(1 --> 2))
+    val numberGraph: Graph[List[String], Unit, Int] = Graph(List("foo"), edges = Set(1 --> 2)).withNode(5)
     val doubledNodes = numberGraph.map(_ * 2)
 
-    doubledNodes should be(Graph[List[String], Unit, Int](List("foo"), edges = Set(2 --> 4)))
+    doubledNodes should be(Graph[List[String], Unit, Int](List("foo"), edges = Set(2 --> 4)).withNode(10))
   }
 
 }
