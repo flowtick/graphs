@@ -6,7 +6,7 @@ import com.flowtick.graphs.graphml.generic._
 import org.scalatest.{ FlatSpec, Matchers }
 
 class JsGraphMLSerializationSpec extends FlatSpec with Matchers {
-  val testGraph: Graph[GraphMLEdge[Unit], GraphMLNode[Unit], GraphMLGraph[Unit]] = GraphML(
+  val testGraph: Graph[GraphMLGraph[Unit], GraphMLEdge[Unit], GraphMLNode[Unit]] = GraphML(
     id = "new-graph",
     meta = (),
     edges = Set(ml((), Some("A")) --> ml((), Some("B"))))

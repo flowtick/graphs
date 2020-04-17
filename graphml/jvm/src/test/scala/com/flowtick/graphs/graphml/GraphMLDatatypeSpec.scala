@@ -15,12 +15,12 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
   implicit val labelledGenericTestNode = shapeless.LabelledGeneric[TestNode]
   implicit val labelledGenericFoo = shapeless.LabelledGeneric[Foo]
 
-  val testGraph: Graph[GraphMLEdge[Unit], GraphMLNode[TestNode], GraphMLGraph[Unit]] = GraphML(
+  val testGraph: Graph[GraphMLGraph[Unit], GraphMLEdge[Unit], GraphMLNode[TestNode]] = GraphML(
     id = "new-graph",
     meta = (),
     edges = Set(ml(TestNode("A", "B"), Some("1")) --> ml(TestNode("C", "D"), Some("2"))))
 
-  val testDataType = new GraphMLDatatype[Unit, TestNode, Unit]()
+  val testDataType = new GraphMLDatatype[Unit, Unit, TestNode]()
 
   def prettyPrint(xml: scala.xml.Node) = println(new scala.xml.PrettyPrinter(80, 4).format(xml))
 
@@ -55,7 +55,7 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
   }
 
   it should "deserialize rendered XML" in {
-    val imported = FromGraphML[Unit, TestNode, Unit](testDataType.serialize(testGraph).mkString(""))
+    val imported = FromGraphML[Unit, Unit, TestNode](testDataType.serialize(testGraph).mkString(""))
 
     imported.right.foreach { graphml =>
       val importedNodes: immutable.Seq[GraphMLNode[TestNode]] = graphml.nodes.toList.sortBy(_.id)
@@ -90,7 +90,7 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
 
   it should "import xml created by yed with node and edge properties" in {
     val cities = io.Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("yed-cities.graphml"))
-    val imported = FromGraphML[String, String, Unit](cities.getLines().mkString)
+    val imported = FromGraphML[Unit, String, String](cities.getLines().mkString)
 
     imported match {
       case Right(graphml) =>
@@ -115,7 +115,7 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
     import com.flowtick.graphs.defaults._
     import com.flowtick.graphs.defaults.label._
 
-    val cities: Graph[Int, String, Unit] = Graph.fromEdges(Set(
+    val cities: Graph[Unit, Int, String] = Graph.fromEdges(Set(
       "Frankfurt" --> (85, "Mannheim"),
       "Frankfurt" --> (217, "Wuerzburg"),
       "Frankfurt" --> (173, "Kassel"),
@@ -135,7 +135,7 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
 
     xml.headOption.foreach(println)
 
-    val parsed: Either[NonEmptyList[Throwable], GraphMLGraphType[Int, String, Unit]] = FromGraphML[Int, String, Unit](xml.toString)
+    val parsed: Either[NonEmptyList[Throwable], GraphMLGraphType[Unit, Int, String]] = FromGraphML[Unit, Int, String](xml.toString)
 
     parsed match {
       case Right(parsedGraph) =>

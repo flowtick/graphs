@@ -7,13 +7,13 @@ trait GraphMLExample {
     import com.flowtick.graphs.graphml._
     import com.flowtick.graphs.graphml.generic._
 
-    val simple: Graph[Unit, String, Unit] = Graph.fromEdges(Set(
+    val simple: Graph[Unit, Unit, String] = Graph.fromEdges(Set(
       "A" --> "B",
       "B" --> "C",
       "D" --> "A"))
 
     val graphML = simple.asGraphML.xml
-    val loaded = FromGraphML[Int, String, Unit](graphML.toString)
+    val loaded = FromGraphML[Unit, Int, String](graphML.toString)
     // #simple-graphml
   }
 
@@ -26,12 +26,12 @@ trait GraphMLExample {
 
     final case class MyNode(value: Int)
 
-    val customGraph: Graph[GraphMLEdge[Unit], GraphMLNode[MyNode], GraphMLGraph[Unit]] =
+    val customGraph: Graph[GraphMLGraph[Unit], GraphMLEdge[Unit], GraphMLNode[MyNode]] =
       GraphML.fromEdges(Set(
         ml(MyNode(1), id = Some("one")) --> ml(MyNode(2), id = Some("two"))))
 
-    val xml: NodeSeq = ToGraphML[Unit, MyNode, Unit](customGraph)
-    val loaded = FromGraphML[Unit, MyNode, Unit](xml.toString)
+    val xml: NodeSeq = ToGraphML[Unit, Unit, MyNode](customGraph)
+    val loaded = FromGraphML[Unit, Unit, MyNode](xml.toString)
     // #custom-node-graphml
   }
 
@@ -45,6 +45,6 @@ trait GraphMLExample {
     val graph = Graph.fromEdges[Unit, String](Set("A" --> "B"))
 
     val xml = graph.asGraphML.xml
-    val loaded = FromGraphML[Unit, String, Unit](xml.toString)
+    val loaded = FromGraphML[Unit, Unit, String](xml.toString)
   }
 }

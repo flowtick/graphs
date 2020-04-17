@@ -8,11 +8,11 @@ import io.circe.Json
 import org.scalatest.{ FlatSpec, Matchers }
 
 class JsonSpec extends FlatSpec with Matchers {
-  val numberGraph: Graph[Unit, Int, Unit] = Graph.fromEdges(Set(1 --> 2)).withNode(3)
+  val numberGraph: Graph[Unit, Unit, Int] = Graph.fromEdges(Set(1 --> 2)).withNode(3)
 
   "JSON support" should "encode and decode int graph" in {
     val graphJson: Json = ToJson(numberGraph)
-    val parsed: Either[circe.Error, Graph[Unit, Int, Unit]] = FromJson[Unit, Int, Unit](graphJson.noSpaces)
+    val parsed: Either[circe.Error, Graph[Unit, Unit, Int]] = FromJson[Unit, Unit, Int](graphJson.noSpaces)
 
     parsed should be(Right(numberGraph))
   }
@@ -27,7 +27,7 @@ class JsonSpec extends FlatSpec with Matchers {
        |}
        |""".stripMargin
 
-    val parsed = FromJson[Unit, Int, Option[Unit]](numberGraphJson)
+    val parsed = FromJson[Option[Unit], Unit, Int](numberGraphJson)
     parsed should be(Right(numberGraph.withMeta(None)))
   }
 
@@ -40,7 +40,7 @@ class JsonSpec extends FlatSpec with Matchers {
                         |}
                         |""".stripMargin
 
-    val parsed = FromJson[Unit, Int, Unit](emptyGraph)
+    val parsed = FromJson[Unit, Unit, Int](emptyGraph)
     parsed should be(Right(Graph.unit))
   }
 
@@ -53,7 +53,7 @@ class JsonSpec extends FlatSpec with Matchers {
                         |}
                         |""".stripMargin
 
-    val parsed = FromJson[Unit, Int, Map[String, String]](emptyGraph)
+    val parsed = FromJson[Map[String, String], Unit, Int](emptyGraph)
     parsed should be(Right(Graph.empty(Map("id" -> "test"))))
   }
 }

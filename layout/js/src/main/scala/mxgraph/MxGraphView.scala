@@ -9,7 +9,7 @@ import org.scalajs.dom.Element
 object MxGraphView {
   def create(
     container: Element,
-    graph: Graph[JsEdge, JsNode, JsGraph],
+    graph: Graph[JsGraph, JsEdge, JsNode],
     layout: MxGraph => MxGraph = hierarchicalLayout)(implicit
     nodeId: Identifiable[JsNode, String],
     edgeLabel: Labeled[Edge[JsEdge, JsNode], Option[String]]): MxGraph = {
@@ -88,8 +88,7 @@ object MxGraphView {
     viewGraph
   }
 
-  def toGraph[G[_, _, _]](meta: JsGraph, view: MxGraph)(implicit identifiable: Identifiable[JsNode, String]): Graph[JsEdge, JsNode, JsGraph] = {
-
+  def toGraph(meta: JsGraph, view: MxGraph)(implicit identifiable: Identifiable[JsNode, String]): Graph[JsGraph, JsEdge, JsNode] = {
     val nodes = view.getModel().getChildVertices(view.getDefaultParent()).map(nodeCell => JsNode(nodeCell.getId()))
     val edges = view.getModel().getChildEdges(view.getDefaultParent()).map(edgeCell => {
       Edge(
@@ -98,7 +97,7 @@ object MxGraphView {
         JsNode(edgeCell.target.get.getId()))
     })
 
-    Graph[JsEdge, JsNode, JsGraph](meta, edges, nodes)
+    Graph[JsGraph, JsEdge, JsNode](meta, edges, nodes)
   }
 }
 // $COVERAGE-ON$

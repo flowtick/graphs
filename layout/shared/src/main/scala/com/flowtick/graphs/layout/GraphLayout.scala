@@ -21,7 +21,7 @@ trait Cell {
 }
 
 trait GraphLayout {
-  def layout[E, N, M](g: Graph[E, N, M])(implicit edgeLabel: Labeled[Edge[E, N], String],
+  def layout[M, E, N](g: Graph[M, E, N])(implicit edgeLabel: Labeled[Edge[E, N], String],
                                    edgeId: Identifiable[Edge[E, N], String],
                                    nodeId: Identifiable[N, String]): NodeLayout[N]
 }
@@ -30,7 +30,7 @@ object GraphLayout {
   type NodeLayout[Node] = Node => Option[Cell]
 
   val none: GraphLayout = new GraphLayout {
-    def layout[E, N, M](g: Graph[E, N, M])(implicit edgeLabel: Labeled[Edge[E, N], String],
+    def layout[M, E, N](g: Graph[M, E, N])(implicit edgeLabel: Labeled[Edge[E, N], String],
                                      edgeId: Identifiable[Edge[E, N], String],
                                      nodeId: Identifiable[N, String]): NodeLayout[N] = _ => None
   }

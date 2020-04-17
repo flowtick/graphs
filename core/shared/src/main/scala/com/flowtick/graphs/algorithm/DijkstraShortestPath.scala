@@ -5,7 +5,7 @@ import com.flowtick.graphs._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class DijkstraShortestPath[E, N, M](graph: Graph[E, N, M])
+class DijkstraShortestPath[M, E, N](graph: Graph[M, E, N])
                                            (implicit label: Labeled[Edge[E, N], E],
                                                      numeric: Numeric[E]) {
 

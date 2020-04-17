@@ -39,20 +39,20 @@ final case class Edge[E, N](value: E, from: N, to: N) {
   override def toString: String = s"$from --> $to"
 }
 
-final case class NodeContext[N, E](node: N, incoming: List[Edge[E, N]] = List.empty, outgoing: List[Edge[E, N]] = List.empty)
+final case class NodeContext[N, E](node: N, incoming: scala.collection.Set[Edge[E, N]] = scala.collection.Set.empty[Edge[E, N]], outgoing: scala.collection.Set[Edge[E, N]] = scala.collection.Set.empty[Edge[E, N]])
 
-final case class GraphInstance[E, N, M](meta: M,
+final case class GraphInstance[M, E, N](meta: M,
                                         contexts: scala.collection.Map[N, NodeContext[N, E]] = scala.collection.Map.empty[N, NodeContext[N, E]],
-                                        edges: scala.collection.Set[Edge[E, N]] = scala.collection.Set.empty[Edge[E, N]]) extends Graph[E, N, M] {
-  def +(edge: Edge[E, N]): Graph[E, N, M] = {
+                                        edges: scala.collection.Set[Edge[E, N]] = scala.collection.Set.empty[Edge[E, N]]) extends Graph[M, E, N] {
+  def +(edge: Edge[E, N]): Graph[M, E, N] = {
     val newFromContext: NodeContext[N, E] = contexts.get(edge.from) match {
-      case Some(fromContext) => fromContext.copy(outgoing = fromContext.outgoing :+ edge)
-      case None => NodeContext(edge.from, outgoing = List(edge))
+      case Some(fromContext) => fromContext.copy(outgoing = fromContext.outgoing + edge)
+      case None => NodeContext(edge.from, outgoing = Set(edge))
     }
 
     val newToContext: NodeContext[N, E] = contexts.get(edge.to) match {
-      case Some(toContext) => toContext.copy(incoming = toContext.incoming :+ edge)
-      case None => NodeContext(edge.to, incoming = List(edge))
+      case Some(toContext) => toContext.copy(incoming = toContext.incoming + edge)
+      case None => NodeContext(edge.to, incoming = Set(edge))
     }
 
     copy(
@@ -61,12 +61,12 @@ final case class GraphInstance[E, N, M](meta: M,
     )
   }
 
-  override def withNode(node: N): Graph[E, N, M] =
+  override def withNode(node: N): Graph[M, E, N] =
     if (contexts.contains(node)) {
       this
     } else copy(contexts = contexts + (node -> NodeContext(node)))
 
-  override def withMeta[MT](meta: MT): Graph[E, N, MT] = copy(meta = meta)
+  override def withMeta[MT](meta: MT): Graph[MT, E, N] = copy(meta = meta)
 }
 
 /**
@@ -83,7 +83,7 @@ final case class GraphInstance[E, N, M](meta: M,
  *
  */
 // #graph
-trait Graph[E, N, M] {
+trait Graph[M, E, N] {
   def meta: M
   def contexts: scala.collection.Map[N, NodeContext[N, E]]
   def edges: scala.collection.Set[Edge[E, N]]
@@ -104,25 +104,26 @@ trait Graph[E, N, M] {
   def successors(node: N): Iterable[N] = outgoing(node).map(_.to)
   def predecessors(node: N): Iterable[N] = incoming(node).map(_.from)
 
-  def +(edge: Edge[E, N]): Graph[E, N, M]
-  def withNode(node: N): Graph[E, N, M]
+  def +(edge: Edge[E, N]): Graph[M, E, N]
+  def ++(graph: Graph[M, E, N]): Graph[M, E, N] = withNodes(graph.nodes).withEdges(graph.edges)
+  def withNode(node: N): Graph[M, E, N]
 
-  def withNodes(nodes: Iterable[N]): Graph[E, N, M] = nodes.foldLeft(this)(_ withNode _)
-  def withEdges(edges: Iterable[Edge[E, N]]): Graph[E, N, M] = edges.foldLeft(this)(_ + _)
-  def withMeta[MT](meta: MT): Graph[E, N, MT]
+  def withNodes(nodes: Iterable[N]): Graph[M, E, N] = nodes.foldLeft(this)(_ withNode _)
+  def withEdges(edges: Iterable[Edge[E, N]]): Graph[M, E, N] = edges.foldLeft(this)(_ + _)
+  def withMeta[MT](meta: MT): Graph[MT, E, N]
 }
 
 // #graph
 
 object Graph {
-  def apply[E, N, M](meta: M,
+  def apply[M, E, N](meta: M,
                      edges: Iterable[Edge[E, N]] = Iterable.empty,
-                     nodes: Iterable[N] = Iterable.empty): Graph[E, N, M] =
+                     nodes: Iterable[N] = Iterable.empty): Graph[M, E, N] =
     GraphInstance(meta).withEdges(edges).withNodes(nodes)
 
-  def empty[E, N, M](meta: M): Graph[E, N, M] = GraphInstance[E, N, M](meta)
+  def empty[M, E, N](meta: M): Graph[M, E, N] = GraphInstance[M, E, N](meta)
 
-  def unit[E, N]: Graph[E, N, Unit] = GraphInstance[E, N, Unit](())
+  def unit[E, N]: Graph[Unit, E, N] = GraphInstance[Unit, E, N](())
 
   /**
    * utility method to create a unit typed graph quickly from iterable edges
@@ -132,6 +133,6 @@ object Graph {
    * @tparam N the node type
    * @return a typed graph with the edges
    */
-  def fromEdges[E, N](edges: Iterable[Edge[E, N]]): Graph[E, N, Unit] =
+  def fromEdges[E, N](edges: Iterable[Edge[E, N]]): Graph[Unit, E, N] =
     edges.foldLeft(unit[E, N])(_ + _)
 }

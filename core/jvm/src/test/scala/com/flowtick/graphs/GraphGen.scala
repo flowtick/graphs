@@ -11,11 +11,11 @@ object GraphGen {
     case ((left, right), value) => Edge(value, left, right)
   }
 
-  def graphGen[E, N, M](implicit
+  def graphGen[M, E, N](implicit
     edgeGen: Gen[E],
     nodeGen: Gen[N],
     nodesGen: Gen[List[N]],
-    metaGen: Gen[M]): Gen[Graph[E, N, M]] = for {
+    metaGen: Gen[M]): Gen[Graph[M, E, N]] = for {
     meta <- metaGen
     nodes <- nodesGen
     edges <- edgesGen[E, N]

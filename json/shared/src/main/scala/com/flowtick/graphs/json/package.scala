@@ -8,7 +8,7 @@ import io.circe.{ Decoder, Encoder, Json }
 
 package object json {
 
-  private[json] final case class JsonGraph[E, N, M](
+  private[json] final case class JsonGraph[M, E, N](
     meta: M,
     nodes: Map[String, N],
     edges: List[JsonEdge[E]])
@@ -24,7 +24,7 @@ package object json {
   }
 
   object ToJson {
-    def apply[E, N, M](graph: Graph[E, N, M])(implicit edgeEncoder: Encoder[E],
+    def apply[M, E, N](graph: Graph[M, E, N])(implicit edgeEncoder: Encoder[E],
                                               nodeEncoder: Encoder[N],
                                               metaEncoder: Encoder[M],
                                               nodeId: Identifiable[N, String],
@@ -40,14 +40,14 @@ package object json {
   }
 
   object FromJson {
-    def apply[E, N, M](json: String)(implicit edgeEncoder: Decoder[E],
+    def apply[M, E, N](json: String)(implicit edgeEncoder: Decoder[E],
                                      nodeEncoder: Decoder[N],
-                                     metaDecoder: Decoder[M]): Either[circe.Error, Graph[E, N, M]] = {
-      decode[JsonGraph[E, N, M]](json).map(jsonGraph => {
+                                     metaDecoder: Decoder[M]): Either[circe.Error, Graph[M, E, N]] = {
+      decode[JsonGraph[M, E, N]](json).map(jsonGraph => {
         val edges: List[Edge[E, N]] = jsonGraph.edges.map { edge =>
           Edge(edge.value, jsonGraph.nodes(edge.source), jsonGraph.nodes(edge.target))
         }
-        jsonGraph.nodes.values.foldLeft(Graph.empty[E, N, M](jsonGraph.meta))(_ withNode _).withEdges(edges)
+        jsonGraph.nodes.values.foldLeft(Graph.empty[M, E, N](jsonGraph.meta))(_ withNode _).withEdges(edges)
       })
     }
   }

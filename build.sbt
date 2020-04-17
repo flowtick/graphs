@@ -5,8 +5,7 @@ val scala213V = "2.13.1"
 val mainScalaVersion = scala213V
 val compatScalaVersion = scala212V
 
-val scalaXmlV = "1.1.1"
-val catsV = "2.0.0"
+val catsV = "2.1.1"
 val xmlsV = "0.1.10"
 val circeVersion = "0.12.3"
 
