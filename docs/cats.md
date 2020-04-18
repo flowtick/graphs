@@ -10,7 +10,7 @@ libraryDependencies += "com.flowtick" %% "graphs-cats" % "$version$"
 ```
 @@@
 
-@@snip [SimpleGraphApp.scala](../examples/shared/src/main/scala/CatsExample.scala)
+@@snip [CatsExample.scala](../examples/shared/src/main/scala/CatsExample.scala)
 
 Which computes the following combination of graphs:
 

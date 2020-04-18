@@ -19,10 +19,6 @@ package object json {
     source: String,
     target: String)
 
-  private implicit val unitEncoder = new Encoder[Unit] {
-    override def apply(a: Unit): Json = Json.Null
-  }
-
   object ToJson {
     def apply[M, E, N](graph: Graph[M, E, N])(implicit edgeEncoder: Encoder[E],
                                               nodeEncoder: Encoder[N],
@@ -52,4 +48,9 @@ package object json {
     }
   }
 
+  object options {
+    implicit val unitAsNull: Encoder[Unit] = new Encoder[Unit] {
+      override def apply(a: Unit): Json = Json.Null
+    }
+  }
 }

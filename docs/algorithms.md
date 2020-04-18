@@ -1,8 +1,8 @@
 # Algorithms
 
-graphs allows ad-hoc extension of graph instances so that you can execute some common operations and algorithms on it.
+`graphs` allows ad-hoc extension of graph instances so that you can execute some common operations and algorithms on it.
 
-Currently the following algorithms are supported:
+Currently, the following algorithms are supported:
 
 ## Depth-first traversal
 

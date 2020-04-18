@@ -7,6 +7,7 @@ package com.flowtick.graphs
  *
  * @tparam T the node type
  */
+// #identifiable
 trait Identifiable[T, I] {
   def apply(value: T): I
 }
@@ -17,6 +18,7 @@ object Identifiable {
 
   def identity[T]: Identifiable[T, T] = id => id
 }
+// #identifiable
 
 /**
  * Type class to define a label

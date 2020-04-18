@@ -1,9 +1,9 @@
 package com.flowtick.graphs
 
 package object defaults {
-  implicit def identifiableEdgeString[E, N]: Identifiable[Edge[E, N], String] =
+  implicit def identifiableEdgeString[E, N](implicit nodeId: Identifiable[N, String]): Identifiable[Edge[E, N], String] =
     Identifiable.identify[Edge[E, N], String] { edge =>
-      s"${edge.from}-${edge.to}"
+      s"${nodeId(edge.from)}-${nodeId(edge.to)}"
     }
 
   implicit val identifiableString: Identifiable[String, String] = Identifiable.identity

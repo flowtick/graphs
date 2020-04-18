@@ -9,6 +9,5 @@ trait CustomGraphExample {
     MyNode("first_node", "My first node") --> MyNode("second_node", "My second node")))
 
   println(graph.edges)
-  // Set(MyNode(first_node,My first node) --> MyNode(second_node,My second node)[()])
   // #custom_graph
 }

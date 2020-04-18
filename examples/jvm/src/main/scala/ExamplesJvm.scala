@@ -6,3 +6,4 @@ object DfsExampleApp extends DfsExample with App
 object GraphMLExampleApp extends GraphMLExample with App
 object SimpleGraphExampleApp extends SimpleGraphExample with App
 object TopologicalSortingExampleApp extends TopologicalSortingExample with App
+object JsonExampleApp extends JsonExample with App

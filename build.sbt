@@ -54,6 +54,12 @@ lazy val commonSettings = Seq(
   coverageExcludedPackages := "<empty>;"
 )
 
+lazy val circeDependencies = Seq(
+  "io.circe" %% "circe-core",
+  "io.circe" %% "circe-generic",
+  "io.circe" %% "circe-parser"
+).map(_ % circeVersion)
+
 lazy val core = (crossProject in file(".") / "core")
   .settings(commonSettings)
   .settings(
@@ -125,11 +131,7 @@ lazy val json = (crossProject in file(".") / "json")
   .settings(commonSettings)
   .settings(
     name := "graphs-json",
-    libraryDependencies ++= Seq(
-      "io.circe" %%% "circe-core",
-      "io.circe" %%% "circe-generic",
-      "io.circe" %%% "circe-parser"
-    ).map(_ % circeVersion % Provided)
+    libraryDependencies ++= circeDependencies.map(_ % Provided)
   ).dependsOn(core)
 
 lazy val jsonJS = json.js
@@ -141,9 +143,9 @@ lazy val examples = (crossProject in file("examples"))
         name := "graphs-examples",
         libraryDependencies ++= Seq(
           "org.typelevel" %%% "cats-core" % catsV
-        )
+        ) ++ circeDependencies
       ).jsSettings(scalaJSUseMainModuleInitializer := false)
-      .dependsOn(core, graphml, cats, layout)
+      .dependsOn(core, graphml, cats, layout, json)
 
 lazy val examplesJS = examples.js
 lazy val examplesJVM = examples.jvm

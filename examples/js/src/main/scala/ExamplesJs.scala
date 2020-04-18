@@ -28,3 +28,6 @@ object SimpleGraphExampleApp extends SimpleGraphExample with ExampleApp
 
 @JSExportTopLevel("topologicalSort")
 object TopologicalSortingExampleApp extends TopologicalSortingExample with ExampleApp
+
+@JSExportTopLevel("dfs")
+object JsonExampleApp extends JsonExample with ExampleApp

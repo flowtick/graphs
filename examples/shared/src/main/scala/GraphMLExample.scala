@@ -34,17 +34,4 @@ trait GraphMLExample {
     val loaded = FromGraphML[Unit, Unit, MyNode](xml.toString)
     // #custom-node-graphml
   }
-
-  {
-    import com.flowtick.graphs.Graph
-    import com.flowtick.graphs.defaults._
-    import com.flowtick.graphs.defaults.label._
-    import com.flowtick.graphs.graphml._
-    import com.flowtick.graphs.graphml.generic._
-
-    val graph = Graph.fromEdges[Unit, String](Set("A" --> "B"))
-
-    val xml = graph.asGraphML.xml
-    val loaded = FromGraphML[Unit, Unit, String](xml.toString)
-  }
 }
