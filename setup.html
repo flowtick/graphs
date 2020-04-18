@@ -167,6 +167,18 @@ flowtick/graphs
 <p>Add the dependency to your build:</p>
 <pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-core&quot; % &quot;0.3.0&quot;
 </code></pre>
+<p>Using the <a href="http://ammonite.io">ammonite REPL</a> you can quickly play around with graphs:</p>
+<pre class="prettyprint"><code class="language-scala">import $ivy.`com.flowtick:graphs-core_2.13:0.3.0`
+</code></pre>
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/SimpleGraphExample.scala#L3-L11" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+import com.flowtick.graphs.defaults._
+
+val graph: Graph[Unit, Unit, String] = Graph.fromEdges(Set(
+  &quot;A&quot; --&gt; &quot;B&quot;,
+  &quot;B&quot; --&gt; &quot;C&quot;,
+  &quot;D&quot; --&gt; &quot;A&quot;))
+
+println(graph.edges)</code></pre>
 </div>
 <div>
 <a href="https://github.com/flowtick/graphs/tree/v0.3.0/docs/setup.md" title="Edit this page" class="md-source-file md-edit">
