@@ -39,10 +39,10 @@ object GraphML {
     id: String,
     meta: M,
     edges: Iterable[Edge[GraphMLEdge[V], GraphMLNode[N]]],
-    nodes: Iterable[GraphMLNode[N]] = Iterable.empty): Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[M]] = {
-    Graph.from(GraphMLGraph(meta, id = Some(id), keys = Seq.empty), nodes, edges)
+    nodes: Iterable[GraphMLNode[N]] = Iterable.empty): Graph[GraphMLGraph[M], GraphMLEdge[V], GraphMLNode[N]] = {
+    Graph(GraphMLGraph(meta, id = Some(id), keys = Seq.empty), edges = edges, nodes = nodes)
   }
 
-  def fromEdges[V, N](edges: Iterable[Edge[GraphMLEdge[V], GraphMLNode[N]]]): Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[Unit]] =
+  def fromEdges[V, N](edges: Iterable[Edge[GraphMLEdge[V], GraphMLNode[N]]]): Graph[GraphMLGraph[Unit], GraphMLEdge[V], GraphMLNode[N]] =
     apply("G", (), edges)
 }

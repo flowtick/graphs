@@ -1,38 +1,57 @@
 package com.flowtick.graphs
 
 package object defaults {
-  def n[X](value: X, label: Option[String] = None) = Node[X](value, label)
+  implicit def identifiableEdgeString[E, N](implicit nodeId: Identifiable[N, String]): Identifiable[Edge[E, N], String] =
+    Identifiable.identify[Edge[E, N], String] { edge =>
+      s"${nodeId(edge.from)}-${nodeId(edge.to)}"
+    }
 
-  implicit val identifiableUnit: Identifiable[Unit] = new Identifiable[Unit] {
-    override def id(string: Unit): String = "()"
+  implicit val identifiableString: Identifiable[String, String] = Identifiable.identity
+  implicit val identifiableUnit: Identifiable[Unit, String] = Identifiable.identify(_ => "()")
+
+  object id {
+    implicit def int[N]: Identifiable[N, Int] = new Identifiable[N, Int] {
+      override def apply(number: N): Int = number match {
+        case aInt: Integer => aInt
+        case aLong: Long => aLong.toInt
+        case other => other.hashCode()
+      }
+    }
+
+    implicit def long[N]: Identifiable[N, Long] = new Identifiable[N, Long] {
+      override def apply(number: N): Long = number match {
+        case aInt: Integer => aInt.toLong
+        case aLong: Long => aLong
+        case other => other.hashCode()
+      }
+    }
+
+    implicit def string[N]: Identifiable[N, String] = new Identifiable[N, String] {
+      override def apply(value: N): String = value.hashCode().toString()
+    }
   }
 
-  implicit val identifiableString: Identifiable[String] = new Identifiable[String] {
-    override def id(string: String): String = string
+  object label {
+    implicit val unitLabel: Labeled[Unit, String] = _ => "()"
+    implicit val intOptLabel: Labeled[Int, Option[String]] = number => Some(number.toString)
+    implicit val intLabel: Labeled[Int, String] = number => number.toString
+
+    implicit def labeledEdgeString[E, N](implicit labeled: Labeled[E, String]): Labeled[Edge[E, N], String] =
+      Labeled.label[Edge[E, N], String](edge => labeled(edge.value))
+
+    implicit val stringOptLabel: Labeled[String, Option[String]] = string => Some(string)
+    implicit def edgeStringOptLabel[E, N](implicit edgeLabel: Labeled[Edge[E, N], String]): Labeled[Edge[E, N], Option[String]] =
+      edge => Some(edgeLabel(edge))
   }
 
-  implicit def identifiableNumeric[N](implicit numeric: Numeric[N]): Identifiable[N] = new Identifiable[N] {
-    override def id(number: N): String = numeric.toDouble(number).toString
+  implicit class DefaultEdgeBuilder[N, I](from: N) {
+    def -->[E](value: E, to: N): Edge[E, N] = Edge(value, from, to)
+    def -->(to: N): Edge[Unit, N] = Edge((), from, to)
   }
 
-  implicit val unitLabel: Labeled[Unit, String] = new Labeled[Unit, String] {
-    override def label(edge: Unit): Option[String] = None
-  }
+  implicit val stringLabel: Labeled[String, String] = (string: String) => string
 
-  implicit val stringLabel: Labeled[String, String] = new Labeled[String, String] {
-    override def label(string: String): Option[String] = Some(string)
-  }
-
-  implicit def numericLabel[T](implicit numeric: Numeric[T]): Labeled[T, String] = new Labeled[T, String] {
-    override def label(number: T): Option[String] = Some(numeric.toDouble(number).toString)
-  }
-
-  implicit def labeledEdge[V, N](implicit labeled: Labeled[V, String]): Labeled[Edge[V, N], String] = new Labeled[Edge[V, N], String] {
-    override def label(e: Edge[V, N]): Option[String] = labeled.label(e.value)
-  }
-
-  implicit class DefaultEdgeBuilder[X](node: Node[X]) {
-    def -->[V](value: V, to: Node[X]): Edge[V, X] = Edge[V, X](value, node.value, to.value)
-    def -->(to: Node[X]): Edge[Unit, X] = Edge[Unit, X]((), node.value, to.value)
+  implicit def numericEdgeLabel[E, N](implicit numeric: Numeric[E]): Labeled[Edge[E, N], E] = new Labeled[Edge[E, N], E] {
+    override def apply(edge: Edge[E, N]): E = edge.value
   }
 }

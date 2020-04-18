@@ -9,14 +9,14 @@ class DepthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
   "Dfs" should "traverse in depth first manner" in {
 
     val graph = Graph.fromEdges(Seq(
-      n("1") --> n("2"),
-      n("1") --> n("3"),
+      "1" --> "2",
+      "1" --> "3",
 
-      n("2") --> n("4"),
-      n("2") --> n("5"),
+      "2" --> "4",
+      "2" --> "5",
 
-      n("3") --> n("6"),
-      n("3") --> n("7")))
+      "3" --> "6",
+      "3" --> "7"))
 
     val visitMock = mockFunction[String, Unit](functionName("visitCallback"))
     val completeMock = mockFunction[String, Unit](functionName("completeCallback"))

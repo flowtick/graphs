@@ -13,21 +13,17 @@ object GraphsJs {
   @JSExport
   def createView(
     containerElementId: String,
-    graph: Graph[JsEdge, JsNode, JsGraph]): js.UndefOr[MxGraph] = {
+    graph: Graph[JsGraph, JsEdge, JsNode]): js.UndefOr[MxGraph] = {
     val container = org.scalajs.dom.window.document.getElementById(containerElementId)
 
     MxGraphView.create(container, graph)(
-      implicitly[Identifiable[JsNode]],
-      implicitly[Labeled[Edge[JsEdge, JsNode], String]])
+      implicitly[Identifiable[JsNode, String]],
+      Labeled.label[Edge[JsEdge, JsNode], Option[String]](edge => edge.value.label))
   }
 
   @JSExport
-  def toGraph(mxGraph: MxGraph): Graph[JsEdge, JsNode, JsGraph] =
+  def toGraph(mxGraph: MxGraph): Graph[JsGraph, JsEdge, JsNode] =
     MxGraphView.toGraph(JsGraph(None), mxGraph)
-
-  @JSExport
-  def exampleGraph: Graph[JsEdge, JsNode, JsGraph] = Graph.from(JsGraph(Some("example")), edges = Seq(
-    n(JsNode("A")) --> (JsEdge(None, None), n(JsNode("B")))))
 
   def main(args: Array[String]): Unit = {
     println("graphs loaded...")

@@ -3,11 +3,10 @@ package com.flowtick.graphs.graphml
 import cats.data.NonEmptyList
 import cats.data.Validated.Valid
 import com.flowtick.graphs.Graph
-import org.scalatest.{ FlatSpec, Matchers }
+import com.flowtick.graphs.graphml.generic._
+import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.immutable
-
-import generic._
 
 case class Foo(bar: String, baz: Double)
 case class TestNode(first: String, second: String)
@@ -16,12 +15,12 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
   implicit val labelledGenericTestNode = shapeless.LabelledGeneric[TestNode]
   implicit val labelledGenericFoo = shapeless.LabelledGeneric[Foo]
 
-  val testGraph: Graph[GraphMLEdge[Unit], GraphMLNode[TestNode], GraphMLGraph[Unit]] = GraphML(
+  val testGraph: Graph[GraphMLGraph[Unit], GraphMLEdge[Unit], GraphMLNode[TestNode]] = GraphML(
     id = "new-graph",
     meta = (),
     edges = Set(ml(TestNode("A", "B"), Some("1")) --> ml(TestNode("C", "D"), Some("2"))))
 
-  val testDataType = new GraphMLDatatype[Unit, TestNode, Unit]()
+  val testDataType = new GraphMLDatatype[Unit, Unit, TestNode]()
 
   def prettyPrint(xml: scala.xml.Node) = println(new scala.xml.PrettyPrinter(80, 4).format(xml))
 
@@ -56,7 +55,7 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
   }
 
   it should "deserialize rendered XML" in {
-    val imported = FromGraphML[Unit, TestNode, Unit](testDataType.serialize(testGraph).mkString(""))
+    val imported = FromGraphML[Unit, Unit, TestNode](testDataType.serialize(testGraph).mkString(""))
 
     imported.right.foreach { graphml =>
       val importedNodes: immutable.Seq[GraphMLNode[TestNode]] = graphml.nodes.toList.sortBy(_.id)
@@ -82,8 +81,8 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
       importedEdges.headOption match {
         case Some(edge) =>
           edge.value.id should be("1-2")
-          edge.head.id should be("1")
-          edge.tail.id should be("2")
+          edge.from.id should be("1")
+          edge.to.id should be("2")
         case None => fail
       }
     }
@@ -91,7 +90,7 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
 
   it should "import xml created by yed with node and edge properties" in {
     val cities = io.Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("yed-cities.graphml"))
-    val imported = FromGraphML[String, String, Unit](cities.getLines().mkString)
+    val imported = FromGraphML[Unit, String, String](cities.getLines().mkString)
 
     imported match {
       case Right(graphml) =>
@@ -114,34 +113,35 @@ class GraphMLDatatypeSpec extends FlatSpec with Matchers {
 
   it should "serialize the cities graph" in {
     import com.flowtick.graphs.defaults._
+    import com.flowtick.graphs.defaults.label._
 
-    val cities: Graph[Int, String, Unit] = Graph.fromEdges(Set(
-      n("Frankfurt") --> (85, n("Mannheim")),
-      n("Frankfurt") --> (217, n("Wuerzburg")),
-      n("Frankfurt") --> (173, n("Kassel")),
-      n("Mannheim") --> (80, n("Karlsruhe")),
-      n("Wuerzburg") --> (186, n("Erfurt")),
-      n("Wuerzburg") --> (103, n("Nuernberg")),
-      n("Stuttgart") --> (183, n("Nuernberg")),
-      n("Kassel") --> (502, n("Muenchen")),
-      n("Nuernberg") --> (167, n("Muenchen")),
-      n("Karlsruhe") --> (250, n("Augsburg")),
-      n("Augsburg") --> (84, n("Muenchen"))))
+    val cities: Graph[Unit, Int, String] = Graph.fromEdges(Set(
+      "Frankfurt" --> (85, "Mannheim"),
+      "Frankfurt" --> (217, "Wuerzburg"),
+      "Frankfurt" --> (173, "Kassel"),
+      "Mannheim" --> (80, "Karlsruhe"),
+      "Wuerzburg" --> (186, "Erfurt"),
+      "Wuerzburg" --> (103, "Nuernberg"),
+      "Stuttgart" --> (183, "Nuernberg"),
+      "Kassel" --> (502, "Muenchen"),
+      "Nuernberg" --> (167, "Muenchen"),
+      "Karlsruhe" --> (250, "Augsburg"),
+      "Augsburg" --> (84, "Muenchen")))
 
-    val graphML = cities.asGraphML()
+    val converter = new GraphMLConverterOps(cities)
+
+    val graphML = converter.asGraphML
     val xml = graphML.xml
 
     xml.headOption.foreach(println)
 
-    val parsed: Either[NonEmptyList[Throwable], GraphMLGraphType[Int, String, Unit]] = FromGraphML[Int, String, Unit](xml.toString)
+    val parsed: Either[NonEmptyList[Throwable], GraphMLGraphType[Unit, Int, String]] = FromGraphML[Unit, Int, String](xml.toString)
 
     parsed match {
       case Right(parsedGraph) =>
         parsedGraph.nodes.find(_.id == "Kassel") should be(graphML.nodes.find(_.id == "Kassel"))
-        parsedGraph.nodeContext.find(_._1.id == "Kassel") should be(graphML.nodeContext.find(_._1.id == "Kassel"))
-
         parsedGraph.nodes should contain theSameElementsAs graphML.nodes
-        parsedGraph.nodeContext.values should contain theSameElementsAs graphML.nodeContext.values
+        parsedGraph.edges should contain theSameElementsAs graphML.edges
 
       case Left(errors) => fail(s"parsing errors ${errors.toString}")
     }

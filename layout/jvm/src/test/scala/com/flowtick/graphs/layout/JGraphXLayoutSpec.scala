@@ -4,6 +4,7 @@ import java.io.{ FileOutputStream, OutputStream }
 
 import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.defaults.label._
 import com.mxgraph.view.mxGraph
 import org.scalatest.FlatSpec
 
@@ -12,11 +13,11 @@ import scala.util.Try
 class JGraphXLayoutSpec extends FlatSpec {
   "JGraphX layout" should "layout simple graph and save it" in {
     val graph = Graph.fromEdges(Set(
-      n("A") --> n("B"),
-      n("B") --> n("C"),
-      n("D") --> n("A")))
+      "A" --> "B",
+      "B" --> "C",
+      "D" --> "A"))
 
-    val layoutedGraph = new JGraphXLayout[Unit, String, Unit].layout(graph)
+    val layoutedGraph = new JGraphXLayout[Unit, Unit, String].layout(graph)
     saveGraph("simple", layoutedGraph)
   }
 
@@ -27,19 +28,19 @@ class JGraphXLayoutSpec extends FlatSpec {
 
   it should "layout city graph" in {
     val cities = Graph.fromEdges(Set(
-      n("Frankfurt") --> (85, n("Mannheim")),
-      n("Frankfurt") --> (217, n("Wuerzburg")),
-      n("Frankfurt") --> (173, n("Kassel")),
-      n("Mannheim") --> (80, n("Karlsruhe")),
-      n("Wuerzburg") --> (186, n("Erfurt")),
-      n("Wuerzburg") --> (103, n("Nuernberg")),
-      n("Stuttgart") --> (183, n("Nuernberg")),
-      n("Kassel") --> (502, n("Muenchen")),
-      n("Nuernberg") --> (167, n("Muenchen")),
-      n("Karlsruhe") --> (250, n("Augsburg")),
-      n("Augsburg") --> (84, n("Muenchen"))))
+      "Frankfurt" --> (85, "Mannheim"),
+      "Frankfurt" --> (217, "Wuerzburg"),
+      "Frankfurt" --> (173, "Kassel"),
+      "Mannheim" --> (80, "Karlsruhe"),
+      "Wuerzburg" --> (186, "Erfurt"),
+      "Wuerzburg" --> (103, "Nuernberg"),
+      "Stuttgart" --> (183, "Nuernberg"),
+      "Kassel" --> (502, "Muenchen"),
+      "Nuernberg" --> (167, "Muenchen"),
+      "Karlsruhe" --> (250, "Augsburg"),
+      "Augsburg" --> (84, "Muenchen")))
 
-    val layoutedGraph = new JGraphXLayout[Int, String, Unit].layout(cities)
+    val layoutedGraph = new JGraphXLayout[Unit, Int, String].layout(cities)
 
     saveGraph("cities", layoutedGraph)
   }

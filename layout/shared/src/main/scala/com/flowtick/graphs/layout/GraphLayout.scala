@@ -1,7 +1,7 @@
 package com.flowtick.graphs.layout
 
 import com.flowtick.graphs.layout.GraphLayout.NodeLayout
-import com.flowtick.graphs.{ Edge, Graph, Identifiable, Labeled }
+import com.flowtick.graphs.{Edge, Graph, Identifiable, Labeled}
 
 trait Geometry {
   def x: Double
@@ -21,17 +21,17 @@ trait Cell {
 }
 
 trait GraphLayout {
-  def layout[V, N, M](g: Graph[V, N, M])(implicit
-    identifiable: Identifiable[N],
-    edgeLabel: Labeled[Edge[V, N], String]): NodeLayout[N]
+  def layout[M, E, N](g: Graph[M, E, N])(implicit edgeLabel: Labeled[Edge[E, N], String],
+                                   edgeId: Identifiable[Edge[E, N], String],
+                                   nodeId: Identifiable[N, String]): NodeLayout[N]
 }
 
 object GraphLayout {
   type NodeLayout[Node] = Node => Option[Cell]
 
   val none: GraphLayout = new GraphLayout {
-    def layout[V, N, M](g: Graph[V, N, M])(implicit
-      identifiable: Identifiable[N],
-      edgeLabel: Labeled[Edge[V, N], String]): NodeLayout[N] = _ => None
+    def layout[M, E, N](g: Graph[M, E, N])(implicit edgeLabel: Labeled[Edge[E, N], String],
+                                     edgeId: Identifiable[Edge[E, N], String],
+                                     nodeId: Identifiable[N, String]): NodeLayout[N] = _ => None
   }
 }

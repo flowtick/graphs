@@ -3,21 +3,21 @@ package com.flowtick.graphs
 import org.scalacheck.Gen
 
 object GraphGen {
-  def edgesGen[V, N](implicit valueGen: Gen[V], nodeGen: Gen[N]): Gen[List[Edge[Option[V], N]]] = for {
+  def edgesGen[E, N](implicit valueGen: Gen[E], nodeGen: Gen[N]): Gen[List[Edge[E, N]]] = for {
     lefts <- Gen.listOf(nodeGen)
     rights <- Gen.listOfN(lefts.size, nodeGen)
-    values <- Gen.listOfN(lefts.size, Gen.option(valueGen))
+    values <- Gen.listOfN(lefts.size, valueGen)
   } yield lefts.zip(rights).zip(values).map {
     case ((left, right), value) => Edge(value, left, right)
   }
 
-  def graphGen[V, N, M](implicit
-    identifiable: Identifiable[N],
-    metaGen: Gen[M],
-    valueGen: Gen[V],
-    nodeGen: Gen[N]): Gen[Graph[Option[V], N, M]] = for {
+  def graphGen[M, E, N](implicit
+    edgeGen: Gen[E],
+    nodeGen: Gen[N],
+    nodesGen: Gen[List[N]],
+    metaGen: Gen[M]): Gen[Graph[M, E, N]] = for {
     meta <- metaGen
-    edges <- edgesGen[V, N]
-  } yield Graph.from(meta, edges = edges)
-
+    nodes <- nodesGen
+    edges <- edgesGen[E, N]
+  } yield Graph(meta, edges = edges, nodes = nodes)
 }

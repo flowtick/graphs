@@ -16,11 +16,11 @@ libraryDependencies += "com.flowtick" %% "graphs-graphml" % "$version$"
 
 This creates a default graph and converts it to a GraphML graph.
 
-@@snip [SimpleGraphApp.scala](../examples/shared/src/main/scala/GraphMLExample.scala){ #simple-graphml }
+@@snip [GraphMLExample.scala](../examples/shared/src/main/scala/GraphMLExample.scala){ #simple-graphml }
 
 ### Custom Node Types
 
 Its possible to create GraphML graphs directly using the `ml` edge builder and serialize your own node types, 
 this is implemeted using shapeless:
 
-@@snip [SimpleGraphApp.scala](../examples/shared/src/main/scala/GraphMLExample.scala){ #custom-node-graphml }
+@@snip [GraphMLExample.scala](../examples/shared/src/main/scala/GraphMLExample.scala){ #custom-node-graphml }

@@ -13,7 +13,7 @@ import scala.util.{ Either, Left, Right }
 import scala.xml.NodeSeq
 
 package object graphml {
-  type GraphMLGraphType[V, N, M] = Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[M]]
+  type GraphMLGraphType[M, E, N] = Graph[GraphMLGraph[M], GraphMLEdge[E], GraphMLNode[N]]
 
   final case class ValueWithProperties[T](value: T, properties: Seq[GraphMLProperty] = Seq.empty)
   final case class WrappedValue[T](value: T)
@@ -166,12 +166,12 @@ package object graphml {
       wrapped.deserialize(from, graphKeys).map(edge => GraphMLEdge(edge.id, edge.value.value, edge.source, edge.target, edge.label, edge.properties))
   }
 
-  implicit def graphMLDataType[V, N, M](implicit
-    identifiable: Identifiable[GraphMLNode[N]],
-    edgeLabel: Labeled[Edge[GraphMLEdge[V], GraphMLNode[N]], String],
+  implicit def graphMLDataType[M, E, N](implicit
+    identifiable: Identifiable[GraphMLNode[N], String],
+    edgeLabel: Labeled[Edge[GraphMLEdge[E], GraphMLNode[N]], String],
     nodeDataType: Datatype[GraphMLNode[N]],
-    edgeDataType: Datatype[GraphMLEdge[V]],
-    metaDataType: Datatype[GraphMLGraph[M]]): Datatype[GraphMLGraphType[V, N, M]] = new GraphMLDatatype[V, N, M]
+    edgeDataType: Datatype[GraphMLEdge[E]],
+    metaDataType: Datatype[GraphMLGraph[M]]): Datatype[GraphMLGraphType[M, E, N]] = new GraphMLDatatype[M, E, N]
 
   def ml[N](nodeValue: N, id: Option[String] = None, properties: Seq[GraphMLProperty] = Seq.empty): GraphMLNode[N] =
     GraphMLNode(id.getOrElse(nodeValue.toString), nodeValue, None, properties)
@@ -181,13 +181,11 @@ package object graphml {
     def -->(to: GraphMLNode[X]): Edge[GraphMLEdge[Unit], GraphMLNode[X]] = Edge[GraphMLEdge[Unit], GraphMLNode[X]](GraphMLEdge(s"${node.id}-${to.id}", (), Some(node.id), Some(to.id)), node, to)
   }
 
-  implicit def graphMLNodeIdentifiable[N]: Identifiable[GraphMLNode[N]] = new Identifiable[GraphMLNode[N]] {
-    override def id(node: GraphMLNode[N]): String = node.id
-  }
+  implicit def graphMLNodeIdentifiable[N]: Identifiable[GraphMLNode[N], String] =
+    (node: GraphMLNode[N]) => node.id
 
-  implicit def graphMLEdgeLabel[V, N]: Labeled[Edge[GraphMLEdge[V], GraphMLNode[N]], String] = new Labeled[Edge[GraphMLEdge[V], GraphMLNode[N]], String] {
-    override def label(edge: Edge[GraphMLEdge[V], GraphMLNode[N]]): Option[String] = Some(edge.value.id)
-  }
+  implicit def graphMLEdgeLabel[V, N]: Labeled[Edge[GraphMLEdge[V], GraphMLNode[N]], String] =
+    (edge: Edge[GraphMLEdge[V], GraphMLNode[N]]) => edge.value.id
 
   implicit class GraphMLOps[V, N, M](graph: GraphMLGraphType[V, N, M]) {
     def xml(implicit graphMLDatatype: Datatype[GraphMLGraphType[V, N, M]]): NodeSeq = {
@@ -196,7 +194,7 @@ package object graphml {
   }
 
   object ToGraphML {
-    def apply[V, N, M](graph: Graph[GraphMLEdge[V], GraphMLNode[N], GraphMLGraph[M]])(implicit graphMLDatatype: Datatype[GraphMLGraphType[V, N, M]]): NodeSeq =
+    def apply[M, E, N](graph: Graph[GraphMLGraph[M], GraphMLEdge[E], GraphMLNode[N]])(implicit graphMLDatatype: Datatype[GraphMLGraphType[M, E, N]]): NodeSeq =
       graphMLDatatype.serialize(graph)
   }
 
@@ -209,25 +207,27 @@ package object graphml {
       }
   }
 
-  implicit class GraphMLConverterOps[V, N, M](graph: Graph[V, N, M])(implicit nodeIdentity: Identifiable[N]) {
-    def asGraphML(withEdgeLabels: Boolean = true): GraphMLGraphType[V, N, M] = {
-      val nodeContext: collection.Map[GraphMLNode[N], NodeContext[GraphMLEdge[V], GraphMLNode[N]]] = graph.nodeContext.map {
-        case (node, context) =>
-          val nodeId = nodeIdentity.id(node)
-          (GraphMLNode(nodeId, node, Some(nodeId)), context.map(
-            contextNode => {
-              val contextNodeId = nodeIdentity.id(contextNode)
-              GraphMLNode(contextNodeId, contextNode, Some(contextNodeId))
-            },
-            contextEdge => {
-              val edgeId = s"${contextEdge.head.toString}-${contextEdge.tail.toString}"
-              val sourceId = nodeIdentity.id(contextEdge.head)
-              val targetId = nodeIdentity.id(contextEdge.tail)
-              GraphMLEdge(edgeId, contextEdge.value, Some(sourceId), Some(targetId), if (withEdgeLabels) Some(contextEdge.value.toString) else None)
-            }))
+  implicit class GraphMLConverterOps[M, E, N](graph: Graph[M, E, N])(implicit nodeId: Identifiable[N, String],
+                                                                     edgeId: Identifiable[Edge[E, N], String],
+                                                                     metaId: Identifiable[M, String],
+                                                                     edgeLabel: Labeled[Edge[E, N], Option[String]],
+                                                                     nodeLabel: Labeled[N, Option[String]]) {
+    def asGraphML: Graph[GraphMLGraph[M], GraphMLEdge[E], GraphMLNode[N]] = {
+      val nodesMap = scala.collection.mutable.Map[String, GraphMLNode[N]]()
+
+      graph.nodes.foreach { node =>
+        nodesMap.put(nodeId(node), GraphMLNode(nodeId(node), node, nodeLabel(node)))
       }
 
-      ImmutableGraph(GraphMLGraph(graph.value, Some("G"), Seq.empty), nodeContext)
+      val mlEdges: collection.Set[Edge[GraphMLEdge[E], GraphMLNode[N]]] = graph.edges.map { edge =>
+        Edge(GraphMLEdge(
+          edgeId(edge),
+          edge.value,
+          Some(nodeId(edge.from)), Some(nodeId(edge.to)),
+          edgeLabel(edge)), nodesMap(nodeId(edge.from)), nodesMap(nodeId(edge.to)))
+      }
+
+      Graph(GraphMLGraph(graph.meta, Some(metaId(graph.meta)), Seq.empty), edges = mlEdges, nodes = nodesMap.values)
     }
   }
 

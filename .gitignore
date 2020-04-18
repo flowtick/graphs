@@ -7,3 +7,4 @@ target
 .metals
 ensime-langserver.log
 pc.stdout.log
+/project/metals.sbt

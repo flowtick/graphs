@@ -1,76 +1,59 @@
 package com.flowtick.graphs
 
-import cats.{ Contravariant, Functor, Monoid }
+import cats.{Applicative, Monoid}
 
 package object cat {
 
-  class IdentifiableContravariant extends Contravariant[Identifiable] {
-    override def contramap[A, B](fa: Identifiable[A])(f: B => A): Identifiable[B] =
-      Identifiable.identify[B]((fa.id _).compose(f))
+  /**
+   * A monoid to combine graphs.
+   *
+   * @param metaMonoid a monoid to combine the meta values
+   * @tparam M
+   * @tparam E
+   * @tparam N
+   */
+  class GraphMonoid[M, E, N](implicit metaMonoid: Monoid[M]) extends Monoid[Graph[M, E, N]] {
+    override def empty: Graph[M, E, N] = Graph.empty(metaMonoid.empty)
+
+    override def combine(x: Graph[M, E, N], y: Graph[M, E, N]): Graph[M, E, N] =
+      (x.edges ++ y.edges)
+        .foldLeft(Graph.empty[M, E, N](metaMonoid.combine(x.meta, y.meta)))(_ + _)
+        .withNodes(x.nodes ++ y.nodes)
   }
 
-  class ContextMonoid[N, V] extends Monoid[scala.collection.Map[N, NodeContext[V, N]]] {
-    override def empty: collection.Map[N, NodeContext[V, N]] = Map.empty
-
-    override def combine(x: collection.Map[N, NodeContext[V, N]], y: collection.Map[N, NodeContext[V, N]]): collection.Map[N, NodeContext[V, N]] =
-      (for {
-        key <- x.keysIterator ++ y.keysIterator
-      } yield {
-        val xContext: NodeContext[V, N] = x.getOrElse(key, NodeContext.empty)
-        val yContext: NodeContext[V, N] = y.getOrElse(key, NodeContext.empty)
-
-        (key, NodeContext(xContext.incoming ++ yContext.incoming, xContext.outgoing ++ yContext.outgoing))
-      }).toMap
+  object GraphMonoid {
+    def apply[M, E, N](implicit metaMonoid: Monoid[M]) = new GraphMonoid[M, E, N]
   }
 
-  class GraphMonoid[V, N, M](implicit metaMonoid: Monoid[M], contextMonoid: Monoid[scala.collection.Map[N, NodeContext[V, N]]]) extends Monoid[Graph[V, N, M]] {
-    override def empty: Graph[V, N, M] = Graph.empty(metaMonoid.empty)
+  /**
+   * An applicative for the nodes of a graph.
+   *
+   * In the current design the edge identity includes the value of the edge and the nodes itself.
+   * So if we have a function that maps the nodes, we can create a new graph with the mapped nodes and map also
+   * the nodes of the edges while keeping the its value (the mapping itself is delegated to the graph instance).
+   *
+   * We can't provide a Monad instance (for nodes) here because the [[cats.Monad.flatMap]] signature gives only
+   * a function that maps a node A to a graph with nodes B, but that is not enough to flatten / merge
+   * it with the original graph edges, which still have node type A.
+   *
+   * @param metaMonoid a monoid to combine the meta values
+   * @tparam M meta type
+   * @tparam E edge type
+   */
+  class GraphNodeApplicative[M, E](implicit metaMonoid: Monoid[M]) extends Applicative[({ type GraphType[T] = Graph[M, E, T] })#GraphType] {
+    override def pure[A](x: A): Graph[M, E, A] = Graph(metaMonoid.empty, nodes = Set(x))
 
-    override def combine(x: Graph[V, N, M], y: Graph[V, N, M]): Graph[V, N, M] =
-      ImmutableGraph[V, N, M](metaMonoid.combine(x.value, y.value), contextMonoid.combine(x.nodeContext, y.nodeContext))
+    override def ap[A, B](ff: Graph[M, E, A => B])(fa: Graph[M, E, A]): Graph[M, E, B] =
+      GraphMonoid[M, E, B].combineAll(ff.nodes.map(fa.mapNodes))
   }
 
-  class EdgeValueFunctor[N] extends Functor[({ type E[x] = Edge[x, N] })#E] {
-    override def map[A, B](fa: Edge[A, N])(f: A => B): Edge[B, N] = Edge(f(fa.value), fa.head, fa.tail)
-  }
-
-  class EdgeNodeFunctor[V] extends Functor[({ type E[x] = Edge[V, x] })#E] {
-    override def map[A, B](fa: Edge[V, A])(f: A => B): Edge[V, B] = Edge(fa.value, f(fa.head), f(fa.tail))
-  }
-
-  class NodeContextFunctor[V, N](implicit edgeNodeFunctor: Functor[({ type E[x] = Edge[V, x] })#E]) extends Functor[({ type E[x] = NodeContext[V, x] })#E] {
-    override def map[A, B](fa: NodeContext[V, A])(f: A => B): NodeContext[V, B] =
-      NodeContext(fa.incoming.map(edgeNodeFunctor.map(_)(f)), fa.outgoing.map(edgeNodeFunctor.map(_)(f)))
-  }
-
-  class GraphNodeFunctor[V, N, M](implicit
-    identifiable: Identifiable[N],
-    nodeContextFunctor: Functor[({ type E[x] = NodeContext[V, x] })#E]) extends Functor[({ type E[x] = Graph[V, x, M] })#E] {
-    override def map[A, B](fa: Graph[V, A, M])(f: A => B): Graph[V, B, M] = {
-      ImmutableGraph[V, B, M](
-        fa.value,
-        fa.nodeContext.map {
-          case (node, context) => (f(node), nodeContextFunctor.map(context)(f))
-        })
-    }
+  object GraphApplicative {
+    def apply[M, E](implicit metaMonoid: Monoid[M]) = new GraphNodeApplicative[M, E]
   }
 
   trait GraphInstances {
-    implicit def contextMonoid[V, N] = new ContextMonoid[V, N]
-
-    implicit def nodeContextFunctor[V, N] = new NodeContextFunctor[V, N]
-
-    implicit def graphMonoid[V, N, M](implicit
-      identifiable: Identifiable[N],
-      metaMonoid: Monoid[M]) = new GraphMonoid[V, N, M]
-
-    implicit def graphNodeFunctor[V, N, M](implicit
-      identifiable: Identifiable[N],
-      edgeNodeFunctor: Functor[({ type E[x] = Edge[V, x] })#E]) = new GraphNodeFunctor[V, N, M]
-
-    implicit def edgeNodeFunctor[V]: Functor[({ type E[x] = Edge[V, x] })#E] = new EdgeNodeFunctor[V]
-
-    implicit def identifiableContravariant = new IdentifiableContravariant
+    implicit def graphMonoid[M, E, N](implicit metaMonoid: Monoid[M]): Monoid[Graph[M, E, N]] = GraphMonoid[M, E, N]
+    implicit def graphNodeApplicative[M, E](implicit metaMonoid: Monoid[M]): GraphNodeApplicative[M, E] = GraphApplicative[M, E]
   }
 
   object instances extends GraphInstances

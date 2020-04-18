@@ -23,15 +23,15 @@ private[graphml] object PartialParsedGraph {
   }
 }
 
-class GraphMLDatatype[V, N, M](implicit
-  edgeLabel: Labeled[Edge[GraphMLEdge[V], GraphMLNode[N]], String],
-  nodeDataType: Datatype[GraphMLNode[N]],
-  edgeDataType: Datatype[GraphMLEdge[V]],
-  metaDataType: Datatype[GraphMLGraph[M]]) extends Datatype[GraphMLGraphType[V, N, M]] {
+class GraphMLDatatype[M, E, N](implicit
+                               edgeLabel: Labeled[Edge[GraphMLEdge[E], GraphMLNode[N]], String],
+                               nodeDataType: Datatype[GraphMLNode[N]],
+                               edgeDataType: Datatype[GraphMLEdge[E]],
+                               metaDataType: Datatype[GraphMLGraph[M]]) extends Datatype[GraphMLGraphType[M, E, N]] {
 
-  override def serialize(g: GraphMLGraphType[V, N, M]): NodeSeq = {
+  override def serialize(g: GraphMLGraphType[M, E, N]): NodeSeq = {
 
-    def graphKeys: Iterable[Node] = (metaDataType.keys ++ nodeDataType.keys ++ edgeDataType.keys ++ g.value.keys).map { key: GraphMLKey =>
+    def graphKeys: Iterable[Node] = (metaDataType.keys ++ nodeDataType.keys ++ edgeDataType.keys ++ g.meta.keys).map { key: GraphMLKey =>
       // format: OFF
       <key id={ key.id }
            attr.name={ key.name.getOrElse(key.id) }
@@ -59,7 +59,7 @@ class GraphMLDatatype[V, N, M](implicit
 
   override def deserialize(
     from: NodeSeq,
-    graphKeys: scala.collection.Map[String, GraphMLKey]): ValidatedNel[Throwable, GraphMLGraphType[V, N, M]] =
+    graphKeys: scala.collection.Map[String, GraphMLKey]): ValidatedNel[Throwable, GraphMLGraphType[M, E, N]] =
     from.headOption match {
       case Some(root) =>
         root
@@ -73,11 +73,11 @@ class GraphMLDatatype[V, N, M](implicit
 
   protected def parseGraphRoot(
     graph: Node,
-    graphKeys: scala.collection.Map[String, GraphMLKey]): Validated[NonEmptyList[Throwable], GraphMLGraphType[V, N, M]] =
+    graphKeys: scala.collection.Map[String, GraphMLKey]): Validated[NonEmptyList[Throwable], GraphMLGraphType[M, E, N]] =
     metaDataType.deserialize(Seq(graph), graphKeys).andThen { meta =>
       parseGraphNodes(graph, graphKeys).andThen { parsedGraph =>
         parseEdges(parsedGraph.edgesXml, parsedGraph.nodes, graphKeys).andThen { edges =>
-          valid(Graph.from(meta, parsedGraph.nodes.values, edges))
+          valid(Graph(meta, edges, parsedGraph.nodes.values))
         }
       }
     }
@@ -85,7 +85,7 @@ class GraphMLDatatype[V, N, M](implicit
   protected def parseEdges(
     edgeXmlNodes: List[scala.xml.Node],
     nodes: scala.collection.Map[String, GraphMLNode[N]],
-    keys: scala.collection.Map[String, GraphMLKey]): Validated[NonEmptyList[Throwable], List[Edge[GraphMLEdge[V], GraphMLNode[N]]]] = {
+    keys: scala.collection.Map[String, GraphMLKey]): Validated[NonEmptyList[Throwable], List[Edge[GraphMLEdge[E], GraphMLNode[N]]]] = {
     val edges = edgeXmlNodes.map { edgeNode =>
       val edge = edgeDataType.deserialize(NodeSeq.fromSeq(Seq(edgeNode)), keys).andThen { mlEdge =>
         (for {
@@ -94,7 +94,7 @@ class GraphMLDatatype[V, N, M](implicit
           sourceNode <- nodes.get(source)
           targetNode <- nodes.get(target)
         } yield {
-          validNel(Edge[GraphMLEdge[V], GraphMLNode[N]](mlEdge, sourceNode, targetNode))
+          validNel(Edge[GraphMLEdge[E], GraphMLNode[N]](mlEdge, sourceNode, targetNode))
         }).getOrElse(invalidNel(new IllegalArgumentException(s"unable to parse edge from ${edgeNode.toString}")))
       }
       edge

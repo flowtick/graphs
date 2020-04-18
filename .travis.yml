@@ -14,9 +14,8 @@ jobs:
     # stage="test" if no stage is specified
     - name: compile
       script:
-        - sbt clean +test:compile
-        - sbt +test
-        - sbt clean coverage test coverageReport && sbt coverageAggregate
+        - sbt clean +test
+        - sbt clean coverage test coverageAggregate
       after_success:
         - bash <(curl -s https://codecov.io/bash)
     # run ci-release only if previous stages passed
