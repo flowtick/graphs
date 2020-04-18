@@ -142,6 +142,7 @@ flowtick/graphs
   <li><a href="setup.html" class="page">Setup</a></li>
   <li><a href="creating-graphs.html" class="page">Creating graphs</a></li>
   <li><a href="algorithms.html" class="active page">Algorithms</a></li>
+  <li><a href="json.html" class="page">JSON support</a></li>
   <li><a href="graphml.html" class="page">GraphML support</a></li>
   <li><a href="cats.html" class="page">cats support</a></li>
 </ul>
@@ -162,7 +163,7 @@ flowtick/graphs
 <ul style="display: none">
 <li class="md-nav__item md-version" id="project.version">
 <label class="md-nav__link" for="__version">
-<i class="md-icon" title="Version">label_outline</i> 0.2.4
+<i class="md-icon" title="Version">label_outline</i> 0.3.0
 </label>
 </li>
 </ul>
@@ -192,28 +193,28 @@ flowtick/graphs
 <article class="md-content__inner md-typeset">
 <div class="md-content__searchable">
 <h1><a href="#algorithms" name="algorithms" class="anchor"><span class="anchor-link"></span></a>Algorithms</h1>
-<p>graphs allows ad-hoc extension of graph instances so that you can execute some common operations and algorithms on it.</p>
-<p>Currently the following algorithms are supported:</p>
+<p><code>graphs</code> allows ad-hoc extension of graph instances so that you can execute some common operations and algorithms on it.</p>
+<p>Currently, the following algorithms are supported:</p>
 <h2><a href="#depth-first-traversal" name="depth-first-traversal" class="anchor"><span class="anchor-link"></span></a>Depth-first traversal</h2>
 <p>A depth first traversal visits every node <em>per branch / path</em> which means that for every node the first child will be visited and the search will be continued there, before going to its siblings.</p>
 <p>Every node will be visited.</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.2.4/examples/shared/src/main/scala/DfsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/DfsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
 import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
 
 trait DfsExample {
   val graph = Graph.fromEdges(Set(
-    n(&quot;1&quot;) --&gt; n(&quot;2&quot;),
-    n(&quot;1&quot;) --&gt; n(&quot;9&quot;),
+    &quot;1&quot; --&gt; &quot;2&quot;,
+    &quot;1&quot; --&gt; &quot;9&quot;,
 
-    n(&quot;2&quot;) --&gt; n(&quot;6&quot;),
-    n(&quot;2&quot;) --&gt; n(&quot;3&quot;),
+    &quot;2&quot; --&gt; &quot;6&quot;,
+    &quot;2&quot; --&gt; &quot;3&quot;,
 
-    n(&quot;3&quot;) --&gt; n(&quot;5&quot;),
-    n(&quot;3&quot;) --&gt; n(&quot;4&quot;),
+    &quot;3&quot; --&gt; &quot;5&quot;,
+    &quot;3&quot; --&gt; &quot;4&quot;,
 
-    n(&quot;6&quot;) --&gt; n(&quot;7&quot;),
-    n(&quot;6&quot;) --&gt; n(&quot;8&quot;)))
+    &quot;6&quot; --&gt; &quot;7&quot;,
+    &quot;6&quot; --&gt; &quot;8&quot;))
 
   println(graph.dfs(&quot;1&quot;).run)
   // List(1, 9, 2, 6, 8, 7, 3, 5, 4)
@@ -221,19 +222,19 @@ trait DfsExample {
 <h2><a href="#breadth-first-traversal" name="breadth-first-traversal" class="anchor"><span class="anchor-link"></span></a>Breadth-first traversal</h2>
 <p>A breadth first traversal visits every node <em>per layer</em>, which means that first all child nodes will be visited before continuing with their children.</p>
 <p>Every node will be visited.</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.2.4/examples/shared/src/main/scala/BfsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/BfsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
 import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
 
 trait BfsExample {
   val graph = Graph.fromEdges(Set(
-    n(&quot;A&quot;) --&gt; n(&quot;D&quot;),
-    n(&quot;A&quot;) --&gt; n(&quot;C&quot;),
-    n(&quot;A&quot;) --&gt; n(&quot;B&quot;),
-    n(&quot;B&quot;) --&gt; n(&quot;E&quot;),
-    n(&quot;B&quot;) --&gt; n(&quot;F&quot;),
-    n(&quot;B&quot;) --&gt; n(&quot;G&quot;),
-    n(&quot;E&quot;) --&gt; n(&quot;H&quot;)))
+    &quot;A&quot; --&gt; &quot;D&quot;,
+    &quot;A&quot; --&gt; &quot;C&quot;,
+    &quot;A&quot; --&gt; &quot;B&quot;,
+    &quot;B&quot; --&gt; &quot;E&quot;,
+    &quot;B&quot; --&gt; &quot;F&quot;,
+    &quot;B&quot; --&gt; &quot;G&quot;,
+    &quot;E&quot; --&gt; &quot;H&quot;))
 
   println(graph.bfs(&quot;A&quot;).run)
   // List(A, B, C, D, E, F, G, H)
@@ -241,23 +242,23 @@ trait BfsExample {
 <h2><a href="#topological-sorting-using-a-depth-first-approach" name="topological-sorting-using-a-depth-first-approach" class="anchor"><span class="anchor-link"></span></a>Topological sorting using a depth-first approach</h2>
 <p><blockquote> <a href="https://en.wikipedia.org/wiki/Topological_sorting">https://en.wikipedia.org/wiki/Topological_sorting</a>:</p>
 <p>&ldquo;topological ordering of a directed graph is a linear ordering of its vertices such that for every directed edge uv from vertex u to vertex v, u comes before v in the ordering. For instance, the vertices of the graph may represent tasks to be performed, and the edges may represent constraints that one task must be performed before another&rdquo; </blockquote></p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.2.4/examples/shared/src/main/scala/TopologicalSortingExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/TopologicalSortingExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.algorithm._
 
 trait TopologicalSortingExample {
   lazy val graph = Graph.fromEdges(Set(
-    n(&quot;A&quot;) --&gt; n(&quot;B&quot;),
-    n(&quot;B&quot;) --&gt; n(&quot;C&quot;),
-    n(&quot;D&quot;) --&gt; n(&quot;A&quot;)))
+    &quot;A&quot; --&gt; &quot;B&quot;,
+    &quot;B&quot; --&gt; &quot;C&quot;,
+    &quot;D&quot; --&gt; &quot;A&quot;))
 
   lazy val clothingDependencies = Graph.fromEdges(Set(
-    n(&quot;Underpants&quot;) --&gt; n(&quot;Pants&quot;),
-    n(&quot;Pants&quot;) --&gt; n(&quot;Coat&quot;),
-    n(&quot;Pullover&quot;) --&gt; n(&quot;Coat&quot;),
-    n(&quot;Undershirt&quot;) --&gt; n(&quot;Pullover&quot;),
-    n(&quot;Pants&quot;) --&gt; n(&quot;Shoes&quot;),
-    n(&quot;Socks&quot;) --&gt; n(&quot;Shoes&quot;)))
+    &quot;Underpants&quot; --&gt; &quot;Pants&quot;,
+    &quot;Pants&quot; --&gt; &quot;Coat&quot;,
+    &quot;Pullover&quot; --&gt; &quot;Coat&quot;,
+    &quot;Undershirt&quot; --&gt; &quot;Pullover&quot;,
+    &quot;Pants&quot; --&gt; &quot;Shoes&quot;,
+    &quot;Socks&quot; --&gt; &quot;Shoes&quot;))
 
   println(graph.topologicalSort)
   // List(D, A, B, C)
@@ -268,39 +269,39 @@ trait TopologicalSortingExample {
 <h2><a href="#dijkstras-algorithm-for-shortest-paths" name="dijkstras-algorithm-for-shortest-paths" class="anchor"><span class="anchor-link"></span></a>Dijkstras algorithm for shortest paths</h2>
 <p><blockquote> <a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm">https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm</a>:</p>
 <p>For a given source node in the graph, the algorithm finds the shortest path between that node and every other. It can also be used for finding the shortest paths from a single node to a single destination node by stopping the algorithm once the shortest path to the destination node has been determined. </blockquote></p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.2.4/examples/shared/src/main/scala/DijkstraExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/DijkstraExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.algorithm._
 
 object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
-  val cities: Graph[Int, String, Unit] = Graph.fromEdges(Set(
-    n(&quot;Frankfurt&quot;) --&gt; (85, n(&quot;Mannheim&quot;)),
-    n(&quot;Frankfurt&quot;) --&gt; (217, n(&quot;Wuerzburg&quot;)),
-    n(&quot;Frankfurt&quot;) --&gt; (173, n(&quot;Kassel&quot;)),
-    n(&quot;Mannheim&quot;) --&gt; (80, n(&quot;Karlsruhe&quot;)),
-    n(&quot;Wuerzburg&quot;) --&gt; (186, n(&quot;Erfurt&quot;)),
-    n(&quot;Wuerzburg&quot;) --&gt; (103, n(&quot;Nuernberg&quot;)),
-    n(&quot;Stuttgart&quot;) --&gt; (183, n(&quot;Nuernberg&quot;)),
-    n(&quot;Kassel&quot;) --&gt; (502, n(&quot;Muenchen&quot;)),
-    n(&quot;Nuernberg&quot;) --&gt; (167, n(&quot;Muenchen&quot;)),
-    n(&quot;Karlsruhe&quot;) --&gt; (250, n(&quot;Augsburg&quot;)),
-    n(&quot;Augsburg&quot;) --&gt; (84, n(&quot;Muenchen&quot;))))
+  val cities: Graph[Unit, Int, String] = Graph.fromEdges(Set(
+    &quot;Frankfurt&quot; --&gt; (85, &quot;Mannheim&quot;),
+    &quot;Frankfurt&quot; --&gt; (217, &quot;Wuerzburg&quot;),
+    &quot;Frankfurt&quot; --&gt; (173, &quot;Kassel&quot;),
+    &quot;Mannheim&quot; --&gt; (80, &quot;Karlsruhe&quot;),
+    &quot;Wuerzburg&quot; --&gt; (186, &quot;Erfurt&quot;),
+    &quot;Wuerzburg&quot; --&gt; (103, &quot;Nuernberg&quot;),
+    &quot;Stuttgart&quot; --&gt; (183, &quot;Nuernberg&quot;),
+    &quot;Kassel&quot; --&gt; (502, &quot;Muenchen&quot;),
+    &quot;Nuernberg&quot; --&gt; (167, &quot;Muenchen&quot;),
+    &quot;Karlsruhe&quot; --&gt; (250, &quot;Augsburg&quot;),
+    &quot;Augsburg&quot; --&gt; (84, &quot;Muenchen&quot;)))
 }
 
 trait DijkstraExample {
-  println(DijkstraGraph.cities.shortestPath(&quot;Frankfurt&quot;, &quot;Muenchen&quot;))
+  println(DijkstraGraph.cities.dijkstra.shortestPath(&quot;Frankfurt&quot;, &quot;Muenchen&quot;))
   // ListBuffer(Frankfurt --&gt; Wuerzburg[217], Wuerzburg --&gt; Nuernberg[103], Nuernberg --&gt; Muenchen[167])
 }</code></pre>
 </div>
 <div>
-<a href="https://github.com/flowtick/graphs/tree/v0.2.4/docs/algorithms.md" title="Edit this page" class="md-source-file md-edit">
+<a href="https://github.com/flowtick/graphs/tree/v0.3.0/docs/algorithms.md" title="Edit this page" class="md-source-file md-edit">
 Edit this page
 </a>
 </div>
 <div class="print-only">
 <span class="md-source-file md-version">
-0.2.4
+0.3.0
 </span>
 </div>
 </article>
@@ -323,13 +324,13 @@ Creating graphs
 </span>
 </div>
 </a>
-<a href="graphml.html" title="GraphML support" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+<a href="json.html" title="JSON support" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
 <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
 <span class="md-flex__ellipsis">
 <span class="md-footer-nav__direction">
 Next
 </span>
-GraphML support
+JSON support
 </span>
 </div>
 <div class="md-flex__cell md-flex__cell--shrink">

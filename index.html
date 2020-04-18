@@ -137,6 +137,7 @@ flowtick/graphs
   <li><a href="setup.html" class="page">Setup</a></li>
   <li><a href="creating-graphs.html" class="page">Creating graphs</a></li>
   <li><a href="algorithms.html" class="page">Algorithms</a></li>
+  <li><a href="json.html" class="page">JSON support</a></li>
   <li><a href="graphml.html" class="page">GraphML support</a></li>
   <li><a href="cats.html" class="page">cats support</a></li>
 </ul>
@@ -145,8 +146,10 @@ flowtick/graphs
 <ul>
   <li><a href="index.html#graphs" class="header">graphs</a>
   <ul>
+    <li><a href="index.html#example" class="header">Example</a></li>
+    <li><a href="index.html#documentation" class="header">Documentation</a></li>
     <li><a href="index.html#features" class="header">Features</a></li>
-    <li><a href="index.html#alternatives" class="header">Alternatives</a></li>
+    <li><a href="index.html#motivation" class="header">Motivation</a></li>
     <li><a href="index.html#license" class="header">License</a></li>
   </ul></li>
 </ul>
@@ -156,7 +159,7 @@ flowtick/graphs
 <ul style="display: none">
 <li class="md-nav__item md-version" id="project.version">
 <label class="md-nav__link" for="__version">
-<i class="md-icon" title="Version">label_outline</i> 0.2.4
+<i class="md-icon" title="Version">label_outline</i> 0.3.0
 </label>
 </li>
 </ul>
@@ -171,8 +174,10 @@ flowtick/graphs
 <ul>
   <li><a href="index.html#graphs" class="header">graphs</a>
   <ul>
+    <li><a href="index.html#example" class="header">Example</a></li>
+    <li><a href="index.html#documentation" class="header">Documentation</a></li>
     <li><a href="index.html#features" class="header">Features</a></li>
-    <li><a href="index.html#alternatives" class="header">Alternatives</a></li>
+    <li><a href="index.html#motivation" class="header">Motivation</a></li>
     <li><a href="index.html#license" class="header">License</a></li>
   </ul></li>
 </ul>
@@ -184,8 +189,23 @@ flowtick/graphs
 <div class="md-content">
 <article class="md-content__inner md-typeset">
 <div class="md-content__searchable">
+<p><a href="https://travis-ci.org/flowtick/graphs"><img src="https://api.travis-ci.org/flowtick/graphs.svg?branch=master" alt="travis ci" /></a> <a href="https://codecov.io/gh/flowtick/graphs"><img src="https://codecov.io/gh/flowtick/graphs/branch/master/graph/badge.svg" alt="codecov" /></a> <a href="https://search.maven.org/search?q=g:com.flowtick%20AND%20a:graphs*"><img src="https://img.shields.io/maven-central/v/com.flowtick/graphs-core_2.12.svg?label=Maven%20Central" alt="latest release" /></a></p>
 <h1><a href="#graphs" name="graphs" class="anchor"><span class="anchor-link"></span></a>graphs</h1>
-<p><code>graphs</code> is simple graph library for Scala and Scala.js</p>
+<p><code>graphs</code> is a simple <a href="https://en.wikipedia.org/wiki/Graph_theory">graph</a> library for Scala</p>
+<h1><a href="#example" name="example" class="anchor"><span class="anchor-link"></span></a>Example</h1>
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/SimpleGraphExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">trait SimpleGraphExample {
+  import com.flowtick.graphs._
+  import com.flowtick.graphs.defaults._
+
+  val graph: Graph[Unit, Unit, String] = Graph.fromEdges(Set(
+    &quot;A&quot; --&gt; &quot;B&quot;,
+    &quot;B&quot; --&gt; &quot;C&quot;,
+    &quot;D&quot; --&gt; &quot;A&quot;))
+
+  println(graph.edges)
+}</code></pre>
+<h1><a href="#documentation" name="documentation" class="anchor"><span class="anchor-link"></span></a>Documentation</h1>
+<p>Please check the <a href="https://flowtick.github.io/graphs">guide</a> and the <a href="https://flowtick.github.io/graphs/latest/api/com/flowtick/graphs">API docs</a></p>
 <h1><a href="#features" name="features" class="anchor"><span class="anchor-link"></span></a>Features</h1>
 <ul>
   <li>Simple graph creation API</li>
@@ -195,21 +215,38 @@ flowtick/graphs
   <li>Dijkstras algorithm for shortest paths</li>
   <li>GraphML import / export (experimental)</li>
   <li><strike>force based layout</strike> (planned)</li>
-  <li>cross compiled for Scala 2.11, 2.12, Scala.js</li>
+  <li>cross compiled for Scala 2.12, 2.13, Scala.js</li>
 </ul>
-<h1><a href="#alternatives" name="alternatives" class="anchor"><span class="anchor-link"></span></a>Alternatives</h1>
-<p><code>graphs</code> is similar to <a href="http://scala-graph.org">Graph for Scala</a> but not aiming to model every kind of graph, making the core classes smaller and maybe easier to understand. If you need more than simple directed / undirected graphs please consider using that instead of <code>graphs</code>, be aware that <em>Graph for Scala</em> does not have Scala.js support currently.</p>
+<h1><a href="#motivation" name="motivation" class="anchor"><span class="anchor-link"></span></a>Motivation</h1>
+<p><code>graphs</code> was created to explore different type encoding for graphs and implement well-known algorithms</p>
+<h2><a href="#goals" name="goals" class="anchor"><span class="anchor-link"></span></a>Goals</h2>
+<ul>
+  <li>Support <a href="https://www.scala-js.org">Scala.js</a></li>
+  <li>Support <a href="https://de.wikipedia.org/wiki/GraphML">GraphML</a></li>
+  <li>Usages of the library and the core interfaces should be intuitive</li>
+  <li>The codebase should follow current idioms and integrate with mainstream libraries for Scala</li>
+</ul>
+<h2><a href="#non-goals" name="non-goals" class="anchor"><span class="anchor-link"></span></a>Non-Goals</h2>
+<ul>
+  <li>Support all possible graph types / scenarios</li>
+  <li>Provide a purely functional library</li>
+</ul>
+<h2><a href="#alternatives" name="alternatives" class="anchor"><span class="anchor-link"></span></a>Alternatives</h2>
+<p><a href="http://scala-graph.org">Graph for Scala</a> is probably the most established graph library for Scala and supports many kinds of graphs explicitly (custom syntax etc.) with a big variety of algorithms and extensions (json, dot support). </p>
+<p>Its still being worked on and recently added support for Scala.js. It might have a steeper learning curve but is more battle-tested and powerful then <code>graphs</code>.</p>
+<p><a href="https://github.com/Verizon/quiver">quiver</a> follows <a href="http://web.engr.oregonstate.edu/~erwig/fgl/haskell">Martin Erwigs Functions Graph Library</a> and appears to be more or less abandoned. Its less focused on algorithms but provides a more functional perspective on graphs.</p>
+<p><code>graphs</code> is inspired and influenced by both libraries. Please check them out to see if they fit your use case and preferences better.</p>
 <h1><a href="#license" name="license" class="anchor"><span class="anchor-link"></span></a>License</h1>
 <p>graphs is published under the terms of the Apache 2.0 License. See the <a href="LICENSE">LICENSE</a> file.</p>
 </div>
 <div>
-<a href="https://github.com/flowtick/graphs/tree/v0.2.4/docs/index.md" title="Edit this page" class="md-source-file md-edit">
+<a href="https://github.com/flowtick/graphs/tree/v0.3.0/docs/index.md" title="Edit this page" class="md-source-file md-edit">
 Edit this page
 </a>
 </div>
 <div class="print-only">
 <span class="md-source-file md-version">
-0.2.4
+0.3.0
 </span>
 </div>
 </article>

@@ -142,20 +142,46 @@ flowtick/graphs
   <li><a href="setup.html" class="page">Setup</a></li>
   <li><a href="creating-graphs.html" class="page">Creating graphs</a></li>
   <li><a href="algorithms.html" class="page">Algorithms</a></li>
+  <li><a href="json.html" class="page">JSON support</a></li>
   <li><a href="graphml.html" class="active page">GraphML support</a></li>
   <li><a href="cats.html" class="page">cats support</a></li>
 </ul>
 <nav class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">Table of contents</label>
+<ul>
+  <li><a href="graphml.html#graphml-support" class="header">GraphML support</a>
+  <ul>
+    <li><a href="graphml.html#conversion-to-graphml" class="header">Conversion to GraphML</a></li>
+    <li><a href="graphml.html#custom-node-types" class="header">Custom Node Types</a></li>
+  </ul></li>
+</ul>
 </nav>
 
 </nav>
 <ul style="display: none">
 <li class="md-nav__item md-version" id="project.version">
 <label class="md-nav__link" for="__version">
-<i class="md-icon" title="Version">label_outline</i> 0.2.4
+<i class="md-icon" title="Version">label_outline</i> 0.3.0
 </label>
 </li>
 </ul>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">Table of contents</label>
+<ul>
+  <li><a href="graphml.html#graphml-support" class="header">GraphML support</a>
+  <ul>
+    <li><a href="graphml.html#conversion-to-graphml" class="header">Conversion to GraphML</a></li>
+    <li><a href="graphml.html#custom-node-types" class="header">Custom Node Types</a></li>
+  </ul></li>
+</ul>
+</nav>
+
 </div>
 </div>
 </div>
@@ -163,41 +189,49 @@ flowtick/graphs
 <article class="md-content__inner md-typeset">
 <div class="md-content__searchable">
 <h2><a href="#graphml-support" name="graphml-support" class="anchor"><span class="anchor-link"></span></a>GraphML support</h2>
-<p><code>graphs</code> supports rendering and loading (currently only on the JVM) of graphs to GraphML XML.</p>
-<p>You need to add the <code>graphs-graphml</code> dependency to use that:</p>
-<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-graphml&quot; % &quot;0.2.4&quot;
+<p><code>graphs</code> supports exporting and loading of graphs to GraphML XML. This format is used by the <a href="https://www.yworks.com/products/yed">yed editor</a>, so graphs can be edited and layouted there.</p>
+<p>You need to add the <code>graphs-graphml</code> dependency to use it:</p>
+<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-graphml&quot; % &quot;0.3.0&quot;
 </code></pre>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.2.4/examples/shared/src/main/scala/GraphMLExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
+<h3><a href="#conversion-to-graphml" name="conversion-to-graphml" class="anchor"><span class="anchor-link"></span></a>Conversion to GraphML</h3>
+<p>This creates a default graph and converts it to a GraphML graph.</p>
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/GraphMLExample.scala#L4-L16" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
+import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.defaults.label._
+import com.flowtick.graphs.graphml._
+import com.flowtick.graphs.graphml.generic._
 
-trait GraphMLExample {
-  {
-    import com.flowtick.graphs.defaults._
-    import com.flowtick.graphs.graphml._
-    val graphMLCities: Graph[GraphMLEdge[Int], GraphMLNode[String], GraphMLGraph[Unit]] = DijkstraGraph.cities.toGraphML()
+val simple: Graph[Unit, Unit, String] = Graph.fromEdges(Set(
+  &quot;A&quot; --&gt; &quot;B&quot;,
+  &quot;B&quot; --&gt; &quot;C&quot;,
+  &quot;D&quot; --&gt; &quot;A&quot;))
 
-    println(fromGraphML[Int, String, Unit](graphMLCities.xml.toString()))
-    println(graphMLCities)
-    // ImmutableGraph(GraphMLGraph((),Some(G),List()),Map(GraphMLNode(Erfurt,Erfurt, ...
-  }
+val graphML = simple.asGraphML.xml
+val loaded = FromGraphML[Unit, Int, String](graphML.toString)</code></pre>
+<h3><a href="#custom-node-types" name="custom-node-types" class="anchor"><span class="anchor-link"></span></a>Custom Node Types</h3>
+<p>Its possible to create GraphML graphs directly using the <code>ml</code> edge builder and serialize your own node types, this is implemeted using shapeless:</p>
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/GraphMLExample.scala#L22-L34" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
+import com.flowtick.graphs.graphml._
+import com.flowtick.graphs.graphml.generic._
+import scala.xml.NodeSeq
 
-  {
-    import com.flowtick.graphs.defaults._
-    import com.flowtick.graphs.graphml._
-    val graph = Graph.fromEdges[Unit, String](Set(n(&quot;A&quot;) --&gt; n(&quot;B&quot;)))
-    val xml = graph.toGraphML().xml
-    println(fromGraphML[Unit, String, Unit](xml.toString))
-  }
-}</code></pre>
-<p>This format is used by the <a href="https://www.yworks.com/products/yed">yed editor</a>, so graphs can be edited and layouted there.</p>
+final case class MyNode(value: Int)
+
+val customGraph: Graph[GraphMLGraph[Unit], GraphMLEdge[Unit], GraphMLNode[MyNode]] =
+  GraphML.fromEdges(Set(
+    ml(MyNode(1), id = Some(&quot;one&quot;)) --&gt; ml(MyNode(2), id = Some(&quot;two&quot;))))
+
+val xml: NodeSeq = ToGraphML[Unit, Unit, MyNode](customGraph)
+val loaded = FromGraphML[Unit, Unit, MyNode](xml.toString)</code></pre>
 </div>
 <div>
-<a href="https://github.com/flowtick/graphs/tree/v0.2.4/docs/graphml.md" title="Edit this page" class="md-source-file md-edit">
+<a href="https://github.com/flowtick/graphs/tree/v0.3.0/docs/graphml.md" title="Edit this page" class="md-source-file md-edit">
 Edit this page
 </a>
 </div>
 <div class="print-only">
 <span class="md-source-file md-version">
-0.2.4
+0.3.0
 </span>
 </div>
 </article>
@@ -207,7 +241,7 @@ Edit this page
 <footer class="md-footer">
 <div class="md-footer-nav">
 <nav class="md-footer-nav__inner md-grid">
-<a href="algorithms.html" title="Algorithms" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+<a href="json.html" title="JSON support" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
 <div class="md-flex__cell md-flex__cell--shrink">
 <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
 </div>
@@ -216,7 +250,7 @@ Edit this page
 <span class="md-footer-nav__direction">
 Previous
 </span>
-Algorithms
+JSON support
 </span>
 </div>
 </a>
