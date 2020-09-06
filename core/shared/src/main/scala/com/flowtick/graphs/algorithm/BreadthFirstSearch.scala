@@ -1,18 +1,17 @@
 package com.flowtick.graphs.algorithm
 
-import com.flowtick.graphs.Graph
+import com.flowtick.graphs.{Graph, Node}
 
 import scala.collection.mutable
 
-class BreadthFirstSearch[M, E, N](
-  initialNodes: Iterable[N],
-  graph: Graph[M, E, N]) extends Traversal[N] {
-  override def run: Seq[N] = {
-    val visited = mutable.Map[N, Boolean]()
-    val visitedList = mutable.ListBuffer[N]()
-    val queue = new mutable.Queue[N]()
+class BreadthFirstSearch[E, N](initialNodes: Iterable[String],
+                               graph: Graph[E, N]) extends Traversal[Node[N]] {
+  override def run: Seq[Node[N]] = {
+    val visited = mutable.Map[Node[N], Boolean]()
+    val visitedList = mutable.ListBuffer[Node[N]]()
+    val queue = new mutable.Queue[Node[N]]()
 
-    def traverse: Seq[N] = {
+    def traverse: Seq[Node[N]] = {
       while (queue.nonEmpty) {
         val node = queue.dequeue()
         val alreadyVisited = visited.put(node, true)
@@ -20,7 +19,7 @@ class BreadthFirstSearch[M, E, N](
           visitCallbacks.foreach(_.apply(node))
           visitedList += node
 
-          def addAdjacent(nodes: Iterable[N]): Unit = {
+          def addAdjacent(nodes: Iterable[Node[N]]): Unit = {
             for (next <- nodes) {
               if (!visited.getOrElse(next, false)) {
                 queue.enqueue(next)
@@ -29,7 +28,7 @@ class BreadthFirstSearch[M, E, N](
               }
             }
           }
-          addAdjacent(graph.successors(node))
+          addAdjacent(graph.successors(node.id))
           queue.enqueue(node)
         } else if (alreadyVisited.getOrElse(false)) {
           completeCallbacks.foreach(_.apply(node))
@@ -38,7 +37,7 @@ class BreadthFirstSearch[M, E, N](
       visitedList.toList
     }
 
-    initialNodes.foreach(queue.enqueue(_))
+    initialNodes.flatMap(graph.findNode).foreach(queue.enqueue(_))
     traverse
   }
 }

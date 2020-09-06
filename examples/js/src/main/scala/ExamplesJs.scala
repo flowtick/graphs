@@ -1,8 +1,8 @@
-import scala.scalajs.js.JSApp
-import scala.scalajs.js.annotation.JSExportTopLevel
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
-trait ExampleApp extends JSApp {
-  def main(): Unit = println("finished example.")
+trait ExampleApp {
+  @JSExport
+  def main(args: Array[String]): Unit = println("finished example.")
 }
 
 @JSExportTopLevel("dijkstra")

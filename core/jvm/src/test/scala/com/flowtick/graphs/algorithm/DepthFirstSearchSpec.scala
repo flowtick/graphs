@@ -3,9 +3,10 @@ package com.flowtick.graphs.algorithm
 import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
 import org.scalamock.scalatest.proxy.MockFactory
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class DepthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
+class DepthFirstSearchSpec extends AnyFlatSpec with Matchers with MockFactory {
   "Dfs" should "traverse in depth first manner" in {
 
     val graph = Graph.fromEdges(Seq(
@@ -41,11 +42,11 @@ class DepthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
     }
 
     val dfsNodes = graph.dfs("1").onVisit(node => {
-      visitMock(node)
+      visitMock(node.value)
     }).onComplete(node => {
-      completeMock(node)
+      completeMock(node.value)
     }).run
 
-    dfsNodes.toList should be(List("1", "3", "7", "6", "2", "5", "4"))
+    dfsNodes.map(_.value).toList should be(List("1", "3", "7", "6", "2", "5", "4"))
   }
 }

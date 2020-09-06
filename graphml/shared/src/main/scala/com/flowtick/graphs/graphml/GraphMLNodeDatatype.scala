@@ -2,131 +2,177 @@ package com.flowtick.graphs.graphml
 
 import cats.data.Validated._
 import cats.data.ValidatedNel
-import com.flowtick.graphs.layout.{ Geometry, ShapeDefinition }
-import shapeless.ops.record.Keys
-import shapeless._
+import com.flowtick.graphs.graphml.GraphMLDatatype.isValueProperty
+import com.flowtick.graphs.layout.{DefaultGeometry, Geometry, ShapeDefinition}
 
-import scala.reflect.ClassTag
-import scala.xml.{ Elem, Node, NodeSeq }
+import scala.xml.{Elem, Node, NodeSeq}
 
-/**
- * @param genericValue
- * @param fromList
- * @param genericValueKeys
- * @tparam T
- * @tparam Repr the representation as labelled generic
- * @tparam FromRepr the representation as generic
- *
- * see FromList to understand why we need two representations
- *
- * the good news is that an implicit LabelledGeneric will also be provide an implicit Generic
- *
- */
-class GraphMLNodeDatatype[T, Repr <: HList, FromRepr <: HList](implicit
-  genericValue: LabelledGeneric.Aux[T, Repr],
-  fromList: FromList[T, FromRepr],
-  genericValueKeys: Keys[Repr],
-  classTag: ClassTag[T]) extends Datatype[GraphMLNode[T]] {
-  private val valueKeys: List[String] = genericValueKeys().runtimeList.map(_.asInstanceOf[Symbol].name)
+class GraphMLNodeDatatype[T](nodeValueDatatype: Datatype[T]) extends Datatype[GraphMLNode[T]] {
+  override def keys(targetHint: Option[String]): Seq[GraphMLKey] =
+    nodeValueDatatype.keys(targetHint) ++ Seq(GraphMLKey(id = "node_graphics", targetHint = targetHint, yfilesType = Some("nodegraphics")))
 
-  override def keys: Seq[GraphMLKey] =
-    valueKeys.map(keyName => GraphMLKey(id = s"node_$keyName", name = Some(keyName), targetHint = Some("node"), typeHint = Some("string"), graphsType = Some(classTag.toString()))) ++
-      Seq(GraphMLKey(id = "node_graphics", targetHint = Some("node"), yfilesType = Some("nodegraphics")))
-
-  def serialize(node: GraphMLNode[T]): NodeSeq = {
-    val nodeValueData = genericValueKeys().runtimeList.zip(genericValue.to(node.value).runtimeList).map {
-      case (key: Symbol, value) if classOf[Integer].isAssignableFrom(value.getClass) =>
-        <data key={ s"node_${key.name}" } type="integer">{ value.toString }</data>
-
-      case (key: Symbol, value) if classOf[Double].isAssignableFrom(value.getClass) =>
-        <data key={ s"node_${key.name}" } type="double">{ value.toString }</data>
-
-      case (key: Symbol, value) =>
-        <data key={ s"node_${key.name}" } type="string">{ value.toString }</data>
-
-      case (_, _) => <!-- unknown value -->
-    }
-
-    val nodePropertiesData = node.properties.map { property =>
-      <data key={ property.key }>{ property.value.toString }</data>
-    }
-
+  def serialize(node: GraphMLNode[T], targetHint: Option[String]): NodeSeq = {
     // format: OFF
     Seq(
       <node id={ node.id }>
-        { nodeValueData }
-        { nodePropertiesData }
+        { nodeValueDatatype.serialize(node.value, targetHint) }
         <data key="node_graphics">
-          {GraphMLNodeDatatype.shapeXml(node.label.orElse(Some(node.id)), node.geometry, node.shape)}
+          {node.shape.map(GraphMLNodeDatatype.shapeXml).getOrElse(<!-- -->)}
         </data>
       </node>
     )
     // format: ON
   }
 
-  override def deserialize(from: NodeSeq, graphKeys: scala.collection.Map[String, GraphMLKey]): ValidatedNel[Throwable, GraphMLNode[T]] =
-    from.headOption match {
-      case Some(node) =>
-        val id = GraphMLDatatype.singleAttributeValue("id", node).getOrElse(node.label)
 
-        GraphMLDatatype.parseValue(node, graphKeys, valueKeys).map { value =>
-          // we assume that we will always recreate the graphics from the domain
-          // so we will not pass though the node graphics prop,
-          // as it would be inconsistent and possible duplicated
-          // TODO: parse graphics properties
-          val nonGraphicProperties = value
-            .properties
-            .filterNot(prop => {
-              graphKeys.get(prop.key).exists(_.yfilesType.exists(_ == "nodegraphics"))
-            })
+  override def deserialize(from: NodeSeq,
+                           graphKeys: scala.collection.Map[String, GraphMLKey],
+                           targetHint: Option[String]): ValidatedNel[Throwable, GraphMLNode[T]] = from.headOption.map { node =>
+    val id = GraphMLDatatype.singleAttributeValue("id", node).getOrElse(node.label)
+    var nodeShape: Option[NodeShape] = None
+    val valuesXml = scala.collection.mutable.ListBuffer[Node]()
 
-          GraphMLNode[T](id, value.value, extractNodeLabel(value.properties, graphKeys), nonGraphicProperties)
-        }
-
-      case None => invalidNel(new IllegalArgumentException(s"invalid node xml ${from.toString}"))
-    }
-
-  protected def extractNodeLabel(properties: Seq[GraphMLProperty], keys: scala.collection.Map[String, GraphMLKey]): Option[String] = {
-    properties.find(prop => keys.get(prop.key).exists(_.yfilesType.exists(_ == "nodegraphics"))).flatMap { nodeGraphics =>
-      nodeGraphics.value match {
-        case xml: Seq[scala.xml.Node @unchecked] =>
-          val nodeLabel: Option[Node] = xml.foldLeft(Seq.empty[scala.xml.Node])((a, b) => a ++ b.nonEmptyChildren).find(_.label == "NodeLabel")
-          nodeLabel.map(_.text.trim)
+    GraphMLDatatype
+      .parseProperties(node)
+      .foreach {
+        case property if graphKeys.get(property.key).exists(_.yfilesType.exists(_ == "nodegraphics")) =>
+          nodeShape = extractNodeShape(property)
+        case property if isValueProperty(property, graphKeys, nodeValueDatatype.keys(targetHint).map(_.id)) =>
+          valuesXml += property.xml
+        case _ =>
       }
+
+    nodeValueDatatype
+      .deserialize(valuesXml, graphKeys, targetHint)
+      .map(value => GraphMLNode[T](id, value, nodeShape))
+  }.getOrElse(invalidNel(new IllegalArgumentException("no xml given")))
+
+  protected def extractNodeShape(property: GraphMLProperty): Option[NodeShape] = property.xml.child
+    .headOption
+    .map { dataNode =>
+    dataNode.nonEmptyChildren.foldLeft(NodeShape()) {
+      case (shape, elem) if elem.label == "Geometry" =>
+        val geo = for {
+          x <- GraphMLDatatype.singleAttributeValue("x", elem)
+          y <- GraphMLDatatype.singleAttributeValue("y", elem)
+          width <- GraphMLDatatype.singleAttributeValue("width", elem)
+          height <- GraphMLDatatype.singleAttributeValue("height", elem)
+        } yield DefaultGeometry(x.toDouble, y.toDouble, width.toDouble, height.toDouble)
+        shape.copy(geometry = geo)
+
+      case (shape, elem) if elem.label == "NodeLabel" =>
+        val label = for {
+          text <- Option(elem.text.trim)
+        } yield NodeLabel(
+          text,
+          GraphMLDatatype.singleAttributeValue("textColor", elem),
+          GraphMLDatatype.singleAttributeValue("fontSize", elem),
+          GraphMLDatatype.singleAttributeValue("fontFamily", elem),
+          GraphMLDatatype.singleAttributeValue("modelName", elem),
+          for {
+            x <- GraphMLDatatype.singleAttributeValue("x", elem).map(_.toDouble).orElse(Some(0.0))
+            y <- GraphMLDatatype.singleAttributeValue("y", elem).map(_.toDouble).orElse(Some(0.0))
+          } yield PointSpec(x, y)
+        )
+        shape.copy(label = label)
+
+      case (shape, elem) if elem.label == "Fill" =>
+        val fill = for {
+          color <- GraphMLDatatype.singleAttributeValue("color", elem).orElse(Some("#FFFFFF"))
+          hasColor <- GraphMLDatatype.singleAttributeValue("hasColor", elem).orElse(Some("true"))
+          transparent <- GraphMLDatatype.singleAttributeValue("transparent", elem)
+        } yield Fill(if (hasColor.toBoolean) Some(color) else None, transparent.toBoolean)
+        shape.copy(fill = fill)
+
+      case (shape, elem) if elem.label == "Shape" =>
+        shape.copy(shapeType = GraphMLDatatype.singleAttributeValue("type", elem))
+
+      case (shape, elem) if elem.label == "BorderStyle" =>
+        val borderStyle = for {
+          color <- GraphMLDatatype.singleAttributeValue("color", elem)
+          styleType <- GraphMLDatatype.singleAttributeValue("type", elem)
+          width <- GraphMLDatatype.singleAttributeValue("width", elem)
+        } yield BorderStyle(color, styleType, width.toDouble)
+        shape.copy(borderStyle = borderStyle)
+
+      case (shape, elem) if elem.label == "SVGModel" =>
+        val svgContent = for {
+          contentChild <- elem.nonEmptyChildren.headOption.filter(_.label == "SVGContent")
+          refId <- GraphMLDatatype.singleAttributeValue("refid", contentChild)
+        } yield SVGContent(refId)
+        shape.copy(svgContent = svgContent)
+
+      case (shape, elem) if elem.label == "Image" =>
+        val image = for {
+          refId <- GraphMLDatatype.singleAttributeValue("refid", elem)
+        } yield Image(refId)
+        shape.copy(image = image)
+
+      case (shape, _) => shape
     }
   }
 
 }
 
 object GraphMLNodeDatatype {
-  def shapeXml(
-    label: Option[String],
-    geometry: Option[Geometry],
-    shape: Option[ShapeDefinition]): Elem = {
+  def apply[T](implicit nodeDataType: Datatype[T]) = new GraphMLNodeDatatype[T](nodeDataType)
+
+  def shapeXml(nodeShape: NodeShape): Elem = {
     // format: OFF
     <y:ShapeNode>
-      <y:Geometry height={ geometry.map(_.height).getOrElse(30).toString } width={ geometry.map(_.width).getOrElse(30).toString } x={ geometry.map(_.x).getOrElse(0).toString } y={ geometry.map(_.y).getOrElse(0).toString }/>
-      <y:Fill color={ shape.map(_.color).getOrElse("#FFFFFF") } transparent="false"/>
-      <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-      <y:NodeLabel alignment="center"
-                   autoSizePolicy="content"
-                   fontFamily="Dialog"
-                   fontSize="12"
-                   fontStyle="plain"
-                   hasBackgroundColor="false"
-                   hasLineColor="false"
-                   horizontalTextPosition="center"
-                   iconTextGap="4"
-                   modelName="custom"
-                   textColor="#000000"
-                   verticalTextPosition="bottom" visible="true">{ scala.xml.PCData(label.getOrElse("")) }<y:LabelModel>
+      {
+        nodeShape
+          .geometry
+          .map(geometry => <y:Geometry height={ geometry.height.toString } width={ geometry.width.toString } x={ geometry.x.toString } y={ geometry.y.toString }/>)
+          .getOrElse(<!-- no geometry defined -->)
+      }
+
+      {
+      nodeShape
+        .fill
+        .map(fill => <y:Fill hasColor={fill.color.isDefined.toString} color={ fill.color.getOrElse("#FFFFFF") } transparent={fill.transparent.toString}/>)
+        .getOrElse(<!-- no fill defined -->)
+      }
+
+      {
+      nodeShape
+        .borderStyle
+        .map(borderStyle => <y:BorderStyle color={borderStyle.color} raised="false" type={borderStyle.styleType} width={borderStyle.width.toString}/>)
+        .getOrElse(<!-- no border style defined -->)
+      }
+
+      {
+      nodeShape
+        .label
+        .map(label => <y:NodeLabel alignment="center"
+                                   autoSizePolicy="content"
+                                   fontFamily={label.fontFamily.getOrElse("Dialog")}
+                                   fontSize={label.fontSize.getOrElse("12")}
+                                   fontStyle="plain"
+                                   hasBackgroundColor="false"
+                                   hasLineColor="false"
+                                   horizontalTextPosition="center"
+                                   iconTextGap="4"
+                                   modelName="custom"
+                                   textColor={label.textColor.getOrElse("#000000")}
+                                   verticalTextPosition="bottom"
+                                   visible="true">{ scala.xml.PCData(label.text) }<y:LabelModel>
           <y:SmartNodeLabelModel distance="4.0"/>
         </y:LabelModel>
-        <y:ModelParameter>
-          <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
-        </y:ModelParameter>
-      </y:NodeLabel>
-      <y:Shape type={ shape.map(_.shapeType).getOrElse("rectangle") }/>
+          <y:ModelParameter>
+            <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>
+          </y:ModelParameter>
+        </y:NodeLabel>)
+        .getOrElse(<!-- no label defined -->)
+      }
+
+      {
+      nodeShape
+        .shapeType
+        .map(shapeType => <y:Shape type={ shapeType }/>)
+        .getOrElse(<!-- no shape type defined -->)
+      }
+
     </y:ShapeNode>
     // format: ON
   }

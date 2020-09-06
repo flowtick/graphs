@@ -1,15 +1,15 @@
-import io.circe
-import io.circe.Json
-
 trait JsonExample {
   {
     // #json_simple
     import com.flowtick.graphs._
     import com.flowtick.graphs.defaults._
     import com.flowtick.graphs.json._
+    import com.flowtick.graphs.json.format.default._
+    import io.circe
+    import io.circe.Json
     import io.circe.generic.auto._
 
-    val graph: Graph[Unit, Unit, String] = Graph.fromEdges(Set(
+    val graph: Graph[Unit, String] = Graph.fromEdges(Set(
       "A" --> "D",
       "A" --> "C",
       "A" --> "B",
@@ -18,11 +18,12 @@ trait JsonExample {
       "B" --> "G",
       "E" --> "H"))
 
-    val json: Json = ToJson(graph)
-    val parsed: Either[circe.Error, Graph[Unit, Unit, String]] = FromJson[Unit, Unit, String](json.noSpaces)
+    val json: Json = ToJson[Unit, Unit, String](graph)
+    val parsed: Either[circe.Error, JsonGraph[Unit, Unit, String]] = FromJson[Unit, Unit, String](json.noSpaces)
 
-    require(parsed.contains(graph))
+    require(parsed.map(_.graph).contains(graph))
     // #json_simple
+    println(json.noSpaces)
   }
 
   {
@@ -30,22 +31,27 @@ trait JsonExample {
     import com.flowtick.graphs._
     import com.flowtick.graphs.defaults._
     import com.flowtick.graphs.json._
+    import com.flowtick.graphs.json.format.default._
+    import io.circe
+    import io.circe.Json
     import io.circe.generic.auto._
-
-    import options.unitAsNull
 
     case class MyNode(id: String, value: Double)
 
-    val graph: Graph[Unit, Unit, MyNode] = Graph.fromEdges(Set(
+    implicit val myNodeId: Identifiable[MyNode] = new Identifiable[MyNode] {
+      override def apply(value: MyNode): String = value.id
+    }
+
+    val graph: Graph[Unit, MyNode] = Graph.fromEdges(Set(
       MyNode("1", 42) --> MyNode("2", 43)
     ))
 
-    implicit val nodeId = Identifiable.identify[MyNode, String](_.id)
+    implicit val nodeId = Identifiable.identify[MyNode](_.id)
 
-    val json: Json = ToJson(graph)
-    val parsed: Either[circe.Error, Graph[Unit, Unit, MyNode]] = FromJson(json.noSpaces)
+    val json: Json = ToJson[Unit, Unit, MyNode](graph)
+    val parsed: Either[circe.Error, JsonGraph[Unit, Unit, MyNode]] = FromJson(json.noSpaces)
 
-    require(parsed.contains(graph))
+    require(parsed.map(_.graph).contains(graph))
     // #json_custom
   }
 }
