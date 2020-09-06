@@ -1,18 +1,17 @@
 package com.flowtick.graphs.algorithm
 
-import com.flowtick.graphs.Graph
+import com.flowtick.graphs.{Graph, Node}
 
 import scala.collection.mutable
 
-class DepthFirstSearch[M, E, N](
-  initialNodes: Iterable[N],
-  graph: Graph[M, E, N]) extends Traversal[N] {
-  override def run: Seq[N] = {
-    val visited = mutable.Map[N, Boolean]()
-    val visitedList = mutable.ListBuffer[N]()
-    val stack = new mutable.Stack[(N, Boolean)]()
+class DepthFirstSearch[E, N](initialNodes: Iterable[String],
+                             graph: Graph[E, N]) extends Traversal[Node[N]] {
+  override def run: Seq[Node[N]] = {
+    val visited = mutable.Map[Node[N], Boolean]()
+    val visitedList = mutable.ListBuffer[Node[N]]()
+    val stack = new mutable.Stack[(Node[N], Boolean)]()
 
-    def traverse: Seq[N] = {
+    def traverse: Seq[Node[N]] = {
       while (stack.nonEmpty) {
         val (node, completed) = stack.pop()
         val alreadyVisited = visited.put(node, true)
@@ -23,7 +22,7 @@ class DepthFirstSearch[M, E, N](
           // to recognize that we completed that node, this will trigger the completion callback branch
           stack.push((node, true))
 
-          def addAdjacent(nodes: Iterable[N]): Unit =
+          def addAdjacent(nodes: Iterable[Node[N]]): Unit =
             nodes.foreach { next =>
               if (!visited.getOrElse(next, false)) {
                 stack.push((next, false))
@@ -32,7 +31,7 @@ class DepthFirstSearch[M, E, N](
               }
             }
 
-          addAdjacent(graph.successors(node))
+          addAdjacent(graph.successors(node.id))
         } else if (completed) {
           completeCallbacks.foreach(_.apply(node))
         }
@@ -40,7 +39,7 @@ class DepthFirstSearch[M, E, N](
       visitedList.toList
     }
 
-    stack.pushAll(initialNodes.map(node => (node, false)))
+    stack.pushAll(initialNodes.flatMap(graph.findNode).map(node => (node, false)))
     traverse
   }
 }

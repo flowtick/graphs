@@ -7,13 +7,13 @@ trait GraphMLExample {
     import com.flowtick.graphs.graphml._
     import com.flowtick.graphs.graphml.generic._
 
-    val simple: Graph[Unit, Unit, String] = Graph.fromEdges(Set(
+    val simple: Graph[Unit, String] = Graph.fromEdges(Set(
       "A" --> "B",
       "B" --> "C",
       "D" --> "A"))
 
     val graphML = simple.asGraphML.xml
-    val loaded = FromGraphML[Unit, Int, String](graphML.toString)
+    val loaded = FromGraphML[Int, String](graphML.toString)
     // #simple-graphml
   }
 
@@ -26,12 +26,13 @@ trait GraphMLExample {
 
     final case class MyNode(value: Int)
 
-    val customGraph: Graph[GraphMLGraph[Unit], GraphMLEdge[Unit], GraphMLNode[MyNode]] =
+    val customGraph: GraphMLGraph[Unit, MyNode] =
       GraphML.fromEdges(Set(
-        ml(MyNode(1), id = Some("one")) --> ml(MyNode(2), id = Some("two"))))
+        ml(MyNode(1), id = Some("one")) --> ml(MyNode(2), id = Some("two"))
+      ))
 
-    val xml: NodeSeq = ToGraphML[Unit, Unit, MyNode](customGraph)
-    val loaded = FromGraphML[Unit, Unit, MyNode](xml.toString)
+    val xml: NodeSeq = ToGraphML[Unit, MyNode](customGraph)
+    val loaded = FromGraphML[Unit, MyNode](xml.toString)
     // #custom-node-graphml
   }
 }

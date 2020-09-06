@@ -5,7 +5,7 @@ import com.flowtick.graphs.algorithm._
 object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
   // #cities
-  val cities: Graph[Unit, Int, String] = Graph.fromEdges(Set(
+  val cities: Graph[Int, String] = Graph.fromEdges(Set(
     "Frankfurt" --> (85, "Mannheim"),
     "Frankfurt" --> (217, "Wuerzburg"),
     "Frankfurt" --> (173, "Kassel"),

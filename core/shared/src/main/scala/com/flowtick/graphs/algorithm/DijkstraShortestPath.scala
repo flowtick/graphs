@@ -5,7 +5,7 @@ import com.flowtick.graphs._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class DijkstraShortestPath[M, E, N](graph: Graph[M, E, N])
+class DijkstraShortestPath[M, E, N](graph: Graph[E, N])
                                            (implicit label: Labeled[Edge[E, N], E],
                                                      numeric: Numeric[E]) {
 
@@ -17,23 +17,23 @@ class DijkstraShortestPath[M, E, N](graph: Graph[M, E, N])
    * @param end the end node
    * @return Some list of node ids with the shortest path, None if there is no path from start to end
    */
-  def shortestPath(start: N, end: N): Iterable[Edge[E, N]] = {
-    val distanceMap = mutable.Map.empty[N, Double]
-    val predecessorMap = mutable.Map.empty[N, (N, Edge[E, N])]
+  def shortestPath(start: String, end: String): Iterable[Edge[E, N]] = {
+    val distanceMap = mutable.Map.empty[String, Double]
+    val predecessorMap = mutable.Map.empty[String, (Node[N], Edge[E, N])]
 
-    implicit val nodePriority: Ordering[N] = new Ordering[N] {
-      override def compare(x: N, y: N): Int = {
-        distanceMap(x).compareTo(distanceMap(y))
+    implicit val nodePriority: Ordering[Node[N]] = new Ordering[Node[N]] {
+      override def compare(x: Node[N], y: Node[N]): Int = {
+        distanceMap(x.id).compareTo(distanceMap(y.id))
       }
     }.reverse
 
-    val queue = mutable.PriorityQueue.empty[N]
+    val queue = mutable.PriorityQueue.empty[Node[N]]
 
-    graph.contexts.keys.foreach { node =>
-      if (node == start) {
+    graph.nodes.foreach { node =>
+      if (node.id == start) {
         distanceMap.put(start, 0)
       } else {
-        distanceMap.put(node, Double.PositiveInfinity)
+        distanceMap.put(node.id, Double.PositiveInfinity)
       }
 
       queue.enqueue(node)
@@ -41,36 +41,36 @@ class DijkstraShortestPath[M, E, N](graph: Graph[M, E, N])
 
     while (queue.nonEmpty) {
       val current = queue.dequeue()
-      val currentDistance: Double = distanceMap(current)
+      val currentDistance: Double = distanceMap(current.id)
       if (currentDistance != Double.NaN) {
-          graph.outgoing(current).foreach { edge =>
+          graph.outgoing(current.id).foreach { edge =>
             val weight = numeric.toDouble(label(edge))
             val newDist = currentDistance + weight
 
-            if(newDist < distanceMap(edge.to)) {
-              distanceMap.put(edge.to, newDist)
-              predecessorMap.put(edge.to, (current, edge))
-              queue.enqueue(edge.to)
+            if(newDist < distanceMap(edge.to.id)) {
+              distanceMap.put(edge.to.id, newDist)
+              predecessorMap.put(edge.to.id, (current, edge))
+              graph.findNode(edge.to.id).foreach(queue.enqueue(_))
             }
 
             /**
              * since we can not update the distance in queue, we mark the current one as done
              */
-            distanceMap.put(current, Double.NaN)
+            distanceMap.put(current.id, Double.NaN)
           }
 
       }
     }
 
-    if (predecessorMap.get(end).nonEmpty) {
-      val predecessors = mutable.Stack[(N, Edge[E, N])]()
+    if (predecessorMap.contains(end)) {
+      val predecessors = mutable.Stack[(Node[N], Edge[E, N])]()
       val predecessorList = ListBuffer.empty[Edge[E, N]]
       predecessorMap.get(end).foreach(predecessors.push)
 
       while (predecessors.nonEmpty) {
         val currentPredecessor = predecessors.pop()
         predecessorList.prepend(currentPredecessor._2)
-        predecessorMap.get(currentPredecessor._1).foreach(predecessors.push)
+        predecessorMap.get(currentPredecessor._1.id).foreach(predecessors.push)
       }
 
       predecessorList

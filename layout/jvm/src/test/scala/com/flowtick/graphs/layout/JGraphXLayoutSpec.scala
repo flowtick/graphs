@@ -6,18 +6,19 @@ import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.defaults.label._
 import com.mxgraph.view.mxGraph
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.util.Try
 
-class JGraphXLayoutSpec extends FlatSpec {
+class JGraphXLayoutSpec extends AnyFlatSpec with Matchers {
   "JGraphX layout" should "layout simple graph and save it" in {
     val graph = Graph.fromEdges(Set(
       "A" --> "B",
       "B" --> "C",
       "D" --> "A"))
 
-    val layoutedGraph = new JGraphXLayout[Unit, Unit, String].layout(graph)
+    val layoutedGraph = new JGraphXLayout[Unit, String].layout(graph)
     saveGraph("simple", layoutedGraph)
   }
 
@@ -40,7 +41,7 @@ class JGraphXLayoutSpec extends FlatSpec {
       "Karlsruhe" --> (250, "Augsburg"),
       "Augsburg" --> (84, "Muenchen")))
 
-    val layoutedGraph = new JGraphXLayout[Unit, Int, String].layout(cities)
+    val layoutedGraph = new JGraphXLayout[Int, String].layout(cities)
 
     saveGraph("cities", layoutedGraph)
   }
