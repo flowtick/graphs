@@ -50,8 +50,7 @@ lazy val commonSettings = Seq(
   ),
   autoAPIMappings := true,
   siteSubdirName in ScalaUnidoc := "latest/api",
-  scalacOptions += (if (scalaVersion.value.contains("2.13")) "" else "-Ypartial-unification"),
-  coverageExcludedPackages := "<empty>;"
+  scalacOptions += (if (scalaVersion.value.contains("2.13")) "" else "-Ypartial-unification")
 )
 
 lazy val core = (crossProject(JVMPlatform, JSPlatform) in file(".") / "core")
