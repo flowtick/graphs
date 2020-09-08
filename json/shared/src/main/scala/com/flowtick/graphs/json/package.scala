@@ -39,12 +39,12 @@ package object json {
       implicit def nodeEncoder[N](implicit nodeEncoder: Encoder[N]): Encoder[Node[N]] = deriveEncoder[Node[N]]
       implicit def nodeDecoder[N](implicit nodeDecoder: Decoder[N]): Decoder[Node[N]] = deriveDecoder[Node[N]]
 
-      implicit def edgeEncoder[E, N](implicit edgeEncoder: Encoder[E]): Encoder[Edge[E, N]] = graphsEdgeEncoder[E, N]
+      implicit def edgeEncoder[E, N](implicit edgeEncoder: Encoder[E]): Encoder[Edge[E]] = graphsEdgeEncoder[E, N]
       implicit def edgeDecoder[E, N](implicit edgeDecoder: Decoder[E]): Decoder[JsonEdge[E]] = deriveDecoder[JsonEdge[E]]
 
       implicit def defaultGraphEncoder[M, E, N](implicit metaEncoder: Encoder[M],
                                                 nodesEncoder: Encoder[Node[N]],
-                                                edgesEncoder: Encoder[Edge[E, N]]): Encoder[JsonGraph[M, E, N]] = new Encoder[JsonGraph[M, E, N]] {
+                                                edgesEncoder: Encoder[Edge[E]]): Encoder[JsonGraph[M, E, N]] = new Encoder[JsonGraph[M, E, N]] {
         override def apply(a: JsonGraph[M, E, N]): Json = {
           val fields = new ListBuffer[(String, Json)]
           fields.append("nodes" -> a.graph.nodes.asJson)
@@ -72,20 +72,20 @@ package object json {
       }
     }
 
-    private def toEdges[E, N](jsonEdges: List[JsonEdge[E]], nodes: Map[String, Node[N]]): List[Edge[E, N]] = jsonEdges.flatMap { jsonEdge =>
+    private def toEdges[E, N](jsonEdges: List[JsonEdge[E]], nodes: Map[String, Node[N]]): List[Edge[E]] = jsonEdges.flatMap { jsonEdge =>
       for {
         from <- nodes.get(jsonEdge.from)
         to <- nodes.get(jsonEdge.to)
-      } yield Edge.of(jsonEdge.value, from, to)
+      } yield Edge.of(jsonEdge.value, from.id, to.id)
     }
 
-    private def graphsEdgeEncoder[E, N](implicit edgeEncoder: Encoder[E]): Encoder[Edge[E, N]] = new Encoder[Edge[E, N]] {
-      override def apply(a: Edge[E, N]): Json = {
+    private def graphsEdgeEncoder[E, N](implicit edgeEncoder: Encoder[E]): Encoder[Edge[E]] = new Encoder[Edge[E]] {
+      override def apply(a: Edge[E]): Json = {
         val encodedValue = edgeEncoder(a.value)
         val fields = new ListBuffer[(String, Json)]
         fields.append("id" -> Json.fromString(a.id))
-        fields.append("from" -> Json.fromString(a.from.id))
-        fields.append("to" -> Json.fromString(a.to.id))
+        fields.append("from" -> Json.fromString(a.from))
+        fields.append("to" -> Json.fromString(a.to))
         fields.append("value" -> encodedValue)
 
         Json.fromFields(fields)
@@ -101,26 +101,16 @@ package object json {
       implicit def nodeEncoder[N](implicit nodeEncoder: Encoder[N]): Encoder[Node[N]] = deriveEncoder[Node[N]]
       implicit def nodeDecoder[N](implicit nodeDecoder: Decoder[N]): Decoder[Node[N]] = deriveDecoder[Node[N]]
 
-      implicit def edgeEncoder[E, N](implicit edgeEncoder: Encoder[E]): Encoder[Edge[E, N]] = graphsEdgeEncoder[E, N]
+      implicit def edgeEncoder[E, N](implicit edgeEncoder: Encoder[E]): Encoder[Edge[E]] = graphsEdgeEncoder[E, N]
       implicit def edgeDecoder[E, N](implicit edgeDecoder: Decoder[E]): Decoder[JsonEdge[E]] = deriveDecoder[JsonEdge[E]]
 
       implicit def embeddedGraphEncoder[M, E, N](implicit metaEncoder: Encoder[M],
                                                 nodesEncoder: Encoder[N],
-                                                edgesEncoder: Encoder[Edge[E, N]],
-                                                nodeId : Identifiable[N]): Encoder[JsonGraph[M, E, N]] = new Encoder[JsonGraph[M, E, N]] {
+                                                edgesEncoder: Encoder[Edge[E]]): Encoder[JsonGraph[M, E, N]] = new Encoder[JsonGraph[M, E, N]] {
         override def apply(a: JsonGraph[M, E, N]): Json = Json.obj(
           "meta" -> a.meta.map(metaEncoder.apply).asJson,
           "nodes" -> a.graph.nodes.map(_.value).asJson,
-          "edges" -> a.graph.edges.map(edge => {
-            val newFromId = nodeId(edge.from.value)
-            val newToId = nodeId(edge.to.value)
-            val id = s"$newFromId-$newToId"
-            edge.copy(
-              id = id,
-              from = edge.from.copy(newFromId),
-              to = edge.to.copy(newToId)
-            )
-          }).asJson.dropNullValues
+          "edges" -> a.graph.edges.asJson.dropNullValues
         ).asJson
       }
 

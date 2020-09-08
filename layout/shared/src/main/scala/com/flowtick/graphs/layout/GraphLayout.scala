@@ -21,13 +21,13 @@ trait Cell {
 }
 
 trait GraphLayout {
-  def layout[E, N](g: Graph[E, N])(implicit edgeLabel: Labeled[Edge[E, N], String]): NodeLayout[Node[N]]
+  def layout[E, N](g: Graph[E, N])(implicit edgeLabel: Labeled[Edge[E], String]): NodeLayout[Node[N]]
 }
 
 object GraphLayout {
   type NodeLayout[Node] = Node => Option[Cell]
 
   val none: GraphLayout = new GraphLayout {
-    def layout[E, N](g: Graph[E, N])(implicit edgeLabel: Labeled[Edge[E, N], String]): NodeLayout[Node[N]] = _ => None
+    def layout[E, N](g: Graph[E, N])(implicit edgeLabel: Labeled[Edge[E], String]): NodeLayout[Node[N]] = _ => None
   }
 }

@@ -24,16 +24,16 @@ class DijkstraShortestPathSpec extends AnyFlatSpec with Matchers {
 
     val pathFrankfurtMuenchen = g.dijkstra.shortestPath("Frankfurt", "Muenchen")
     pathFrankfurtMuenchen.headOption match {
-      case Some(firstEdge) => firstEdge.from.id should be("Frankfurt")
+      case Some(firstEdge) => firstEdge.from should be("Frankfurt")
       case None => fail("there should be path")
     }
-    pathFrankfurtMuenchen.map(_.to.id) should be(List("Wuerzburg", "Nuernberg", "Muenchen"))
+    pathFrankfurtMuenchen.map(_.to) should be(List("Wuerzburg", "Nuernberg", "Muenchen"))
 
     val pathFrankfurtErfurt = g.dijkstra.shortestPath("Frankfurt", "Erfurt")
     pathFrankfurtErfurt.headOption match {
-      case Some(firstEdge) => firstEdge.from.id should be("Frankfurt")
+      case Some(firstEdge) => firstEdge.from should be("Frankfurt")
       case None => fail("there should be path")
     }
-    pathFrankfurtErfurt.map(_.to.id) should be(List("Wuerzburg", "Erfurt"))
+    pathFrankfurtErfurt.map(_.to) should be(List("Wuerzburg", "Erfurt"))
   }
 }

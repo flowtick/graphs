@@ -219,11 +219,11 @@ object SVGGraphRenderer {
     )(spans: _*)
   }.render
 
-  def renderEdge(edge: Edge[GraphMLEdge[Json], GraphMLNode[Json]],
+  def renderEdge(edge: Edge[GraphMLEdge[Json]],
                  graphml: GraphMLGraph[Json, Json]): Option[EdgeElement] = {
     for {
-      fromNode <- graphml.graph.findNode(edge.from.id)
-      toNode <- graphml.graph.findNode(edge.to.id)
+      fromNode <- graphml.graph.findNode(edge.from)
+      toNode <- graphml.graph.findNode(edge.to)
       shape <- edge.value.shape.orElse(Some(EdgeShape()))
       from <- fromNode.value.shape.flatMap(_.geometry)
       to <- toNode.value.shape.flatMap(_.geometry)

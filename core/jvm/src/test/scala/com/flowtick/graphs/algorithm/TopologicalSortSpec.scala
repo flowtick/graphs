@@ -19,7 +19,7 @@ class TopologicalSortSpec extends AnyFlatSpec with Matchers {
     val sorted = clothes.topologicalSort.map(_.id)
 
     clothes.edges.forall { edge =>
-      sorted.indexOf(edge.from.value) < sorted.indexOf(edge.to.value)
+      sorted.indexOf(edge.from) < sorted.indexOf(edge.to)
     } should be(true)
   }
 }

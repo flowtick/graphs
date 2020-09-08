@@ -76,8 +76,8 @@ class GraphMLDatatypeSpec extends AnyFlatSpec with Matchers {
       importedEdges.headOption match {
         case Some(edge) =>
           edge.value.id should be("1-2")
-          edge.from.id should be("1")
-          edge.to.id should be("2")
+          edge.from should be("1")
+          edge.to should be("2")
         case None => fail
       }
     }
@@ -141,7 +141,12 @@ class GraphMLDatatypeSpec extends AnyFlatSpec with Matchers {
 
     val converter = new GraphMLConverterOps(cities)
 
-    val graphML = converter.asGraphML
+    val graphML = converter.asGraphML(Some({
+      case (labelString, _) => NodeShape(label = {
+        labelString.map(NodeLabel(_, textColor = Some("#000000"), fontSize = Some("12"), fontFamily = Some("Dialog"), modelName = Some("custom"), position = Some(PointSpec(0.0, 0.0))))
+      })
+    }))
+
     val xml = graphML.xml
 
     xml.headOption.foreach(println)
@@ -153,7 +158,6 @@ class GraphMLDatatypeSpec extends AnyFlatSpec with Matchers {
         val expectedCity = graphML.graph
           .nodes
           .find(_.id == "Kassel")
-          .map(node => node.copy(value = node.value.copy(shape = Some(NodeShape()))))
 
         val actualCity = parsedGraph.graph.nodes.find(_.id == "Kassel")
 

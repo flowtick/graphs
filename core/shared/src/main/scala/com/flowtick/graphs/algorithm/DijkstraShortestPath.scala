@@ -6,7 +6,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 class DijkstraShortestPath[M, E, N](graph: Graph[E, N])
-                                           (implicit label: Labeled[Edge[E, N], E],
+                                           (implicit label: Labeled[Edge[E], E],
                                                      numeric: Numeric[E]) {
 
   /**
@@ -17,9 +17,9 @@ class DijkstraShortestPath[M, E, N](graph: Graph[E, N])
    * @param end the end node
    * @return Some list of node ids with the shortest path, None if there is no path from start to end
    */
-  def shortestPath(start: String, end: String): Iterable[Edge[E, N]] = {
+  def shortestPath(start: String, end: String): Iterable[Edge[E]] = {
     val distanceMap = mutable.Map.empty[String, Double]
-    val predecessorMap = mutable.Map.empty[String, (Node[N], Edge[E, N])]
+    val predecessorMap = mutable.Map.empty[String, (Node[N], Edge[E])]
 
     implicit val nodePriority: Ordering[Node[N]] = new Ordering[Node[N]] {
       override def compare(x: Node[N], y: Node[N]): Int = {
@@ -47,10 +47,10 @@ class DijkstraShortestPath[M, E, N](graph: Graph[E, N])
             val weight = numeric.toDouble(label(edge))
             val newDist = currentDistance + weight
 
-            if(newDist < distanceMap(edge.to.id)) {
-              distanceMap.put(edge.to.id, newDist)
-              predecessorMap.put(edge.to.id, (current, edge))
-              graph.findNode(edge.to.id).foreach(queue.enqueue(_))
+            if(newDist < distanceMap(edge.to)) {
+              distanceMap.put(edge.to, newDist)
+              predecessorMap.put(edge.to, (current, edge))
+              graph.findNode(edge.to).foreach(queue.enqueue(_))
             }
 
             /**
@@ -63,8 +63,8 @@ class DijkstraShortestPath[M, E, N](graph: Graph[E, N])
     }
 
     if (predecessorMap.contains(end)) {
-      val predecessors = mutable.Stack[(Node[N], Edge[E, N])]()
-      val predecessorList = ListBuffer.empty[Edge[E, N]]
+      val predecessors = mutable.Stack[(Node[N], Edge[E])]()
+      val predecessorList = ListBuffer.empty[Edge[E]]
       predecessorMap.get(end).foreach(predecessors.push)
 
       while (predecessors.nonEmpty) {

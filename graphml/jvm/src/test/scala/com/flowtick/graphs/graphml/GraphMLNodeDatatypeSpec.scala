@@ -35,7 +35,7 @@ class GraphMLNodeDatatypeSpec extends AnyFlatSpec with Matchers {
                             <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
                             <y:Fill hasColor="true" color="#FFFFFF" transparent="false"/>
                             <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-                            <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true">
+                            <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" horizontalTextPosition="center" iconTextGap="4" modelName="custom" x="0.0" y="0.0" textColor="#000000" verticalTextPosition="bottom" visible="true">
                               <![CDATA[test]]><y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel>
                               <y:ModelParameter>
                                 <y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/>

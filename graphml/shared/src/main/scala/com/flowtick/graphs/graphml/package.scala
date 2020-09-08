@@ -208,7 +208,7 @@ package object graphml {
 
   implicit def graphMLDataType[E, N](implicit
     identifiable: Identifiable[GraphMLNode[N]],
-    edgeLabel: Labeled[Edge[GraphMLEdge[E], GraphMLNode[N]], String],
+    edgeLabel: Labeled[Edge[GraphMLEdge[E]], String],
     nodeDataType: Datatype[N],
     edgeDataType: Datatype[E]): Datatype[GraphMLGraph[E, N]] = GraphMLDatatype[E, N]
 
@@ -216,15 +216,15 @@ package object graphml {
     GraphMLNode(id.getOrElse(nodeValue.toString), nodeValue, None)
 
   implicit class GraphMLEdgeBuilder[X](node: GraphMLNode[X]) {
-    def -->[V](value: V, to: GraphMLNode[X]): Edge[GraphMLEdge[V], GraphMLNode[X]] = Edge.of(GraphMLEdge(s"${node.id}-${to.id}", value, Some(node.id), Some(to.id)), Node.of(node), Node.of(to))
-    def -->(to: GraphMLNode[X]): Edge[GraphMLEdge[Unit], GraphMLNode[X]] = Edge.of(GraphMLEdge(s"${node.id}-${to.id}", (), Some(node.id), Some(to.id)), Node.of(node), Node.of(to))
+    def -->[V](value: V, to: GraphMLNode[X]): Relation[GraphMLEdge[V], GraphMLNode[X]] = Relation(GraphMLEdge(s"${node.id}-${to.id}", value, Some(node.id), Some(to.id)), Node.of(node), Node.of(to))
+    def -->(to: GraphMLNode[X]): Relation[GraphMLEdge[Unit], GraphMLNode[X]] = Relation(GraphMLEdge(s"${node.id}-${to.id}", (), Some(node.id), Some(to.id)), Node.of(node), Node.of(to))
   }
 
   implicit def graphMLNodeIdentifiable[N]: Identifiable[GraphMLNode[N]] =
     (node: GraphMLNode[N]) => node.id
 
-  implicit def graphMLEdgeLabel[V, N]: Labeled[Edge[GraphMLEdge[V], N], String] =
-    (edge: Edge[GraphMLEdge[V], N]) => edge.value.id
+  implicit def graphMLEdgeLabel[V, N]: Labeled[Edge[GraphMLEdge[V]], String] =
+    (edge: Edge[GraphMLEdge[V]]) => edge.value.id
 
   implicit class GraphMLOps[E, N](graph: GraphMLGraph[E, N]) {
     def xml(implicit graphMLDatatype: Datatype[GraphMLGraph[E, N]]): NodeSeq = {
@@ -254,15 +254,15 @@ package object graphml {
       }
   }
 
-  implicit class GraphMLConverterOps[E, N](graph: Graph[E, N])(implicit edgeLabel: Labeled[Edge[E, N], Option[String]],
+  implicit class GraphMLConverterOps[E, N](graph: Graph[E, N])(implicit edgeLabel: Labeled[Edge[E], Option[String]],
                                                                nodeLabel: Labeled[Node[N], Option[String]]) {
 
-    def asGraphML: GraphMLGraph[E, N] = {
+    def asGraphML(nodeShape: Option[(Option[String], N) => NodeShape] = None): GraphMLGraph[E, N] = {
       val mlNodes: Iterable[Node[GraphMLNode[N]]] = graph.nodes.map { node =>
-        node.copy(value = GraphMLNode(node.id, node.value, Some(NodeShape(label = nodeLabel(node).map(NodeLabel(_))))))
+        node.copy(value = GraphMLNode(node.id, node.value, nodeShape.map(f => f(nodeLabel(node), node.value))))
       }
 
-      val mlEdges: Iterable[Edge[GraphMLEdge[E], GraphMLNode[N]]] = graph.edges.map { edge =>
+      val mlEdges: Iterable[Edge[GraphMLEdge[E]]] = graph.edges.map { edge =>
         val edgeShape: Option[EdgeShape] = edgeLabel(edge).map(labelValue => EdgeShape(Some(
           EdgeLabel(labelValue)
         )))
@@ -270,10 +270,10 @@ package object graphml {
         val mlEdge = GraphMLEdge(
           edge.id,
           edge.value,
-          Some(edge.from.id), Some(edge.to.id),
+          Some(edge.from), Some(edge.to),
           edgeShape)
 
-        Edge.of(mlEdge, edge.from.map(GraphMLNode(edge.from.id, _)), edge.to.map(GraphMLNode(edge.to.id, _)))
+        Edge.of(mlEdge, edge.from, edge.to)
       }
 
       GraphMLGraph(Graph(edges = mlEdges, nodes = mlNodes), GraphMLMeta())

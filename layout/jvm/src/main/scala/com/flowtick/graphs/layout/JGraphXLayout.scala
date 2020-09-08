@@ -13,7 +13,7 @@ import scala.collection.mutable
 
 object JGraphXLayouter extends GraphLayout {
   @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
-  override def layout[E, N](g: Graph[E, N])(implicit edgeLabel: Labeled[Edge[E, N], String]): NodeLayout[Node[N]] = {
+  override def layout[E, N](g: Graph[E, N])(implicit edgeLabel: Labeled[Edge[E], String]): NodeLayout[Node[N]] = {
     val cells: Map[String, JGraphXCell] = new JGraphXLayout[E, N]()
       .layout(g)
       .getModel.asInstanceOf[mxGraphModel]
@@ -35,7 +35,7 @@ final case class JGraphXCell(cell: mxCell) extends Cell {
   override def geometry: Option[Geometry] = Option(cell.getGeometry).map(JGraphGeometry)
 }
 
-class JGraphXLayout[E, N](implicit edgeLabel: Labeled[Edge[E, N], String]) {
+class JGraphXLayout[E, N](implicit edgeLabel: Labeled[Edge[E], String]) {
 
   def layout(graph: Graph[E, N]): mxGraph = {
     val layoutGraph = graphToMxGraph(graph)
@@ -85,8 +85,8 @@ class JGraphXLayout[E, N](implicit edgeLabel: Labeled[Edge[E, N], String]) {
           mxGraph.getDefaultParent,
           edge.id,
           edgeLabel(edge),
-          vertices.get(edge.from.id).orNull,
-          vertices.get(edge.to.id).orNull)
+          vertices.get(edge.from).orNull,
+          vertices.get(edge.to).orNull)
     }
 
     mxGraph.getModel.endUpdate()

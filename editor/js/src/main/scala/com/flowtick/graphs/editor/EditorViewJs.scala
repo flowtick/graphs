@@ -139,7 +139,7 @@ class EditorViewJs(containerElementId: String)(messageBus: EditorMessageBus) ext
     _ <- viewModel.update(vm => vm.copy(graphElements = vm.graphElements - element.id))
   } yield ()
 
-  def appendEdge(edge: Edge[GraphMLEdge[Json], GraphMLNode[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[EdgeElement]] = for {
+  def appendEdge(edge: Edge[GraphMLEdge[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[EdgeElement]] = for {
     page <- page.get
 
     edgeElement <- IO(SVGGraphRenderer.renderEdge(edge, graphml))

@@ -154,6 +154,8 @@ object GraphMLNodeDatatype {
                                    horizontalTextPosition="center"
                                    iconTextGap="4"
                                    modelName="custom"
+                                   x={label.position.map(_.x).getOrElse(0.0).toString}
+                                   y={label.position.map(_.y).getOrElse(0.0).toString}
                                    textColor={label.textColor.getOrElse("#000000")}
                                    verticalTextPosition="bottom"
                                    visible="true">{ scala.xml.PCData(label.text) }<y:LabelModel>

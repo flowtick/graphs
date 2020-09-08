@@ -12,7 +12,7 @@ trait GraphMLExample {
       "B" --> "C",
       "D" --> "A"))
 
-    val graphML = simple.asGraphML.xml
+    val graphML = simple.asGraphML().xml
     val loaded = FromGraphML[Int, String](graphML.toString)
     // #simple-graphml
   }

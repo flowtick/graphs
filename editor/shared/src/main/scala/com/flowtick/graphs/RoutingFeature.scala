@@ -12,10 +12,12 @@ class RoutingFeature extends EditorComponent {
     case _ => false
   }
 
-  def updateEdgeRouting(edge: Edge[GraphMLEdge[Json], GraphMLNode[Json]], graphml: GraphMLGraph[Json, Json]): Option[GraphMLGraph[Json, Json]] =
+  def updateEdgeRouting(edge: Edge[GraphMLEdge[Json]], graphml: GraphMLGraph[Json, Json]): Option[GraphMLGraph[Json, Json]] =
     for {
-      fromNode <- graphml.graph.findNode(edge.from.id)
-      toNode <- graphml.graph.findNode(edge.to.id)
+      fromNode <- graphml.graph.findNode(edge.from)
+      _ = println(fromNode)
+      toNode <- graphml.graph.findNode(edge.to)
+      _ = println(toNode)
       from <- fromNode.value.shape.flatMap(_.geometry)
       to <- toNode.value.shape.flatMap(_.geometry)
     } yield {

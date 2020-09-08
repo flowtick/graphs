@@ -69,16 +69,16 @@ class GraphSpec extends AnyFlatSpec with Matchers {
       "D" --> "A",
       "A" --> "C",
       "B" --> "D"
-    ))
+    ).map(_.toEdge))
   }
 
   it should "return empty iterable for an empty graph" in {
     val emptyGraph = Graph.empty
-    emptyGraph.edges should be(empty)
+    emptyGraph.edges should be (empty)
   }
 
   it should "have nodes after adding an edge" in {
-    val intGraph = Graph.empty[Option[Unit], Int].addEdge(None, 1, 2)
+    val intGraph = Graph.empty[Option[Unit], Int].addEdge(None, Node.of(1), Node.of(2))
     intGraph.nodes should contain theSameElementsAs List(
       Node("1", 1),
       Node("2", 2)
@@ -88,17 +88,17 @@ class GraphSpec extends AnyFlatSpec with Matchers {
   it should "remove nodes" in {
     val intGraph = Graph
       .empty[Unit, Int]
-      .addEdge((), 1, 2)
-      .addNode(3)
+      .addEdge((), Node.of(1), Node.of(2))
+      .addNode(Node.of(3))
 
     intGraph.removeNodeValue(3) should be(
-      Graph.empty[Unit, Int].withEdge(Edge.of((), Node.of(1), Node.of(2)))
+      Graph.empty[Unit, Int].addEdge((), Node.of(1), Node.of(2))
     )
 
     val expected = Graph
       .empty[Unit, Int]
-      .addNode(2)
-      .addNode(3)
+      .addNode(Node.of(2))
+      .addNode(Node.of(3))
 
     intGraph.removeNodeValue(1) should be(expected)
   }
@@ -106,14 +106,14 @@ class GraphSpec extends AnyFlatSpec with Matchers {
   it should "remove edges" in {
     val intGraph = Graph
       .empty[Unit, Int]
-      .addEdge((), 1, 2)
-      .addNode(3)
+      .addEdge((), Node.of(1), Node.of(2))
+      .addNode(Node.of(3))
 
     val expected = Graph
       .empty[Unit, Int]
-      .addNode(1)
-      .addNode(2)
-      .addNode(3)
+      .addNode(Node.of(1))
+      .addNode(Node.of(2))
+      .addNode(Node.of(3))
 
     intGraph.edges.headOption match {
       case Some(edge) => intGraph.removeEdge(edge) should be (expected)

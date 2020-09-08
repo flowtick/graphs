@@ -28,7 +28,7 @@ final case class GraphMLProperty(key: String, xml: XmlNode, typeHint: Option[Str
 }
 
 class GraphMLDatatype[E, N](nodeDataType: Datatype[GraphMLNode[N]],
-                            edgeDataType: Datatype[GraphMLEdge[E]])(implicit edgeLabel: Labeled[Edge[GraphMLEdge[E], GraphMLNode[N]], String]) extends Datatype[GraphMLGraph[E, N]] {
+                            edgeDataType: Datatype[GraphMLEdge[E]])(implicit edgeLabel: Labeled[Edge[GraphMLEdge[E]], String]) extends Datatype[GraphMLGraph[E, N]] {
   val nodeTargetHint = Some("node")
   val edgeTargetHint = Some("edge")
   val metaTargetHint = Some("meta")
@@ -101,17 +101,15 @@ class GraphMLDatatype[E, N](nodeDataType: Datatype[GraphMLNode[N]],
   protected def parseEdges(
     edgeXmlNodes: List[scala.xml.Node],
     nodes: scala.collection.Map[String, Node[GraphMLNode[N]]],
-    keys: scala.collection.Map[String, GraphMLKey]): Validated[NonEmptyList[Throwable], List[Edge[GraphMLEdge[E], GraphMLNode[N]]]] = {
+    keys: scala.collection.Map[String, GraphMLKey]): Validated[NonEmptyList[Throwable], List[Edge[GraphMLEdge[E]]]] = {
     edgeXmlNodes.map { edgeNode =>
       val edge = edgeDataType.deserialize(Seq(edgeNode), keys, edgeTargetHint).andThen { mlEdge =>
         (for {
           source <- GraphMLDatatype.singleAttributeValue("source", edgeNode)
           target <- GraphMLDatatype.singleAttributeValue("target", edgeNode)
           id <- GraphMLDatatype.singleAttributeValue("id", edgeNode).orElse(Some(s"$source-$target"))
-          sourceNode <- nodes.get(source)
-          targetNode <- nodes.get(target)
         } yield {
-          validNel(Edge[GraphMLEdge[E], GraphMLNode[N]](id, mlEdge, sourceNode, targetNode))
+          validNel(Edge[GraphMLEdge[E]](id, mlEdge, source, target))
         }).getOrElse(invalidNel(new IllegalArgumentException(s"unable to parse edge from ${edgeNode.toString}")))
       }
       edge
@@ -151,7 +149,7 @@ class GraphMLDatatype[E, N](nodeDataType: Datatype[GraphMLNode[N]],
 
 object GraphMLDatatype {
   def apply[E, N](implicit identifiable: Identifiable[GraphMLNode[N]],
-                     edgeLabel: Labeled[Edge[GraphMLEdge[E], GraphMLNode[N]], String],
+                     edgeLabel: Labeled[Edge[GraphMLEdge[E]], String],
                      nodeDataType: Datatype[N],
                      edgeDataType: Datatype[E]): Datatype[GraphMLGraph[E, N]] =
     new GraphMLDatatype[E, N](new GraphMLNodeDatatype[N](nodeDataType), new GraphMLEdgeDatatype[E](edgeDataType))

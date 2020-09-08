@@ -1,7 +1,7 @@
 package com.flowtick.graphs.graphml
 
 import com.flowtick.graphs.layout.DefaultGeometry
-import com.flowtick.graphs.{Edge, Graph, Node}
+import com.flowtick.graphs.{Edge, Graph, Node, Relation}
 
 final case class GraphMLKey(
   id: String,
@@ -159,12 +159,12 @@ object GraphML {
 
   def apply[E, N](
     id: String,
-    edges: Iterable[Edge[GraphMLEdge[E], GraphMLNode[N]]],
+    edges: Iterable[Edge[GraphMLEdge[E]]],
     nodes: Iterable[Node[GraphMLNode[N]]] = Iterable.empty,
     keys: Seq[GraphMLKey] = Seq.empty): GraphMLGraph[E, N] = {
     GraphMLGraph(Graph(edges = edges, nodes = nodes), GraphMLMeta(keys = keys))
   }
 
-  def fromEdges[E, N](edges: Iterable[Edge[GraphMLEdge[E], GraphMLNode[N]]]): GraphMLGraph[E, N] =
+  def fromEdges[E, N](edges: Iterable[Relation[GraphMLEdge[E], GraphMLNode[N]]]): GraphMLGraph[E, N] =
     GraphMLGraph(Graph.fromEdges(edges), GraphMLMeta())
 }

@@ -13,7 +13,7 @@ import scala.util.Try
 
 class JGraphXLayoutSpec extends AnyFlatSpec with Matchers {
   "JGraphX layout" should "layout simple graph and save it" in {
-    val graph = Graph.fromEdges(Set(
+    val graph = Graph.fromEdges[Unit, String](Set(
       "A" --> "B",
       "B" --> "C",
       "D" --> "A"))
@@ -28,7 +28,7 @@ class JGraphXLayoutSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "layout city graph" in {
-    val cities = Graph.fromEdges(Set(
+    val cities = Graph.fromEdges[Int, String](Set(
       "Frankfurt" --> (85, "Mannheim"),
       "Frankfurt" --> (217, "Wuerzburg"),
       "Frankfurt" --> (173, "Kassel"),

@@ -112,7 +112,7 @@ class EditorModelUpdate extends EditorComponent {
     (for {
       fromNode <- ctx.model.graphml.graph.findNode(edge.from)
       toNode <- ctx.model.graphml.graph.findNode(edge.to)
-      newEdge = Edge.of(mlEdge, fromNode, toNode)
+      newEdge = Edge.of(mlEdge, fromNode.id, toNode.id)
     } yield {
       val updated = ElementUpdated(ElementRef(newEdge.id, EdgeType))
       println(s"updated: $updated")
