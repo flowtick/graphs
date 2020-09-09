@@ -1,5 +1,10 @@
 language: scala
-sbt_args: "-J-Xmx2G"
+sbt_args: "-no-colors -J-Xmx2G -JXss8m"
+
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot/
 
 before_install:
   - git fetch --tags
@@ -11,13 +16,9 @@ stages:
 
 jobs:
   include:
-    # stage="test" if no stage is specified
     - name: compile
       script:
         - sbt clean +test
-        - sbt clean coverage test coverageAggregate
-      after_success:
-        - bash <(curl -s https://codecov.io/bash)
     # run ci-release only if previous stages passed
     - stage: release
       script:
