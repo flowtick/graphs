@@ -159,7 +159,7 @@ flowtick/graphs
 <ul style="display: none">
 <li class="md-nav__item md-version" id="project.version">
 <label class="md-nav__link" for="__version">
-<i class="md-icon" title="Version">label_outline</i> 0.3.0
+<i class="md-icon" title="Version">label_outline</i> 0.4.0
 </label>
 </li>
 </ul>
@@ -189,21 +189,19 @@ flowtick/graphs
 <div class="md-content">
 <article class="md-content__inner md-typeset">
 <div class="md-content__searchable">
-<p><a href="https://travis-ci.org/flowtick/graphs"><img src="https://api.travis-ci.org/flowtick/graphs.svg?branch=master" alt="travis ci" /></a> <a href="https://codecov.io/gh/flowtick/graphs"><img src="https://codecov.io/gh/flowtick/graphs/branch/master/graph/badge.svg" alt="codecov" /></a> <a href="https://search.maven.org/search?q=g:com.flowtick%20AND%20a:graphs*"><img src="https://img.shields.io/maven-central/v/com.flowtick/graphs-core_2.12.svg?label=Maven%20Central" alt="latest release" /></a></p>
+<p><a href="https://travis-ci.org/flowtick/graphs"><img src="https://api.travis-ci.org/flowtick/graphs.svg?branch=master" alt="travis ci" /></a> <a href="https://search.maven.org/search?q=g:com.flowtick%20AND%20a:graphs*"><img src="https://img.shields.io/maven-central/v/com.flowtick/graphs-core_2.12.svg?label=Maven%20Central" alt="latest release" /></a></p>
 <h1><a href="#graphs" name="graphs" class="anchor"><span class="anchor-link"></span></a>graphs</h1>
 <p><code>graphs</code> is a simple <a href="https://en.wikipedia.org/wiki/Graph_theory">graph</a> library for Scala</p>
 <h1><a href="#example" name="example" class="anchor"><span class="anchor-link"></span></a>Example</h1>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/SimpleGraphExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">trait SimpleGraphExample {
-  import com.flowtick.graphs._
-  import com.flowtick.graphs.defaults._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.4.0/examples/shared/src/main/scala/SimpleGraphExample.scala#L3-L11" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+import com.flowtick.graphs.defaults._
 
-  val graph: Graph[Unit, Unit, String] = Graph.fromEdges(Set(
-    &quot;A&quot; --&gt; &quot;B&quot;,
-    &quot;B&quot; --&gt; &quot;C&quot;,
-    &quot;D&quot; --&gt; &quot;A&quot;))
+val graph: Graph[Unit, String] = Graph.fromEdges(Set(
+  &quot;A&quot; --&gt; &quot;B&quot;,
+  &quot;B&quot; --&gt; &quot;C&quot;,
+  &quot;D&quot; --&gt; &quot;A&quot;))
 
-  println(graph.edges)
-}</code></pre>
+println(graph.edges)</code></pre>
 <h1><a href="#documentation" name="documentation" class="anchor"><span class="anchor-link"></span></a>Documentation</h1>
 <p>Please check the <a href="https://flowtick.github.io/graphs">guide</a> and the <a href="https://flowtick.github.io/graphs/latest/api/com/flowtick/graphs">API docs</a></p>
 <h1><a href="#features" name="features" class="anchor"><span class="anchor-link"></span></a>Features</h1>
@@ -240,13 +238,13 @@ flowtick/graphs
 <p>graphs is published under the terms of the Apache 2.0 License. See the <a href="LICENSE">LICENSE</a> file.</p>
 </div>
 <div>
-<a href="https://github.com/flowtick/graphs/tree/v0.3.0/docs/index.md" title="Edit this page" class="md-source-file md-edit">
+<a href="https://github.com/flowtick/graphs/tree/v0.4.0/docs/index.md" title="Edit this page" class="md-source-file md-edit">
 Edit this page
 </a>
 </div>
 <div class="print-only">
 <span class="md-source-file md-version">
-0.3.0
+0.4.0
 </span>
 </div>
 </article>

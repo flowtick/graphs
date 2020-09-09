@@ -163,7 +163,7 @@ flowtick/graphs
 <ul style="display: none">
 <li class="md-nav__item md-version" id="project.version">
 <label class="md-nav__link" for="__version">
-<i class="md-icon" title="Version">label_outline</i> 0.3.0
+<i class="md-icon" title="Version">label_outline</i> 0.4.0
 </label>
 </li>
 </ul>
@@ -198,7 +198,7 @@ flowtick/graphs
 <h2><a href="#depth-first-traversal" name="depth-first-traversal" class="anchor"><span class="anchor-link"></span></a>Depth-first traversal</h2>
 <p>A depth first traversal visits every node <em>per branch / path</em> which means that for every node the first child will be visited and the search will be continued there, before going to its siblings.</p>
 <p>Every node will be visited.</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/DfsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.4.0/examples/shared/src/main/scala/DfsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
 import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
 
@@ -222,7 +222,7 @@ trait DfsExample {
 <h2><a href="#breadth-first-traversal" name="breadth-first-traversal" class="anchor"><span class="anchor-link"></span></a>Breadth-first traversal</h2>
 <p>A breadth first traversal visits every node <em>per layer</em>, which means that first all child nodes will be visited before continuing with their children.</p>
 <p>Every node will be visited.</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/BfsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.4.0/examples/shared/src/main/scala/BfsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
 import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
 
@@ -242,7 +242,7 @@ trait BfsExample {
 <h2><a href="#topological-sorting-using-a-depth-first-approach" name="topological-sorting-using-a-depth-first-approach" class="anchor"><span class="anchor-link"></span></a>Topological sorting using a depth-first approach</h2>
 <p><blockquote> <a href="https://en.wikipedia.org/wiki/Topological_sorting">https://en.wikipedia.org/wiki/Topological_sorting</a>:</p>
 <p>&ldquo;topological ordering of a directed graph is a linear ordering of its vertices such that for every directed edge uv from vertex u to vertex v, u comes before v in the ordering. For instance, the vertices of the graph may represent tasks to be performed, and the edges may represent constraints that one task must be performed before another&rdquo; </blockquote></p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/TopologicalSortingExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.4.0/examples/shared/src/main/scala/TopologicalSortingExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.algorithm._
 
@@ -269,13 +269,13 @@ trait TopologicalSortingExample {
 <h2><a href="#dijkstras-algorithm-for-shortest-paths" name="dijkstras-algorithm-for-shortest-paths" class="anchor"><span class="anchor-link"></span></a>Dijkstras algorithm for shortest paths</h2>
 <p><blockquote> <a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm">https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm</a>:</p>
 <p>For a given source node in the graph, the algorithm finds the shortest path between that node and every other. It can also be used for finding the shortest paths from a single node to a single destination node by stopping the algorithm once the shortest path to the destination node has been determined. </blockquote></p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/DijkstraExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.4.0/examples/shared/src/main/scala/DijkstraExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.algorithm._
 
 object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
-  val cities: Graph[Unit, Int, String] = Graph.fromEdges(Set(
+  val cities: Graph[Int, String] = Graph.fromEdges(Set(
     &quot;Frankfurt&quot; --&gt; (85, &quot;Mannheim&quot;),
     &quot;Frankfurt&quot; --&gt; (217, &quot;Wuerzburg&quot;),
     &quot;Frankfurt&quot; --&gt; (173, &quot;Kassel&quot;),
@@ -295,13 +295,13 @@ trait DijkstraExample {
 }</code></pre>
 </div>
 <div>
-<a href="https://github.com/flowtick/graphs/tree/v0.3.0/docs/algorithms.md" title="Edit this page" class="md-source-file md-edit">
+<a href="https://github.com/flowtick/graphs/tree/v0.4.0/docs/algorithms.md" title="Edit this page" class="md-source-file md-edit">
 Edit this page
 </a>
 </div>
 <div class="print-only">
 <span class="md-source-file md-version">
-0.3.0
+0.4.0
 </span>
 </div>
 </article>

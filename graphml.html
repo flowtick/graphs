@@ -161,7 +161,7 @@ flowtick/graphs
 <ul style="display: none">
 <li class="md-nav__item md-version" id="project.version">
 <label class="md-nav__link" for="__version">
-<i class="md-icon" title="Version">label_outline</i> 0.3.0
+<i class="md-icon" title="Version">label_outline</i> 0.4.0
 </label>
 </li>
 </ul>
@@ -191,47 +191,48 @@ flowtick/graphs
 <h2><a href="#graphml-support" name="graphml-support" class="anchor"><span class="anchor-link"></span></a>GraphML support</h2>
 <p><code>graphs</code> supports exporting and loading of graphs to GraphML XML. This format is used by the <a href="https://www.yworks.com/products/yed">yed editor</a>, so graphs can be edited and layouted there.</p>
 <p>You need to add the <code>graphs-graphml</code> dependency to use it:</p>
-<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-graphml&quot; % &quot;0.3.0&quot;
+<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-graphml&quot; % &quot;0.4.0&quot;
 </code></pre>
 <h3><a href="#conversion-to-graphml" name="conversion-to-graphml" class="anchor"><span class="anchor-link"></span></a>Conversion to GraphML</h3>
 <p>This creates a default graph and converts it to a GraphML graph.</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/GraphMLExample.scala#L4-L16" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.4.0/examples/shared/src/main/scala/GraphMLExample.scala#L4-L16" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.defaults.label._
 import com.flowtick.graphs.graphml._
 import com.flowtick.graphs.graphml.generic._
 
-val simple: Graph[Unit, Unit, String] = Graph.fromEdges(Set(
+val simple: Graph[Unit, String] = Graph.fromEdges(Set(
   &quot;A&quot; --&gt; &quot;B&quot;,
   &quot;B&quot; --&gt; &quot;C&quot;,
   &quot;D&quot; --&gt; &quot;A&quot;))
 
-val graphML = simple.asGraphML.xml
-val loaded = FromGraphML[Unit, Int, String](graphML.toString)</code></pre>
+val graphML = simple.asGraphML().xml
+val loaded = FromGraphML[Int, String](graphML.toString)</code></pre>
 <h3><a href="#custom-node-types" name="custom-node-types" class="anchor"><span class="anchor-link"></span></a>Custom Node Types</h3>
 <p>Its possible to create GraphML graphs directly using the <code>ml</code> edge builder and serialize your own node types, this is implemeted using shapeless:</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.3.0/examples/shared/src/main/scala/GraphMLExample.scala#L22-L34" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.4.0/examples/shared/src/main/scala/GraphMLExample.scala#L22-L35" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
 import com.flowtick.graphs.graphml._
 import com.flowtick.graphs.graphml.generic._
 import scala.xml.NodeSeq
 
 final case class MyNode(value: Int)
 
-val customGraph: Graph[GraphMLGraph[Unit], GraphMLEdge[Unit], GraphMLNode[MyNode]] =
+val customGraph: GraphMLGraph[Unit, MyNode] =
   GraphML.fromEdges(Set(
-    ml(MyNode(1), id = Some(&quot;one&quot;)) --&gt; ml(MyNode(2), id = Some(&quot;two&quot;))))
+    ml(MyNode(1), id = Some(&quot;one&quot;)) --&gt; ml(MyNode(2), id = Some(&quot;two&quot;))
+  ))
 
-val xml: NodeSeq = ToGraphML[Unit, Unit, MyNode](customGraph)
-val loaded = FromGraphML[Unit, Unit, MyNode](xml.toString)</code></pre>
+val xml: NodeSeq = ToGraphML[Unit, MyNode](customGraph)
+val loaded = FromGraphML[Unit, MyNode](xml.toString)</code></pre>
 </div>
 <div>
-<a href="https://github.com/flowtick/graphs/tree/v0.3.0/docs/graphml.md" title="Edit this page" class="md-source-file md-edit">
+<a href="https://github.com/flowtick/graphs/tree/v0.4.0/docs/graphml.md" title="Edit this page" class="md-source-file md-edit">
 Edit this page
 </a>
 </div>
 <div class="print-only">
 <span class="md-source-file md-version">
-0.3.0
+0.4.0
 </span>
 </div>
 </article>
