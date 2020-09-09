@@ -3,12 +3,13 @@ package com.flowtick.graphs.algorithm
 import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
 import org.scalamock.scalatest.proxy.MockFactory
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class BreadthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
+class BreadthFirstSearchSpec extends AnyFlatSpec with Matchers with MockFactory {
   "Bfs" should "traverse in breadth first manner" in {
 
-    val graph = Graph.fromEdges(Seq(
+    val graph: Graph[Unit, String] = Graph.fromEdges(Seq(
       "1" --> "2",
       "1" --> "3",
 
@@ -41,11 +42,11 @@ class BreadthFirstSearchSpec extends FlatSpec with Matchers with MockFactory {
     }
 
     val bfsResult = graph.bfs("1").onVisit(node => {
-      visitMock(node)
+      visitMock(node.id)
     }).onComplete(node => {
-      completeMock(node)
+      completeMock(node.id)
     }).run
 
-    bfsResult should be(List("1", "2", "3", "4", "5", "6", "7"))
+    bfsResult.map(_.value) should be(List("1", "2", "3", "4", "5", "6", "7"))
   }
 }

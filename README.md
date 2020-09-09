@@ -1,5 +1,4 @@
 [![travis ci](https://api.travis-ci.org/flowtick/graphs.svg?branch=master)](https://travis-ci.org/flowtick/graphs)
-[![codecov](https://codecov.io/gh/flowtick/graphs/branch/master/graph/badge.svg)](https://codecov.io/gh/flowtick/graphs)
 [![latest release](https://img.shields.io/maven-central/v/com.flowtick/graphs-core_2.12.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.flowtick%20AND%20a:graphs*)
 
 # graphs
@@ -8,7 +7,7 @@
 
 # Example
 
-@@snip [SimpleGraphApp.scala](examples/shared/src/main/scala/SimpleGraphExample.scala)
+@@snip [SimpleGraphApp.scala](examples/shared/src/main/scala/SimpleGraphExample.scala) { #simple_graph }
 
 # Documentation
 

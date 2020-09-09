@@ -2,9 +2,10 @@ package com.flowtick.graphs.algorithm
 
 import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class DijkstraShortestPathSpec extends FlatSpec with Matchers {
+class DijkstraShortestPathSpec extends AnyFlatSpec with Matchers {
   "Dijkstras algorithm" should "get the shortest path" in {
 
     // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus

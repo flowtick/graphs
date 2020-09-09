@@ -8,15 +8,13 @@ package com.flowtick.graphs
  * @tparam T the node type
  */
 // #identifiable
-trait Identifiable[T, I] {
-  def apply(value: T): I
+trait Identifiable[-T] {
+  def apply(value: T): String
 }
 
 object Identifiable {
   /** creates an instance of [[Identifiable]] using the provided function */
-  def identify[T, I](f: T => I): Identifiable[T, I] = (a: T) => f(a)
-
-  def identity[T]: Identifiable[T, T] = id => id
+  def identify[T](f: T => String): Identifiable[T] = (a: T) => f(a)
 }
 // #identifiable
 
@@ -37,42 +35,123 @@ object Labeled {
   def identity[T]: Labeled[T, T] = label => label
 }
 
-final case class Edge[E, N](value: E, from: N, to: N) {
-  override def toString: String = s"$from --> $to"
+/**
+ * An edge value, note that this only holds the ids of the nodes. You need to get the node values from the graph.
+ * This allows dangling references and removes the dependency to the node values at the creation time of the edge.
+ * That design comes from a focus on serialization but also makes operations like mapping nodes easier internally
+ * (as you do not need to rebuild the edges etc.).
+ *
+ * @tparam E the edge type
+ */
+final case class Edge[+E](id: String, value: E, from: String, to: String) {
+  def map[B](f: E => B): Edge[B] = copy(value = f(value))
+
+  override def toString: String = s"(${from}) --($value)--> (${to})"
 }
 
-final case class NodeContext[N, E](node: N, incoming: scala.collection.Set[Edge[E, N]] = scala.collection.Set.empty[Edge[E, N]], outgoing: scala.collection.Set[Edge[E, N]] = scala.collection.Set.empty[Edge[E, N]])
+/**
+ * Edge with complete node values, makes creating edges more type safe as it can capture both types,
+ * which the Edge type can not.
+ *
+ * Mainly used for `Graph.fromEdges`
+ */
+final case class Relation[+E, +N](value: E, from: Node[N], to: Node[N]) {
+  def toEdge: Edge[E] = Edge.of(value, from.id, to.id)
+}
 
-final case class GraphInstance[M, E, N](meta: M,
-                                        contexts: scala.collection.Map[N, NodeContext[N, E]] = scala.collection.Map.empty[N, NodeContext[N, E]],
-                                        edges: scala.collection.Set[Edge[E, N]] = scala.collection.Set.empty[Edge[E, N]]) extends Graph[M, E, N] {
-  def +(edge: Edge[E, N]): Graph[M, E, N] = {
-    val newFromContext: NodeContext[N, E] = contexts.get(edge.from) match {
-      case Some(fromContext) => fromContext.copy(outgoing = fromContext.outgoing + edge)
-      case None => NodeContext(edge.from, outgoing = Set(edge))
-    }
+object Edge {
+  def of[E, N](value: E, from: String, to: String): Edge[E] = Edge(s"$from-$to", value, from, to)
+  def unit[N](from: String, to: String): Edge[Unit] = Edge.of((), from, to)
+}
 
-    val newToContext: NodeContext[N, E] = contexts.get(edge.to) match {
-      case Some(toContext) => toContext.copy(incoming = toContext.incoming + edge)
-      case None => NodeContext(edge.to, incoming = Set(edge))
-    }
+final case class Node[+N](id: String, value: N) {
+  def map[B](f: N => B): Node[B] = copy(value = f(value))
 
+  override def toString: String = s"Node(id: $id, value: $value)"
+}
+
+object Node {
+  def of[N](value: N)(implicit id: Identifiable[N]): Node[N] = Node(id(value), value)
+}
+
+final case class GraphInstance[E, N](nodesById: scala.collection.Map[String, Node[N]] = scala.collection.immutable.TreeMap.empty[String, Node[N]],
+                                     incomingById: scala.collection.Map[String, Set[String]] = scala.collection.immutable.Map.empty[String, Set[String]],
+                                     outgoingById: scala.collection.Map[String, Set[String]] = scala.collection.immutable.Map.empty[String, Set[String]],
+                                     edgesById: scala.collection.Map[String, Edge[E]] = scala.collection.immutable.TreeMap.empty[String, Edge[E]]) extends Graph[E, N] {
+  def withEdge(edge: Edge[E]): Graph[E, N] = {
     copy(
-      contexts = contexts + (edge.from -> newFromContext) + (edge.to -> newToContext),
-      edges = edges + edge
+      incomingById = incomingById + (edge.to -> (incomingById.getOrElse(edge.to, Set.empty) + edge.id)),
+      outgoingById = outgoingById + (edge.from.-> (outgoingById.getOrElse(edge.from, Set.empty) + edge.id)),
+      edgesById = edgesById + (edge.id -> edge)
     )
   }
 
-  def mapNodes[B](f: N => B): Graph[M, E, B] = edges.map { edge =>
-    edge.copy(from = f(edge.from), to = f(edge.to))
-  }.foldLeft(Graph.empty[M, E, B](meta))(_ + _).withNodes(nodes.map(f))
+  def mapNodes[B](f: N => B): Graph[E, B] = copy(
+    nodesById = nodesById.mapValues(_.map(f)).toMap
+  )
 
-  override def withNode(node: N): Graph[M, E, N] =
-    if (contexts.contains(node)) {
+  def incoming(nodeId: String): Iterable[Edge[E]] = incomingById.getOrElse(nodeId, Iterable.empty).map(edgesById)
+  def outgoing(nodeId: String): Iterable[Edge[E]] = outgoingById.getOrElse(nodeId, Iterable.empty).map(edgesById)
+
+  override def withNode(node: Node[N]): Graph[E, N] =
+    if (nodesById.contains(node.id)) {
       this
-    } else copy(contexts = contexts + (node -> NodeContext(node)))
+    } else copy(
+      nodesById = nodesById + (node.id -> node)
+    )
 
-  override def withMeta[MT](meta: MT): Graph[MT, E, N] = copy(meta = meta)
+  override def nodes: Iterable[Node[N]] = nodesById.values
+
+  override def edges: Iterable[Edge[E]] = edgesById.values
+
+  override def findNode(id: String): Option[Node[N]] = nodesById.get(id)
+  override def findEdge(id: String): Option[Edge[E]] = edgesById.get(id)
+
+  override def nodeIds: Iterable[String] = nodesById.keys
+
+  override def edgeIds: Iterable[String] = edgesById.keys
+
+  override def updateNode(id: String)(f: N => N): Graph[E, N] = nodesById.get(id) match {
+    case Some(node) => copy(nodesById = nodesById + (node.id -> node.map(f)))
+    case None => this
+  }
+
+  override def updateEdge(id: String)(f: E => E): Graph[E, N] = edgesById.get(id) match {
+    case Some(edge) => copy(edgesById = edgesById + (edge.id -> edge.map(f)))
+    case None => this
+  }
+
+  override def toString: String = {
+    val nodeString = nodes.mkString(",\n")
+    val edgeString = edges.mkString(",\n")
+    s"nodes = [\n$nodeString\n],\nedges = [\n$edgeString\n]), incoming: $incomingById, outgoing: $outgoingById"
+  }
+
+  override def removeNodeById(nodeId: String): Graph[E, N] = nodesById.get(nodeId) match {
+    case Some(node) =>
+      val withoutNode: Graph[E, N] = copy(
+        nodesById = nodesById - node.id,
+        incomingById = incomingById - node.id,
+        outgoingById = outgoingById - node.id,
+      )
+
+      (outgoingById.getOrElse(node.id, Set.empty) ++ incomingById.getOrElse(node.id, Set.empty))
+        .foldLeft(withoutNode)(_ removeEdgeById _)
+    case None => this
+  }
+
+  override def removeEdgeById(edgeId: String): Graph[E, N] = edgesById.get(edgeId) match {
+    case Some(edge) =>
+      val newIncoming = incomingById.getOrElse(edge.to, Set.empty) - edge.id
+      val newOutgoing = outgoingById.getOrElse(edge.from, Set.empty) - edge.id
+
+      copy(
+        edgesById = edgesById - edge.id,
+        incomingById = if (newIncoming.nonEmpty) incomingById + (edge.to -> newIncoming) else incomingById - edge.to,
+        outgoingById = if (newOutgoing.nonEmpty) outgoingById + (edge.from -> newOutgoing) else outgoingById - edge.from,
+      )
+    case None => this
+  }
 }
 
 /**
@@ -89,57 +168,73 @@ final case class GraphInstance[M, E, N](meta: M,
  *
  */
 // #graph
-trait Graph[M, E, N] {
-  def meta: M
-  def contexts: scala.collection.Map[N, NodeContext[N, E]]
-  def edges: scala.collection.Set[Edge[E, N]]
-  def nodes: Iterable[N] = contexts.keys
+trait Graph[E, N] {
+  def edges: Iterable[Edge[E]]
+  def nodes: Iterable[Node[N]]
 
-  def findNode(id: N): Option[NodeContext[N, E]] = contexts.get(id)
+  def nodeIds: Iterable[String]
+  def edgeIds: Iterable[String]
 
-  def incoming(node: N): Iterable[Edge[E, N]] = contexts.get(node) match {
-    case Some(node) => node.incoming
-    case None => Iterable.empty
-  }
+  def findNode(id: String): Option[Node[N]]
+  def findEdge(id: String): Option[Edge[E]]
 
-  def outgoing(node: N): Iterable[Edge[E, N]] = contexts.get(node) match {
-    case Some(node) => node.outgoing
-    case None => Iterable.empty
-  }
+  def updateNode(id: String)(f: N => N): Graph[E, N]
+  def updateEdge(id: String)(f: E => E): Graph[E, N]
 
-  def successors(node: N): Iterable[N] = outgoing(node).map(_.to)
-  def predecessors(node: N): Iterable[N] = incoming(node).map(_.from)
+  def removeNodeById(nodeId: String): Graph[E, N]
+  def removeEdgeById(edgeId: String): Graph[E, N]
 
-  def mapNodes[B](f: N => B): Graph[M, E, B]
+  def removeNodeValue(node: N)(implicit nodeId: Identifiable[N]): Graph[E, N] = removeNodeById(nodeId(node))
+  def removeEdge(edge: Edge[E]): Graph[E, N] = removeEdgeById(edge.id)
 
-  def +(edge: Edge[E, N]): Graph[M, E, N]
-  def withNode(node: N): Graph[M, E, N]
+  def incoming(nodeId: String): Iterable[Edge[E]]
+  def outgoing(nodeId: String): Iterable[Edge[E]]
 
-  def withNodes(nodes: Iterable[N]): Graph[M, E, N] = nodes.foldLeft(this)(_ withNode _)
-  def withEdges(edges: Iterable[Edge[E, N]]): Graph[M, E, N] = edges.foldLeft(this)(_ + _)
-  def withMeta[MT](meta: MT): Graph[MT, E, N]
+  def successors(nodeId: String): Iterable[Node[N]] = outgoing(nodeId).flatMap(edge => findNode(edge.to))
+  def predecessors(nodeId: String): Iterable[Node[N]] = incoming(nodeId).flatMap(edge => findNode(edge.from))
+
+  def mapNodes[B](f: N => B): Graph[E, B]
+
+  def withEdge(edge: Edge[E]): Graph[E, N]
+  def withNode(node: Node[N]): Graph[E, N]
+
+  def addEdge(value: E, from: Node[N], to: Node[N]): Graph[E, N] =
+    withEdge(Edge.of(value, from.id, to.id)).withNode(from).withNode(to)
+
+  def addNode(node: Node[N]): Graph[E, N] =
+    withNode(node)
+
+  def +(edge: Edge[E]): Graph[E, N] = withEdge(edge)
+
+  def withNodes(nodes: Iterable[Node[N]]): Graph[E, N] = nodes.foldLeft(this)(_ withNode _)
+  def withEdges(edges: Iterable[Edge[E]]): Graph[E, N] = edges.foldLeft(this)(_ withEdge _)
 }
 
 // #graph
 
 object Graph {
-  def apply[M, E, N](meta: M,
-                     edges: Iterable[Edge[E, N]] = Iterable.empty,
-                     nodes: Iterable[N] = Iterable.empty): Graph[M, E, N] =
-    GraphInstance(meta).withEdges(edges).withNodes(nodes)
 
-  def empty[M, E, N](meta: M): Graph[M, E, N] = GraphInstance[M, E, N](meta)
+  def apply[E, N](edges: Iterable[Edge[E]] = Iterable.empty,
+                  nodes: Iterable[Node[N]] = Iterable.empty): Graph[E, N] =
+    empty.withEdges(edges).withNodes(nodes)
 
-  def unit[E, N]: Graph[Unit, E, N] = GraphInstance[Unit, E, N](())
+  def empty[E, N]: Graph[E, N] = GraphInstance[E, N]()
 
   /**
    * utility method to create a unit typed graph quickly from iterable edges
    *
-   * @param edges the edges to create the graph from
+   * @param relations the edges to create the graph from
    * @tparam E the edge type
    * @tparam N the node type
    * @return a typed graph with the edges
    */
-  def fromEdges[E, N](edges: Iterable[Edge[E, N]]): Graph[Unit, E, N] =
-    edges.foldLeft(unit[E, N])(_ + _)
+  def fromEdges[E, N](relations: Iterable[Relation[E, N]]): Graph[E, N] =
+    relations.foldLeft(empty[E, N]) {
+      (acc, relation) => acc
+        .withNode(relation.from)
+        .withNode(relation.to) withEdge relation.toEdge
+    }
+
+  def fromNodes[E, N](nodes: Map[String, Node[N]]): Graph[E, N] =
+    GraphInstance(nodesById = nodes)
 }

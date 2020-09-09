@@ -22,7 +22,6 @@ In `graphs` the core type is the `Graph` type.
 
 It is parametrized over three types:
 
-* the value type of the graph meta information (named `M`) 
 * the value type of the edges (named `E`) 
 * the value type of the node (named `N`)
 
@@ -30,8 +29,8 @@ The meta value allows carrying additional information on the graph itself like a
 In `graphs` transformations are defined on nodes, which is why the node type is on the right side of the type parameter 
 list.
 
-A value of a graph instance of type `Graph[Unit, Double, String]` would be described as
-> a graph with no meta value and edges of type `Double` value connecting nodes of type `String`
+A value of a graph instance of type `Graph[Double, String]` would be described as
+> a graph with edges of type `Double` value connecting nodes of type `String`
 
 `Graph` has common methods to work with graph instances:
 
@@ -39,13 +38,13 @@ A value of a graph instance of type `Graph[Unit, Double, String]` would be descr
 
 ## Identity
 
-There is no explicit concept of identity for nodes or edges. It is assumed that the Scala / JVM methods for defining
-the identity of an object are used. This is mainly important during the creation of a graph, since internally
-`Set` and `Map` implementations are used to manage the relations.
-
-However, for serialization you will need to provide an identity representation via the `Identifiable` type:
+Nodes and Edges have an `id` field of type `String`. Most of the graph API is built around this `id`.
+During graph creation, the `id` is derived from the node / edge value via the `Identifiable` type:
 
 @@snip [Graph.scala](../core/shared/src/main/scala/com/flowtick/graphs/Graph.scala){ #identifiable } 
+
+The defaults contain some default identities for common primitive types, for complex custom types you 
+need to provide a corresponding instance.
 
 ## Custom Graph Types
 

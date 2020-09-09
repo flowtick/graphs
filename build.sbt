@@ -1,13 +1,13 @@
 import ReleaseTransformations._
 
 val scala212V = "2.12.11"
-val scala213V = "2.13.1"
+val scala213V = "2.13.2"
 val mainScalaVersion = scala213V
 val compatScalaVersion = scala212V
 
 val catsV = "2.1.1"
-val xmlsV = "0.1.10"
-val circeVersion = "0.12.3"
+val xmlsV = "0.1.11"
+val circeVersion = "0.13.0"
 
 lazy val commonSettings = Seq(
   resolvers ++= Seq(
@@ -33,9 +33,9 @@ lazy val commonSettings = Seq(
     pushChanges
   ),
   libraryDependencies ++=
-    "org.scalatest" %%% "scalatest" % "3.0.8" % Test ::
-    "org.scalamock" %% "scalamock" % "4.4.0" % Test ::
-    "org.scalacheck" %% "scalacheck" % "1.14.1-RC2" % Test ::
+    "org.scalatest" %%% "scalatest" % "3.2.2" % Test ::
+    "org.scalamock" %% "scalamock" % "5.0.0" % Test ::
+    "org.scalacheck" %% "scalacheck" % "1.14.1" % Test ::
     Nil,
   licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://flowtick.github.io/graphs")),
@@ -50,22 +50,21 @@ lazy val commonSettings = Seq(
   ),
   autoAPIMappings := true,
   siteSubdirName in ScalaUnidoc := "latest/api",
-  scalacOptions += (if (scalaVersion.value.contains("2.13")) "" else "-Ypartial-unification"),
-  coverageExcludedPackages := "<empty>;"
+  scalacOptions += (if (scalaVersion.value.contains("2.13")) "" else "-Ypartial-unification")
 )
 
-lazy val core = (crossProject in file(".") / "core")
+lazy val core = (crossProject(JVMPlatform, JSPlatform) in file(".") / "core")
   .settings(commonSettings)
   .settings(
     name := "graphs-core"
   )
 
 lazy val coreJS = core.js.settings(
-  libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.7"
+  libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.0.0"
 )
 lazy val coreJVM = core.jvm
 
-lazy val layout = (crossProject in file(".") / "layout")
+lazy val layout = (crossProject(JVMPlatform, JSPlatform) in file(".") / "layout")
   .settings(commonSettings)
   .settings(
     name := "graphs-layout",
@@ -78,7 +77,7 @@ lazy val layout = (crossProject in file(".") / "layout")
 lazy val layoutJS = layout.js
 lazy val layoutJVM = layout.jvm
 
-lazy val graphml = (crossProject in file(".") / "graphml")
+lazy val graphml = (crossProject(JVMPlatform, JSPlatform) in file(".") / "graphml")
   .settings(commonSettings)
   .settings(
     name := "graphs-graphml",
@@ -98,18 +97,25 @@ lazy val graphml = (crossProject in file(".") / "graphml")
 lazy val graphmlJS = graphml.js
 lazy val graphmlJVM = graphml.jvm
 
-lazy val editor = (crossProject in file(".") / "editor")
+lazy val editor = (crossProject(JVMPlatform, JSPlatform) in file(".") / "editor")
   .settings(commonSettings)
   .settings(
-    name := "graphs-editor"
-  ).dependsOn(core, graphml, json)
+    name := "graphs-editor",
+    libraryDependencies ++= Seq(
+      "io.circe" %%% "circe-core",
+      "io.circe" %%% "circe-generic",
+      "io.circe" %%% "circe-parser"
+    ).map(_ % circeVersion),
+    libraryDependencies += "org.typelevel" %%% "cats-effect" % "2.1.3"
+  ).dependsOn(core, graphml, json, cats)
 
 lazy val editorJS = editor.js.settings(
-  scalaJSUseMainModuleInitializer := true
+  scalaJSUseMainModuleInitializer := true,
+  libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.1"
 )
 lazy val editorJVM = editor.jvm
 
-lazy val cats = (crossProject in file(".") / "cats")
+lazy val cats = (crossProject(JVMPlatform, JSPlatform) in file(".") / "cats")
   .settings(commonSettings)
   .settings(
     name := "graphs-cats",
@@ -121,7 +127,7 @@ lazy val cats = (crossProject in file(".") / "cats")
 lazy val catsJS = cats.js
 lazy val catsJVM = cats.jvm
 
-lazy val json = (crossProject in file(".") / "json")
+lazy val json = (crossProject(JVMPlatform, JSPlatform) in file(".") / "json")
   .settings(commonSettings)
   .settings(
     name := "graphs-json",
@@ -135,7 +141,7 @@ lazy val json = (crossProject in file(".") / "json")
 lazy val jsonJS = json.js
 lazy val jsonJVM = json.jvm
 
-lazy val examples = (crossProject in file("examples"))
+lazy val examples = (crossProject(JVMPlatform, JSPlatform) in file("examples"))
       .settings(commonSettings)
       .settings(
         name := "graphs-examples",

@@ -2,9 +2,10 @@ package com.flowtick.graphs.algorithm
 
 import com.flowtick.graphs.Graph
 import com.flowtick.graphs.defaults._
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class TopologicalSortSpec extends FlatSpec with Matchers {
+class TopologicalSortSpec extends AnyFlatSpec with Matchers {
   "Topological sort" should "sort dependent nodes" in {
     // https://de.wikipedia.org/wiki/Topologische_Sortierung#Beispiel:_Anziehreihenfolge_von_Kleidungsst.C3.BCcken
     val clothes = Graph.fromEdges(Seq(
@@ -15,14 +16,10 @@ class TopologicalSortSpec extends FlatSpec with Matchers {
       "Hose" --> "Schuhe",
       "Socken" --> "Schuhe"))
 
-    // FIXME: topological sort result is different (but still valid) comparing 2.12 and 2.13
-    val validSortings = List(
-      List("Unterhemd", "Unterhose", "Hose", "Socken", "Schuhe", "Pullover", "Mantel"),
-      List("Unterhemd", "Unterhose", "Pullover", "Hose", "Mantel", "Socken", "Schuhe"),
-      List("Socken", "Unterhemd", "Pullover", "Unterhose", "Hose", "Schuhe", "Mantel"),
-      List("Unterhemd", "Socken", "Unterhose", "Pullover", "Hose", "Schuhe", "Mantel")
-    )
+    val sorted = clothes.topologicalSort.map(_.id)
 
-    validSortings should contain(clothes.topologicalSort)
+    clothes.edges.forall { edge =>
+      sorted.indexOf(edge.from) < sorted.indexOf(edge.to)
+    } should be(true)
   }
 }

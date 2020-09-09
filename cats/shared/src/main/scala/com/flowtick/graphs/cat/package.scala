@@ -7,22 +7,20 @@ package object cat {
   /**
    * A monoid to combine graphs.
    *
-   * @param metaMonoid a monoid to combine the meta values
-   * @tparam M
    * @tparam E
    * @tparam N
    */
-  class GraphMonoid[M, E, N](implicit metaMonoid: Monoid[M]) extends Monoid[Graph[M, E, N]] {
-    override def empty: Graph[M, E, N] = Graph.empty(metaMonoid.empty)
+  class GraphMonoid[E, N] extends Monoid[Graph[E, N]] {
+    override def empty: Graph[E, N] = Graph.empty
 
-    override def combine(x: Graph[M, E, N], y: Graph[M, E, N]): Graph[M, E, N] =
+    override def combine(x: Graph[E, N], y: Graph[E, N]): Graph[E, N] =
       (x.edges ++ y.edges)
-        .foldLeft(Graph.empty[M, E, N](metaMonoid.combine(x.meta, y.meta)))(_ + _)
+        .foldLeft(Graph.empty[E, N])(_ withEdge _)
         .withNodes(x.nodes ++ y.nodes)
   }
 
   object GraphMonoid {
-    def apply[M, E, N](implicit metaMonoid: Monoid[M]) = new GraphMonoid[M, E, N]
+    def apply[E, N] = new GraphMonoid[E, N]
   }
 
   /**
@@ -36,24 +34,25 @@ package object cat {
    * a function that maps a node A to a graph with nodes B, but that is not enough to flatten / merge
    * it with the original graph edges, which still have node type A.
    *
-   * @param metaMonoid a monoid to combine the meta values
-   * @tparam M meta type
+   * Note: the [[Identifiable]] acts as an id generator in this case, since we need to be able to create new ids
+   * for arbitrary types.
+   *
    * @tparam E edge type
    */
-  class GraphNodeApplicative[M, E](implicit metaMonoid: Monoid[M]) extends Applicative[({ type GraphType[T] = Graph[M, E, T] })#GraphType] {
-    override def pure[A](x: A): Graph[M, E, A] = Graph(metaMonoid.empty, nodes = Set(x))
+  class GraphNodeApplicative[E](id: Identifiable[Any]) extends Applicative[({ type GraphType[T] = Graph[E, T] })#GraphType] {
+    override def pure[A](x: A): Graph[E, A] = Graph(nodes = Set(Node.of(x)(id)))
 
-    override def ap[A, B](ff: Graph[M, E, A => B])(fa: Graph[M, E, A]): Graph[M, E, B] =
-      GraphMonoid[M, E, B].combineAll(ff.nodes.map(fa.mapNodes))
+    override def ap[A, B](ff: Graph[E, A => B])(fa: Graph[E, A]): Graph[E, B] =
+      GraphMonoid[E, B].combineAll(ff.nodes.map(node => fa.mapNodes(node.value)))
   }
 
   object GraphApplicative {
-    def apply[M, E](implicit metaMonoid: Monoid[M]) = new GraphNodeApplicative[M, E]
+    def apply[E](implicit id: Identifiable[Any]) = new GraphNodeApplicative[E](id)
   }
 
   trait GraphInstances {
-    implicit def graphMonoid[M, E, N](implicit metaMonoid: Monoid[M]): Monoid[Graph[M, E, N]] = GraphMonoid[M, E, N]
-    implicit def graphNodeApplicative[M, E](implicit metaMonoid: Monoid[M]): GraphNodeApplicative[M, E] = GraphApplicative[M, E]
+    implicit def graphMonoid[E, N]: Monoid[Graph[E, N]] = GraphMonoid[E, N]
+    implicit def graphNodeApplicative[E](implicit id: Identifiable[Any] = defaults.anyId.identifyAny): GraphNodeApplicative[E] = GraphApplicative[E]
   }
 
   object instances extends GraphInstances
