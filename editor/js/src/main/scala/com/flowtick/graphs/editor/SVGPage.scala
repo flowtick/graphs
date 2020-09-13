@@ -2,7 +2,9 @@ package com.flowtick.graphs.editor
 
 import cats.effect.IO
 import cats.effect.concurrent.Ref
-import com.flowtick.graphs.{EdgeType, ElementRef, NodeType}
+import com.flowtick.graphs.graphml.{GraphMLEdge, GraphMLGraph, GraphMLNode, PointSpec}
+import com.flowtick.graphs.{Edge, EdgeType, ElementRef, GraphElement, Node, NodeType, Page}
+import io.circe.Json
 import org.scalajs.dom
 import org.scalajs.dom.raw.{MouseEvent, SVGElement, SVGMatrix, SVGPoint, WheelEvent}
 import org.scalajs.dom.svg.{G, RectElement, SVG}
@@ -18,14 +20,14 @@ final case class DragStart(cursorX: Double,
                            element: ElementRef,
                            lastPos: Option[(Double, Double)])
 
-class Page(val svgElem: SVG,
-           val viewPort: G,
-           val edgeGroup: G,
-           val nodeGroup: G,
-           val selectGroup: G,
-           val labelGroup: G,
-           val panZoomRect: RectElement,
-           var pageMatrix: SVGMatrix) {
+class SVGPage(val root: SVG,
+              val viewPort: G,
+              val edgeGroup: G,
+              val nodeGroup: G,
+              val selectGroup: G,
+              val labelGroup: G,
+              val panZoomRect: RectElement,
+              var pageMatrix: SVGMatrix) extends Page[SVGElement] {
   type Point = SVGPoint
 
   var dragStartRef: Ref[IO, Option[DragStart]] = Ref.unsafe(None)
@@ -55,21 +57,22 @@ class Page(val svgElem: SVG,
   }
 
   def screenCoordinates(x: Double, y: Double): Point = {
-    val pt = svgElem.createSVGPoint()
+    val pt = root.createSVGPoint()
     pt.x = x
     pt.y = y
-    pt.matrixTransform(svgElem.getScreenCTM.inverse)
+    pt.matrixTransform(root.getScreenCTM.inverse)
   }
 
   def pageCoordinates(x: Double, y: Double): Point = {
-    val pt = svgElem.createSVGPoint()
+    val pt = root.createSVGPoint()
     pt.x = x
     pt.y = y
     pt.matrixTransform(pageMatrix.inverse())
   }
 
-  def pageCenter: Point = {
-    pageCoordinates(svgElem.clientWidth / 2.0, svgElem.clientHeight / 2.0)
+  def pageCenter: PointSpec = {
+    val coordinates = pageCoordinates(root.clientWidth / 2.0, root.clientHeight / 2.0)
+    PointSpec(coordinates.x, coordinates.y)
   }
 
   def pan(evt: MouseEvent): Unit =
@@ -93,7 +96,7 @@ class Page(val svgElem: SVG,
 
     val cursor = pageCoordinates(evt.clientX, evt.clientY)
 
-    val scaleDelta = evt.deltaY * Page.scrollSpeed
+    val scaleDelta = evt.deltaY * SVGPage.scrollSpeed
     val zoom = 1 + scaleDelta
 
     pageMatrix = pageMatrix
@@ -159,12 +162,30 @@ class Page(val svgElem: SVG,
   }.unsafeRunSync()
 
   def endDrag: MouseEvent => Option[DragStart] = _ => dragStartRef.getAndUpdate(_ => None).unsafeRunSync()
+
+  override def addEdge(edge: Edge[GraphMLEdge[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[SVGElement]]] = for {
+    edgeElement <- IO(SVGGraphRenderer.renderEdge(edge, graphml))
+    _ <- IO(edgeElement.foreach(edge => {
+      edgeGroup.appendChild(edge.group)
+      labelGroup.appendChild(edge.label)
+    }))
+  } yield edgeElement
+
+  override def addNode(node: Node[GraphMLNode[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[SVGElement]]] = for {
+    node <- IO(node.value.shape.map { shape =>
+      val nodeElement = SVGGraphRenderer.renderNode(node.id, shape, graphml.resourcesById)
+      nodeGroup.appendChild(nodeElement.group)
+      selectGroup.appendChild(nodeElement.selectElem)
+
+      nodeElement
+    })
+  } yield node
 }
 
-object Page {
+object SVGPage {
   lazy val scrollSpeed: Double = if (dom.window.navigator.userAgent.contains("Firefox")) 0.03 else 0.003
 
-  def apply(): Page = {
+  def apply(): SVGPage = {
     val panZoomRect = svg.rect(
       id := "pan-zoom-hit",
       svgAttrs.width := "100%",
@@ -246,6 +267,6 @@ object Page {
       viewPort
     ).render
 
-    new Page(svgElem, viewPort, edges, nodes, select, label, panZoomRect, svgElem.createSVGMatrix())
+    new SVGPage(svgElem, viewPort, edges, nodes, select, label, panZoomRect, svgElem.createSVGMatrix())
   }
 }

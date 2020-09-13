@@ -1,32 +1,26 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import cats.effect.concurrent.Ref
 import cats.implicits._
-import com.flowtick.graphs.graphml.{GraphMLEdge, GraphMLGraph, GraphMLNode, GraphMLResource}
-import com.flowtick.graphs.layout.DefaultGeometry
+import com.flowtick.graphs.graphml.{GraphMLEdge, GraphMLGraph, GraphMLNode}
 import com.flowtick.graphs.{Node, _}
 import io.circe.Json
-import org.scalajs.dom.raw.MouseEvent
+import org.scalajs.dom.raw.{MouseEvent, SVGElement}
 
-case class ViewModel(graphElements: Map[String, GraphElement] = Map.empty)
-
-class EditorViewJs(containerElementId: String)(messageBus: EditorMessageBus) extends EditorComponent {
+class EditorViewJs(containerElementId: String)(val messageBus: EditorMessageBus) extends EditorView[SVGElement] {
 
   lazy val container = org.scalajs.dom.window.document.getElementById(containerElementId)
-  lazy val page = Ref.unsafe[IO, Page](createPage)
-  lazy val viewModel = Ref.unsafe[IO, ViewModel](ViewModel())
 
-  def createPage = {
-    val page = Page()
+  def createPage: Page[SVGElement] = {
+    val page = SVGPage()
 
     page.panZoomRect.onmousedown = e => page.startPan(e)
     page.panZoomRect.onmouseup = e => page.stopPan(e)
     page.panZoomRect.onmousemove = e => page.pan(e)
 
-    page.svgElem.addEventListener("wheel", page.zoom _)
+    page.root.addEventListener("wheel", page.zoom _)
 
-    page.svgElem.addEventListener("mousedown", (e: MouseEvent) => {
+    page.root.addEventListener("mousedown", (e: MouseEvent) => {
       page
         .click(e)
         .orElse(page.startDrag(e).map(_.element)) match {
@@ -35,14 +29,14 @@ class EditorViewJs(containerElementId: String)(messageBus: EditorMessageBus) ext
       }
     })
 
-    page.svgElem.addEventListener("mousemove", page.drag)
-    page.svgElem.addEventListener("mouseup", (e: MouseEvent) => handleDrag(page.endDrag(e)))
-    page.svgElem.addEventListener("mouseleave", (e: MouseEvent) => {
+    page.root.addEventListener("mousemove", page.drag)
+    page.root.addEventListener("mouseup", (e: MouseEvent) => handleDrag(page.endDrag(e)))
+    page.root.addEventListener("mouseleave", (e: MouseEvent) => {
       page.stopPan(e)
       handleDrag(page.endDrag(e))
     })
 
-    page.svgElem.ondblclick = _ => {
+    page.root.ondblclick = _ => {
       messageBus
         .notifyEvent(this, Toggle(Toggle.editKey, true))
         .unsafeRunSync()
@@ -50,14 +44,6 @@ class EditorViewJs(containerElementId: String)(messageBus: EditorMessageBus) ext
 
     page
   }
-
-  def handleSelect(element: ElementRef): IO[Unit] = for {
-    vm <- viewModel.get
-    newSelections =
-      if(vm.graphElements.contains(element.id)) List(element)
-      else List.empty
-    _ <- messageBus.notifyEvent(this, Select(newSelections))
-  } yield ()
 
   def updateSelections(oldSelections: Seq[ElementRef], newSelections: Seq[ElementRef]): IO[Unit] =
     for {
@@ -75,7 +61,7 @@ class EditorViewJs(containerElementId: String)(messageBus: EditorMessageBus) ext
     .publish(Move(dragEvent.element, x, y))
     .unsafeRunSync()
 
-  override def init(model: EditorModel): IO[Unit] = page.get.map(p => container.insertBefore(p.svgElem, container.firstChild))
+  override def init(model: EditorModel): IO[Unit] = page.get.map(p => container.insertBefore(p.root, container.firstChild))
 
   def handleCreateNode: Eval = ctx => ctx.transformIO {
     case create: CreateNode => for {
@@ -107,7 +93,7 @@ class EditorViewJs(containerElementId: String)(messageBus: EditorMessageBus) ext
 
     for {
       oldPage <- page.getAndSet(newPage)
-      _ <- IO(container.replaceChild(newPage.svgElem, oldPage.svgElem))
+      _ <- IO(container.replaceChild(newPage.root, oldPage.root))
 
       _ <- graphml.graph.edges.map(appendEdge(_, graphml)).toList.sequence
       _ <- graphml.graph.nodes.map(appendNode(_, graphml)).toList.sequence
@@ -132,24 +118,20 @@ class EditorViewJs(containerElementId: String)(messageBus: EditorMessageBus) ext
     _ <- vm.graphElements.get(elementRef.id).map(deleteElement).getOrElse(IO.unit)
   } yield ()
 
-  def deleteElement(element: GraphElement): IO[Unit] = for {
+  def deleteElement(element: GraphElement[SVGElement]): IO[Unit] = for {
     _ <- IO(element.group.parentNode.removeChild(element.group))
     _ <- IO(element.selectElem.parentNode.removeChild(element.selectElem)).attempt.void
     _ <- IO(element.label.parentNode.removeChild(element.label)).attempt.void
     _ <- viewModel.update(vm => vm.copy(graphElements = vm.graphElements - element.id))
   } yield ()
 
-  def appendEdge(edge: Edge[GraphMLEdge[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[EdgeElement]] = for {
+  def appendEdge(edge: Edge[GraphMLEdge[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[SVGElement]]] = for {
     page <- page.get
 
-    edgeElement <- IO(SVGGraphRenderer.renderEdge(edge, graphml))
-    _ <- IO(edgeElement.foreach(edge => {
-      page.edgeGroup.appendChild(edge.group)
-      page.labelGroup.appendChild(edge.label)
-    }))
+    edgeElement <- page.addEdge(edge, graphml)
 
     _ <- {
-      def withEdge(vm: ViewModel): ViewModel = edgeElement match {
+      def withEdge(vm: ViewModel[SVGElement]): ViewModel[SVGElement] = edgeElement match {
         case Some(elem) => vm.copy(graphElements = vm.graphElements + (edge.id -> elem))
         case None => vm
       }
@@ -171,19 +153,11 @@ class EditorViewJs(containerElementId: String)(messageBus: EditorMessageBus) ext
       }
   } yield ()).getOrElse(IO.unit)
 
-  def appendNode(node: Node[GraphMLNode[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[NodeElement]] = for {
+  def appendNode(node: Node[GraphMLNode[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[SVGElement]]] = for {
     pageElem <- page.get
-    nodeElement <- IO {
-      node.value.shape.map { shape =>
-        val nodeElement = SVGGraphRenderer.renderNode(node.id, shape, graphml.resourcesById)
-        pageElem.nodeGroup.appendChild(nodeElement.group)
-        pageElem.selectGroup.appendChild(nodeElement.selectElem)
-
-        nodeElement
-      }
-    }
+    nodeElement <- pageElem.addNode(node, graphml)
     _ <- {
-      def withNode(vm: ViewModel): ViewModel = nodeElement
+      def withNode(vm: ViewModel[SVGElement]): ViewModel[SVGElement] = nodeElement
         .map(elem => vm.copy(graphElements = vm.graphElements + (elem.id -> elem)))
         .getOrElse(vm)
 

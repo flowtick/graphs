@@ -113,7 +113,24 @@ lazy val editorJS = editor.js.settings(
   scalaJSUseMainModuleInitializer := true,
   libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.1"
 )
-lazy val editorJVM = editor.jvm
+
+// Determine OS version of JavaFX binaries
+lazy val osName = System.getProperty("os.name") match {
+  case n if n.startsWith("Linux")   => "linux"
+  case n if n.startsWith("Mac")     => "mac"
+  case n if n.startsWith("Windows") => "win"
+  case _ => throw new Exception("Unknown platform!")
+}
+
+// Add dependency on JavaFX libraries, OS dependent
+lazy val javaFXModules = Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
+
+lazy val editorJVM = editor.jvm.settings(
+  libraryDependencies += "org.scalafx" %% "scalafx" % "14-R19",
+  libraryDependencies ++= javaFXModules.map( m =>
+    "org.openjfx" % s"javafx-$m" % "14.0.1" classifier osName
+  )
+)
 
 lazy val cats = (crossProject(JVMPlatform, JSPlatform) in file(".") / "cats")
   .settings(commonSettings)

@@ -1,6 +1,6 @@
 package com.flowtick.graphs.editor
 
-import com.flowtick.graphs.Edge
+import com.flowtick.graphs.{DrawUtil, Edge, GraphElement}
 import com.flowtick.graphs.editor.SVGGraphRenderer.SVGGraphElement
 import com.flowtick.graphs.graphml.{BorderStyle, EdgePath, EdgeShape, Fill, Free, GraphMLEdge, GraphMLGraph, GraphMLNode, GraphMLResource, LabelLike, NodeShape, PointSpec, ShapeType}
 import io.circe.Json
@@ -12,23 +12,16 @@ import scalatags.JsDom.{svgAttrs, svgTags => svg}
 
 import scala.util.Try
 
-sealed trait GraphElement {
-  def id: String
-  def group: G
-  def selectElem: SVGElement
-  def label: Text
-}
-
 case class NodeElement(id: String,
                        shapeElement: SVGGraphElement,
                        label: Text,
                        selectElem: SVGElement,
-                       group: G) extends GraphElement
+                       group: G) extends GraphElement[SVGElement]
 
 case class EdgeElement(id: String,
                        group: G,
                        label: Text,
-                       selectElem: SVGElement) extends GraphElement
+                       selectElem: SVGElement) extends GraphElement[SVGElement]
 
 object SVGGraphRenderer {
   val defaultTextColor = "#000000"
@@ -37,12 +30,12 @@ object SVGGraphRenderer {
 
   type SVGGraphElement = SVGElement
 
-  def setSelection(element: GraphElement) = {
+  def setSelection(element: GraphElement[SVGElement]) = {
     element.selectElem.setAttribute("stroke", "#555555")
     element.selectElem.setAttribute("stroke-dasharray", "3 5")
   }
 
-  def unsetSelection(element: GraphElement) = {
+  def unsetSelection(element: GraphElement[SVGElement]) = {
     element.selectElem.setAttribute("stroke", null)
     element.selectElem.setAttribute("stroke-dasharray", null)
   }
@@ -222,23 +215,12 @@ object SVGGraphRenderer {
   def renderEdge(edge: Edge[GraphMLEdge[Json]],
                  graphml: GraphMLGraph[Json, Json]): Option[EdgeElement] = {
     for {
-      fromNode <- graphml.graph.findNode(edge.from)
-      toNode <- graphml.graph.findNode(edge.to)
-      shape <- edge.value.shape.orElse(Some(EdgeShape()))
-      from <- fromNode.value.shape.flatMap(_.geometry)
-      to <- toNode.value.shape.flatMap(_.geometry)
+      points <- DrawUtil.getLinePoints(edge, graphml).map(_.toList)
+      start <- points.headOption
+      end <- points.reverse.headOption
 
-      fromCenterX = from.x + from.width / 2
-      fromCenterY = from.y + from.height / 2
-
-      toCenterX = to.x + to.width / 2
-      toCenterY = to.y + to.height / 2
-
-      path <- shape.path.orElse(Some(EdgePath(0, 0, 0, 0, List.empty)))
-      start = PointSpec(fromCenterX + path.sourceX, fromCenterY + path.sourceY)
-      end = PointSpec(toCenterX + path.targetX, toCenterY + path.targetY)
-      points = Iterator(start) ++ path.points ++ Iterator(end)
       pointsString = points.map(p => s"${p.x} ${p.y}").mkString(", ")
+      shape <- edge.value.shape.orElse(Some(EdgeShape()))
 
       line = {
         svg.polyline(
