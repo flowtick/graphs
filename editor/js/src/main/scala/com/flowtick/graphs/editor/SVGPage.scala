@@ -3,22 +3,13 @@ package com.flowtick.graphs.editor
 import cats.effect.IO
 import cats.effect.concurrent.Ref
 import com.flowtick.graphs.graphml.{GraphMLEdge, GraphMLGraph, GraphMLNode, PointSpec}
-import com.flowtick.graphs.{Edge, EdgeType, ElementRef, GraphElement, Node, NodeType, Page}
+import com.flowtick.graphs._
 import io.circe.Json
 import org.scalajs.dom
-import org.scalajs.dom.raw.{MouseEvent, SVGElement, SVGMatrix, SVGPoint, WheelEvent}
+import org.scalajs.dom.raw.{Node => _, _}
 import org.scalajs.dom.svg.{G, RectElement, SVG}
 import scalatags.JsDom.all.{id, _}
 import scalatags.JsDom.{svgAttrs, svgTags => svg}
-
-final case class PanStart(cursorX: Double, cursorY: Double, transformX: Double, transformY: Double)
-
-final case class DragStart(cursorX: Double,
-                           cursorY: Double,
-                           transform: SVGMatrix,
-                           dragElem: SVGElement,
-                           element: ElementRef,
-                           lastPos: Option[(Double, Double)])
 
 class SVGPage(val root: SVG,
               val viewPort: G,
@@ -30,8 +21,8 @@ class SVGPage(val root: SVG,
               var pageMatrix: SVGMatrix) extends Page[SVGElement] {
   type Point = SVGPoint
 
-  var dragStartRef: Ref[IO, Option[DragStart]] = Ref.unsafe(None)
-  var panStart: Option[PanStart] = None
+  var dragStartRef: Ref[IO, Option[DragStart[SVGElement]]] = Ref.unsafe(None)
+  var panStart: Option[DragContext] = None
 
   def tx: Double = pageMatrix.e
   def tx_= (value: Double): Unit = pageMatrix.e = value
@@ -48,7 +39,7 @@ class SVGPage(val root: SVG,
   def startPan(mouseEvent: MouseEvent): Unit = {
     if (panStart.isEmpty) {
       val cursor = screenCoordinates(mouseEvent.clientX, mouseEvent.clientY)
-      panStart = Some(PanStart(cursor.x, cursor.y, tx, ty))
+      panStart = Some(DragContext(cursor.x, cursor.y, tx, ty))
     }
   }
 
@@ -80,11 +71,11 @@ class SVGPage(val root: SVG,
       case Some(start) =>
       val cursor = screenCoordinates(evt.clientX, evt.clientY)
 
-      val dx = cursor.x - start.cursorX
-      val dy = cursor.y - start.cursorY
+      val dx = cursor.x - start.mouseAnchorX
+      val dy = cursor.y - start.mouseAnchorY
 
-      tx = start.transformX + dx
-      ty = start.transformY + dy
+      tx = start.translateAnchorX + dx
+      ty = start.translateAnchorY + dy
 
       SVGUtil.setMatrix(viewPort, pageMatrix)
 
@@ -126,22 +117,23 @@ class SVGPage(val root: SVG,
       } else None
     }.unsafeRunSync()
 
-  def startDrag: MouseEvent => Option[DragStart] = evt => (for {
+  def startDrag: MouseEvent => Option[DragStart[SVGElement]] = evt => (for {
     dragStart <- IO {
       val elem = evt.target.asInstanceOf[SVGElement]
       if (elem.classList.contains("draggable")) {
         val startCursor = screenCoordinates(evt.clientX, evt.clientY)
-        val selectElement = elem.asInstanceOf[RectElement]
+        val selectElement = elem.asInstanceOf[SVGRectElement]
         val elementRef = referenceFromElement(selectElement)
+        val matrix = selectElement.getCTM()
 
-        Some(DragStart(startCursor.x, startCursor.y, selectElement.getCTM(), selectElement, elementRef, None))
+        Some(DragStart[SVGElement](startCursor.x, startCursor.y, matrix.e, matrix.f, selectElement, elementRef, None))
       } else None
     }
     _ <- dragStartRef.set(dragStart)
   } yield dragStart).unsafeRunSync()
 
   def drag: MouseEvent => Unit = evt => dragStartRef.update {
-    case Some(dragStart: DragStart) =>
+    case Some(dragStart: DragStart[SVGElement]) =>
       evt.preventDefault()
       val dragCursor = screenCoordinates(evt.clientX, evt.clientY)
 
@@ -150,7 +142,7 @@ class SVGPage(val root: SVG,
       val deltaX = dragCursor.x - dragStart.cursorX
       val deltaY = dragCursor.y - dragStart.cursorY
 
-      val point = pageCoordinates(dragStart.transform.e + deltaX, dragStart.transform.f + deltaY)
+      val point = pageCoordinates(dragStart.transformX + deltaX, dragStart.transformY + deltaY)
 
       val tx = (point.x.toInt / gridSize) * gridSize
       val ty = (point.y.toInt / gridSize) * gridSize
@@ -161,7 +153,7 @@ class SVGPage(val root: SVG,
     case None => None
   }.unsafeRunSync()
 
-  def endDrag: MouseEvent => Option[DragStart] = _ => dragStartRef.getAndUpdate(_ => None).unsafeRunSync()
+  def endDrag: MouseEvent => Option[DragStart[SVGElement]] = _ => dragStartRef.getAndUpdate(_ => None).unsafeRunSync()
 
   override def addEdge(edge: Edge[GraphMLEdge[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[SVGElement]]] = for {
     edgeElement <- IO(SVGGraphRenderer.renderEdge(edge, graphml))
@@ -180,12 +172,29 @@ class SVGPage(val root: SVG,
       nodeElement
     })
   } yield node
+
+  override def setSelection(element: GraphElement[SVGElement]): IO[Unit] = IO(SVGGraphRenderer.setSelection(element))
+
+  override def unsetSelection(element: GraphElement[SVGElement]): IO[Unit] = IO(SVGGraphRenderer.unsetSelection(element))
+
+  override def deleteElement(element: GraphElement[SVGElement]): IO[Unit] = for {
+    _ <- IO(element.group.parentNode.removeChild(element.group))
+    _ <- IO(element.selectElem.parentNode.removeChild(element.selectElem)).attempt.void
+    _ <- IO(element.label.parentNode.removeChild(element.label)).attempt.void
+  } yield ()
+
+  override def reset: IO[Unit] = IO {
+    pageMatrix = root.createSVGMatrix()
+    SVGUtil.setMatrix(viewPort, pageMatrix)
+  }
 }
 
 object SVGPage {
   lazy val scrollSpeed: Double = if (dom.window.navigator.userAgent.contains("Firefox")) 0.03 else 0.003
 
-  def apply(): SVGPage = {
+  def apply(handleSelect: ElementRef => IO[Unit],
+            handleDrag: Option[DragStart[SVGElement]] => IO[Unit],
+            handleDoubleClick: MouseEvent => IO[Unit]): SVGPage = {
     val panZoomRect = svg.rect(
       id := "pan-zoom-hit",
       svgAttrs.width := "100%",
@@ -267,6 +276,30 @@ object SVGPage {
       viewPort
     ).render
 
-    new SVGPage(svgElem, viewPort, edges, nodes, select, label, panZoomRect, svgElem.createSVGMatrix())
+    val page = new SVGPage(svgElem, viewPort, edges, nodes, select, label, panZoomRect, svgElem.createSVGMatrix())
+    page.panZoomRect.onmousedown = e => page.startPan(e)
+    page.panZoomRect.onmouseup = e => page.stopPan(e)
+    page.panZoomRect.onmousemove = e => page.pan(e)
+
+    page.root.addEventListener("wheel", page.zoom _)
+
+    page.root.addEventListener("mousedown", (e: MouseEvent) => {
+      page
+        .click(e)
+        .orElse(page.startDrag(e).map(_.element)) match {
+        case Some(elementRef) => handleSelect(elementRef).unsafeRunSync()
+        case None =>
+      }
+    })
+
+    page.root.addEventListener("mousemove", page.drag)
+    page.root.addEventListener("mouseup", (e: MouseEvent) => handleDrag(page.endDrag(e)).unsafeRunSync())
+    page.root.addEventListener("mouseleave", (e: MouseEvent) => {
+      page.stopPan(e)
+      handleDrag(page.endDrag(e))
+    })
+
+    page.root.ondblclick = e => handleDoubleClick(e).unsafeRunSync()
+    page
   }
 }

@@ -59,12 +59,12 @@ class EditorController(logRef: Ref[IO, List[EditorEvent]],
     schema = schema.getOrElse(Schema())
   ))
 
-  override def subscribe(backend: EditorComponent): IO[EditorComponent] =
+  override def subscribe(component: EditorComponent): IO[EditorComponent] =
     for {
-      _ <- listenersRef.getAndUpdate(backend :: _)
+      _ <- listenersRef.getAndUpdate(component :: _)
       model <- modelRef.get
-      _ <- backend.init(model)
-    } yield backend
+      _ <- component.init(model)
+    } yield component
 
   override def notifyEvent(source: EditorComponent, event: EditorEvent): IO[EditorContext] =
     listenersRef.get.map(_.filter(_ != source)).flatMap(notifyListeners(event, _))

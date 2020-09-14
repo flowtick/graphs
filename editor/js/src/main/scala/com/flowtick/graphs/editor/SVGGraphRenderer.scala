@@ -12,16 +12,16 @@ import scalatags.JsDom.{svgAttrs, svgTags => svg}
 
 import scala.util.Try
 
-case class NodeElement(id: String,
-                       shapeElement: SVGGraphElement,
-                       label: Text,
-                       selectElem: SVGElement,
-                       group: G) extends GraphElement[SVGElement]
+case class SVGNodeElement(id: String,
+                          shapeElement: SVGGraphElement,
+                          label: Text,
+                          selectElem: SVGElement,
+                          group: G) extends GraphElement[SVGElement]
 
-case class EdgeElement(id: String,
-                       group: G,
-                       label: Text,
-                       selectElem: SVGElement) extends GraphElement[SVGElement]
+case class SVGEdgeElement(id: String,
+                          group: G,
+                          label: Text,
+                          selectElem: SVGElement) extends GraphElement[SVGElement]
 
 object SVGGraphRenderer {
   val defaultTextColor = "#000000"
@@ -30,17 +30,17 @@ object SVGGraphRenderer {
 
   type SVGGraphElement = SVGElement
 
-  def setSelection(element: GraphElement[SVGElement]) = {
+  def setSelection(element: GraphElement[SVGElement]): Unit = {
     element.selectElem.setAttribute("stroke", "#555555")
     element.selectElem.setAttribute("stroke-dasharray", "3 5")
   }
 
-  def unsetSelection(element: GraphElement[SVGElement]) = {
+  def unsetSelection(element: GraphElement[SVGElement]): Unit = {
     element.selectElem.setAttribute("stroke", null)
     element.selectElem.setAttribute("stroke-dasharray", null)
   }
 
-  def renderNode(id: String, shape: NodeShape, resources: Map[String, GraphMLResource]): NodeElement = {
+  def renderNode(id: String, shape: NodeShape, resources: Map[String, GraphMLResource]): SVGNodeElement = {
     val x = shape.geometry.map(_.x).getOrElse(0.0)
     val y = shape.geometry.map(_.y).getOrElse(0.0)
 
@@ -67,7 +67,7 @@ object SVGGraphRenderer {
     selectRect.setAttribute("data-id", id)
     selectRect.setAttribute("data-type", "node")
 
-    NodeElement(
+    SVGNodeElement(
       id,
       shapeElement,
       label,
@@ -213,7 +213,7 @@ object SVGGraphRenderer {
   }.render
 
   def renderEdge(edge: Edge[GraphMLEdge[Json]],
-                 graphml: GraphMLGraph[Json, Json]): Option[EdgeElement] = {
+                 graphml: GraphMLGraph[Json, Json]): Option[SVGEdgeElement] = {
     for {
       points <- DrawUtil.getLinePoints(edge, graphml).map(_.toList)
       start <- points.headOption
@@ -258,7 +258,7 @@ object SVGGraphRenderer {
 
       group = svg.g(id := edge.id, line, selectLine).render
 
-    } yield EdgeElement(edge.id, group, label, group)
+    } yield SVGEdgeElement(edge.id, group, label, group)
   }
 
 }

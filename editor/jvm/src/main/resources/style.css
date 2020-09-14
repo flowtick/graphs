@@ -1,0 +1,30 @@
+.root {
+    -fx-base: rgb(50, 50, 50);
+    -fx-background: rgb(50, 50, 50);
+    -fx-control-inner-background: rgb(50, 50, 50);
+}
+
+.menu-bar {
+    -fx-background-color: derive(-fx-base, 25%);
+}
+
+.menu-button:hover, .menu-button:showing {
+    -fx-background-color: derive(-fx-base, 50%);
+}
+
+.menu-item {
+    -fx-background-color: derive(-fx-base, 10%);
+}
+
+.menu-item:hover {
+    -fx-background-color: derive(-fx-base, 50%);
+}
+
+.button {
+    -fx-background-color: transparent;
+}
+
+.button:hover {
+    -fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
+    -fx-color: -fx-hover-base;
+}

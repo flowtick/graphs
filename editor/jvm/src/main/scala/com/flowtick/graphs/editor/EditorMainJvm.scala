@@ -1,56 +1,24 @@
 package com.flowtick.graphs.editor
 
-import java.io.FileInputStream
-
 import cats.effect.IO
 import com.flowtick.graphs._
+import com.flowtick.graphs.graphml.GraphML
 import scalafx.application.JFXApp
-import scalafx.scene.Scene
-import scalafx.scene.control.{Menu, MenuBar, MenuItem}
 import scalafx.scene.layout.BorderPane
-import scalafx.stage.FileChooser
-
-import scala.util.Try
+import scalafx.scene.{Group, Scene}
 
 object EditorMainJvm extends JFXApp with EditorMain {
-  lazy val openItem: MenuItem = new MenuItem("Open") {
-    onAction = event => {
-      event.consume()
 
-      Try {
-        val fileChooser = new FileChooser()
-        fileChooser.setTitle("Open Resource File")
-        Option(fileChooser.showOpenDialog(stage))
-      }.map {
-        case Some(file) => (IO(editorPane.clear()) *> loadGraph(file.getAbsolutePath)).unsafeRunSync()
-        case _ =>
-      }
-    }
-  }
-
-  lazy val menu = {
-    val bar = new MenuBar {
-      menus = List(
-        new Menu("File") {
-          items = List(
-            openItem
-          )
-        }
-      )
-    }
-    bar.setViewOrder(-1.0) // lowest comes first
-    bar
-  }
-
-  lazy val editorPane = new EditorGraphPane
+  lazy val pageRoot = new Group
 
   lazy val wholeLayout = new BorderPane {
-    top = menu
-    center = editorPane
+    center = pageRoot
     style = s"""-fx-background: #DDD;""".stripMargin
   }
 
   lazy val editorScene = new Scene(wholeLayout) {
+    val stylePath = sys.env.getOrElse("GRAPHS_THEME", getClass.getClassLoader.getResource("style.css").toURI.toString)
+    stylesheets.add(stylePath)
   }
 
   stage = new JFXApp.PrimaryStage {
@@ -60,17 +28,16 @@ object EditorMainJvm extends JFXApp with EditorMain {
     scene = editorScene
   }
 
-  def fxView(bus: EditorMessageBus): EditorComponent = new EditorViewJavaFx(editorPane)
-
-  def loadGraph(path: String): IO[Unit] = for {
-    editor <- createEditor(bus => List(fxView(bus), new EditorModelUpdate))(None, None, None)
-    xmlContent <- IO {
-      scala.io.Source
-        .fromInputStream(new FileInputStream(path))
-        .getLines()
-        .mkString("\n")
-    }
+  val initEditor: IO[Unit] = for {
+    editor <- createEditor(bus => List(
+      new RoutingFeature,
+      new EditorModelUpdate,
+      new EditorViewJavaFx(bus, wholeLayout),
+      new EditorMenuJavaFx(bus, wholeLayout, stage)
+    ))(None, None, None)
     (bus, _) = editor
-    _ <- bus.publish(Load(xmlContent, GraphMLFormat))
+    _ <- bus.publish(SetGraph(GraphML.empty))
   } yield ()
+
+  initEditor.unsafeRunSync()
 }

@@ -17,9 +17,16 @@ case class SetJson(elementRef: ElementRef, json: Json => Json) extends EditorCom
 case class Load(value: String, format: FileFormat) extends EditorCommand
 case class SetGraph(graphml: GraphMLGraph[Json, Json]) extends EditorCommand
 
-sealed trait FileFormat
-case object GraphMLFormat extends FileFormat
-case object JsonFormat extends FileFormat
+sealed trait FileFormat {
+  def extension: String
+}
+
+case object GraphMLFormat extends FileFormat {
+  override def `extension`: String = ".graphml"
+}
+case object JsonFormat extends FileFormat {
+  override def `extension`: String = ".json"
+}
 
 case class Export(format: FileFormat) extends EditorCommand
 case class ExportedGraph(name: String, value: String, format: FileFormat) extends EditorEvent
@@ -34,6 +41,7 @@ case class AddEdge(id: String,
 case class ElementRef(id: String, elementType: ElementType)
 case class ElementUpdated(element: ElementRef, update: UpdateType = Changed) extends EditorEvent
 
+case object Reset extends EditorCommand
 case class Select(selection: Seq[ElementRef]) extends EditorCommand
 case class Selected(elements: Seq[ElementRef], oldSelection: Seq[ElementRef]) extends EditorEvent
 
