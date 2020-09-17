@@ -43,7 +43,7 @@ class EditorModelUpdate extends EditorComponent {
               .getOrElse(NodeShape(geometry = geometry))
           } yield item match {
             case Stencil(_, _, _, None, _, schemaRef) =>
-              withNode(
+              withNewNode(
                 ctx,
                 Node.of(GraphMLNode(add.id, Json.obj(), shape = Some(shape), schemaRef = schemaRef))
               )
@@ -52,7 +52,7 @@ class EditorModelUpdate extends EditorComponent {
               ctx.model.graphml.meta.resources.find(_.id == id) match {
                 case Some(imageFound) =>
                   val imageShape = Some(shape.copy(image = Some(Image(imageFound.id))))
-                  withNode(
+                  withNewNode(
                     ctx,
                     Node.of(GraphMLNode(add.id, Json.obj(), shape = imageShape, schemaRef = schemaRef))
                   )
@@ -63,7 +63,7 @@ class EditorModelUpdate extends EditorComponent {
                     val newResource = GraphMLResource(id, image.data, Some("dataUrl"))
                     val urlImageShape = shape.copy(image = Some(Image(newResource.id)))
 
-                    withNode(
+                    withNewNode(
                       ctx.updateModel(_.updateGraphMl(ctx.model.graphml.addResource(newResource))),
                       Node.of(GraphMLNode(add.id, Json.obj(), shape = Some(urlImageShape), schemaRef = schemaRef))
                     )
@@ -78,11 +78,11 @@ class EditorModelUpdate extends EditorComponent {
       // TODO: handle refs to images and add them to graph resources
   }
 
-  private def withNode(ctx: EditorContext, newNode: Node[GraphMLNode[Json]]) = {
+  private def withNewNode(ctx: EditorContext, newNode: Node[GraphMLNode[Json]]): EditorContext = {
     val updatedGraph = ctx.model.graphml.copy(graph = ctx.model.graphml.graph withNode newNode)
     ctx
       .copy(model = ctx.model.updateGraphMl(updatedGraph))
-      .addNotification(this, ElementUpdated(ElementRef(newNode.id, NodeType)))
+      .addNotification(this, ElementUpdated(ElementRef(newNode.id, NodeType), Created))
       .addCommand(Select(List(ElementRef(newNode.id, NodeType))))
   }
 
@@ -106,16 +106,15 @@ class EditorModelUpdate extends EditorComponent {
       Some(edge.from),
       Some(edge.to),
       schemaRef = connector.flatMap(_.schemaRef),
-      shape = connector.flatMap(_.shape)
+      shape = connector.flatMap(_.shape.map(_.copy(path = edge.path)))
     )
 
     (for {
       fromNode <- ctx.model.graphml.graph.findNode(edge.from)
       toNode <- ctx.model.graphml.graph.findNode(edge.to)
-      newEdge = Edge.of(mlEdge, fromNode.id, toNode.id)
+      newEdge = Edge(edge.id, mlEdge, fromNode.id, toNode.id)
     } yield {
-      val updated = ElementUpdated(ElementRef(newEdge.id, EdgeType))
-      println(s"updated: $updated")
+      val updated = ElementUpdated(ElementRef(newEdge.id, EdgeType), Created)
       val graphMl = ctx.model.updateGraphMl(ctx.model.graphml.copy(graph = ctx.model.graphml.graph withEdge newEdge))
       ctx
         .copy(model = graphMl)

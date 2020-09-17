@@ -78,6 +78,7 @@ class EditorPropertiesJs(containerId: String)(messageBus: EditorMessageBus) exte
     _ <- elem match {
       case Some(ref) =>
         IO(f(value)(ref)).flatMap { events =>
+          println(s"events $events")
           events.map {
             case command: EditorCommand => messageBus.publish(command)
             case other => messageBus.notifyEvent(this, other)
@@ -89,22 +90,25 @@ class EditorPropertiesJs(containerId: String)(messageBus: EditorMessageBus) exte
 
   override lazy val eval: Eval = ctx => ctx.effect(this) {
     case Selected(elements, _) =>
+      println(s"selected $elements")
+
       elements
         .headOption
         .flatMap(getElementProperties(_, ctx.model.graphml, ctx.model.schema))
         .map(setElementAndReset)
         .getOrElse(IO.unit)
 
-    case ElementUpdated(updatedElement, _) => for {
+    case ElementUpdated(updatedElement, _) =>
+      println(s"updated $updatedElement")
+
+      for {
       current <- currentElement.get
-      _ <- if (!current.contains(updatedElement)) {
-        getElementProperties(updatedElement, ctx.model.graphml, ctx.model.schema)
-          .map(setElementAndReset)
-          .getOrElse(IO.unit)
-      } else current
-        .flatMap(getElementProperties(_, ctx.model.graphml, ctx.model.schema))
-        .map(updateValues)
-        .getOrElse(IO.unit)
+      _ <- if (current.contains(updatedElement)) {
+        current
+            .flatMap(getElementProperties(_, ctx.model.graphml, ctx.model.schema))
+            .map(updateValues)
+            .getOrElse(IO.unit)
+      } else IO.unit
     } yield ()
 
     case Toggle(Toggle.editKey, true) => for {

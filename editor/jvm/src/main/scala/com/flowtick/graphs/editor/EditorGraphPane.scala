@@ -2,24 +2,26 @@ package com.flowtick.graphs.editor
 
 import cats.effect.IO
 import com.flowtick.graphs
-import com.flowtick.graphs.graphml.{GraphMLEdge, GraphMLGraph, GraphMLNode, PointSpec}
 import com.flowtick.graphs._
+import com.flowtick.graphs.graphml.{GraphMLEdge, GraphMLGraph, GraphMLNode, NodeShape, PointSpec}
+import com.flowtick.graphs.layout.DefaultGeometry
 import io.circe.Json
 import javafx.event.EventHandler
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.geometry.VPos
-import scalafx.scene.effect.{Glow, InnerShadow}
 import scalafx.scene.layout.{BorderPane, Pane}
 import scalafx.scene.paint.Color
-import scalafx.scene.shape.{Line, Polygon, Polyline, Rectangle}
+import scalafx.scene.shape.{Circle, Line, Polygon, Polyline}
 import scalafx.scene.text.{Text, TextAlignment}
 import scalafx.scene.transform.Affine
 import scalafx.scene.{Group, Node}
 
-final case class JFXElement(id: String, group: Node, selectElem: Node, label : Node) extends GraphElement[Node]
+final case class JFXElement(id: String, group: Node, selectElem: Node, label : Node, elementType: ElementType) extends GraphElement[Node]
 
-class EditorGraphPane(handleSelect: ElementRef => IO[Unit]) extends BorderPane with Page[Node]{
-  var dragContext = DragContext(0.0, 0.0, 0.0, 0.0)
+class EditorGraphPane(handleSelect: ElementRef => IO[Unit],
+                      handleDrag: Option[DragStart[Node]] => IO[Unit],
+                      handleDoubleClick: Any => IO[Unit]) extends BorderPane with Page[Node]{
+  var panContext = PanContext(0.0, 0.0, 0.0, 0.0)
 
   val transformation = new Affine()
 
@@ -50,12 +52,17 @@ class EditorGraphPane(handleSelect: ElementRef => IO[Unit]) extends BorderPane w
     override def handle(event: MouseEvent): Unit = {
       event.consume()
 
-      if (!event.isPrimaryButtonDown) {
-        dragContext = dragContext.copy(mouseAnchorX = event.getX)
-        dragContext = dragContext.copy(mouseAnchorY = event.getY)
+      if (event.getClickCount == 2) {
+        println("double click")
+        handleDoubleClick(()).unsafeRunSync()
+      }
 
-        dragContext = dragContext.copy(translateAnchorX = transformation.getTx)
-        dragContext = dragContext.copy(translateAnchorY = transformation.getTy)
+      if (!event.isPrimaryButtonDown) {
+        panContext = panContext.copy(mouseAnchorX = event.getX)
+        panContext = panContext.copy(mouseAnchorY = event.getY)
+
+        panContext = panContext.copy(translateAnchorX = transformation.getTx)
+        panContext = panContext.copy(translateAnchorY = transformation.getTy)
       }
     }
   }
@@ -65,8 +72,8 @@ class EditorGraphPane(handleSelect: ElementRef => IO[Unit]) extends BorderPane w
       event.consume()
 
       if (!event.isPrimaryButtonDown) {
-        val newX = dragContext.translateAnchorX + ((event.getX - dragContext.mouseAnchorX))
-        val newY = dragContext.translateAnchorY + ((event.getY - dragContext.mouseAnchorY))
+        val newX = panContext.translateAnchorX + ((event.getX - panContext.mouseAnchorX))
+        val newY = panContext.translateAnchorY + ((event.getY - panContext.mouseAnchorY))
 
         transformation.setTx(newX)
         transformation.setTy(newY)
@@ -115,22 +122,57 @@ class EditorGraphPane(handleSelect: ElementRef => IO[Unit]) extends BorderPane w
   }
 
   override def addEdge(edge: Edge[GraphMLEdge[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[Node]]] = IO {
-    println(s"adding edge...${edge}")
-
     for {
       edgePoints <- DrawUtil.getLinePoints(edge, graphml).map(_.toList.reverse)
       shape = edge.value.shape
-      polyline = new Polyline {
-        edgePoints.foreach(point => points.addAll(point.x, point.y))
-        strokeWidth = 1.0
-        stroke = Color.web("#000000")
-      }
       last <- edgePoints.headOption
       secondLast <- edgePoints.tail.headOption
 
       arrowHead = createArrowHead(secondLast.x, secondLast.y, last.x, last.y)
     } yield {
       val textValue = shape.flatMap(_.label.map(_.text)).getOrElse("")
+
+      val edgeLine = new Polyline {
+        edgePoints.foreach(point => points.addAll(point.x, point.y))
+        strokeWidth = 1.0
+        stroke = Color.web("#000000")
+      }
+
+      val points = new Group {
+        edgePoints.foreach(point => {
+          val cirlce = new Circle {
+            centerX = point.x
+            centerY = point.y
+            radius = 2
+            fill = new Color(Color.Yellow)
+            strokeWidth = 0.5
+            stroke = Color.Black
+          }
+          children.add(cirlce)
+        })
+
+        visible = false
+      }
+
+      val selectLine = new Polyline {
+        edgePoints.foreach(point => points.addAll(point.x, point.y))
+        strokeWidth = 10.0
+        stroke = Color.Transparent
+        viewOrder_(2.0)
+      }
+
+      val selectGroup = new Group {
+        override def visible_=(v: Boolean): Unit = {
+          points.visible = v
+
+          if (v) {
+            selectLine.stroke = new Color(Color.DarkGrey.opacity(0.3))
+          } else selectLine.stroke = Color.Transparent
+        }
+      }
+
+      selectGroup.children.add(selectLine)
+      selectGroup.children.add(points)
 
       val label = new Text() {
         text = textValue
@@ -141,67 +183,51 @@ class EditorGraphPane(handleSelect: ElementRef => IO[Unit]) extends BorderPane w
       }
 
       val edgeGroup = new Group {
-        children.add(polyline)
+        children.add(edgeLine)
         children.add(arrowHead)
+        children.add(selectGroup)
+        viewOrder_(-10)
+      }
+
+      selectLine.onMousePressed = new EventHandler[MouseEvent] {
+        override def handle(t: MouseEvent): Unit = {
+          handleSelect(ElementRef(edge.id, EdgeType)).unsafeRunSync()
+          selectGroup.visible = true
+        }
       }
 
       group.children.add(edgeGroup)
 
-      JFXElement(edge.id, edgeGroup, edgeGroup, label)
+      JFXElement(edge.id, edgeGroup, selectGroup, label, EdgeType)
     }
   }
 
   override def addNode(node: graphs.Node[GraphMLNode[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[Node]]] = IO {
     for {
-      geometry <- node.value.shape.flatMap(_.geometry)
-      shape <- node.value.shape
+      geometry: DefaultGeometry <- node.value.shape.flatMap(_.geometry)
+      shape: NodeShape <- node.value.shape
     } yield {
-      val nodeShape = new Rectangle {
-        x = 0
-        y = 0
-        arcWidth = 5.0
-        arcHeight = 5.0
-        width = geometry.width
-        height = geometry.height
-        fill = Color.web(shape.fill.flatMap(_.color).getOrElse("#FFFFFF"))
-        stroke = Color.web(shape.borderStyle.map(_.color).getOrElse("#CCCCCC"))
-        strokeWidth = shape.borderStyle.map(_.width).getOrElse(0.0)
-      }
+      val graphNode = new EditorGraphNode(node.id, geometry, shape)(transformation, handleSelect, handleDrag)
+      group.children.add(graphNode)
+      group.children.add(graphNode.selectRect)
 
-      val textValue = shape.label.map(_.text).getOrElse("")
-
-      val label = new Text() {
-        text = textValue
-        y = geometry.height / 2.0
-        wrappingWidth = geometry.width
-        textAlignment = TextAlignment.Center
-        textOrigin = VPos.Center
-      }
-
-      val nodeGroup = new Group {
-        layoutX = geometry.x
-        layoutY = geometry.y
-        children.add(nodeShape)
-        children.add(label)
-        onMouseClicked = _ => handleSelect(ElementRef(node.id, NodeType)).unsafeRunSync()
-      }
-
-      group.children.add(nodeGroup)
-
-      JFXElement(node.id, nodeGroup, nodeGroup, label)
+      JFXElement(node.id, graphNode, graphNode.selectRect, graphNode.label, NodeType)
     }
   }
 
-  override def setSelection(element: GraphElement[Node]): IO[Unit] = IO {
-    element.selectElem.setEffect(new InnerShadow(15.0, Color.Green))
+  override def setSelection(element: GraphElement[Node]): IO[Unit] = element.elementType match {
+    case NodeType => IO(element.selectElem.setVisible(true))
+    case EdgeType => IO(element.selectElem.visible = true)
   }
 
-  override def unsetSelection(element: GraphElement[Node]): IO[Unit] = IO {
-    Option(element.selectElem.getEffect).foreach(_.asInstanceOf[javafx.scene.effect.InnerShadow].setRadius(0.0))
+  override def unsetSelection(element: GraphElement[Node]): IO[Unit] = element.elementType match {
+    case NodeType => IO(element.selectElem.setVisible(false))
+    case EdgeType => IO(element.selectElem.visible = false)
   }
 
   override def deleteElement(element: GraphElement[Node]): IO[Unit] = IO {
     group.children.remove(element.group)
+    group.children.remove(element.selectElem)
   }
 
   override def reset: IO[Unit] = IO {

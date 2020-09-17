@@ -75,7 +75,8 @@ class EditorController(logRef: Ref[IO, List[EditorEvent]],
       _ <- logRef.getAndUpdate(event :: _)
       graph <- modelRef.get
       context <- listeners.foldLeft(IO.pure(EditorContext(event, graph))) {
-        case (current, next) => current
+        case (current, next) =>
+          current
           .flatMap(next.eval)
           .redeemWith(
             error => IO.raiseError(new RuntimeException(s"unable to evaluate event $event in $next", error)),
@@ -88,11 +89,12 @@ class EditorController(logRef: Ref[IO, List[EditorEvent]],
           error => IO.raiseError(new RuntimeException(s"unable to evaluate effect in ${editorEffect.source}", error)),
           IO.pure
         )).sequence
-      _ <- context
+      _ <-
+        context
         .notifications
         .map(notification => notifyEvent(notification.source, notification.event))
         .sequence
-      _ <- publishAll(context.commands)
+      _ <- if (context.commands.nonEmpty) publishAll(context.commands) else IO.unit
     } yield context).redeemWith(
       error => IO {
         println(s"error $error during notify")

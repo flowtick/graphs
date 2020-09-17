@@ -18,7 +18,7 @@ class EditorMenuJavaFx(val messageBus: EditorMessageBus, layout: BorderPane, sta
       menus = editorMenus.map { menuSpec =>
         new Menu(menuSpec.title) {
           items = menuSpec.actions.map(action => {
-            new MenuItem(action.title) {
+            new MenuItem(action.fullTitle) {
               onAction = event => {
                 event.consume()
                 action.handler(event)

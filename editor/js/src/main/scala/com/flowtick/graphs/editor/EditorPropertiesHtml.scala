@@ -10,9 +10,9 @@ import scalatags.JsDom
 import scala.scalajs.js
 
 final case class PropertyFormGroup(property: PropertySpec,
-                             container: JsDom.TypedTag[Div],
-                             init: () => Unit,
-                             set: Json => Unit)
+                                   container: JsDom.TypedTag[Div],
+                                   init: () => Unit,
+                                   set: Json => Unit)
 
 final case class PropertyForm(groups: List[PropertyFormGroup], html: Form)
 

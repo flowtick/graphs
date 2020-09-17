@@ -1,6 +1,6 @@
 package com.flowtick.graphs.editor
 
-import com.flowtick.graphs.{DrawUtil, Edge, GraphElement}
+import com.flowtick.graphs.{DrawUtil, Edge, EdgeType, ElementType, GraphElement, NodeType}
 import com.flowtick.graphs.editor.SVGGraphRenderer.SVGGraphElement
 import com.flowtick.graphs.graphml.{BorderStyle, EdgePath, EdgeShape, Fill, Free, GraphMLEdge, GraphMLGraph, GraphMLNode, GraphMLResource, LabelLike, NodeShape, PointSpec, ShapeType}
 import io.circe.Json
@@ -12,16 +12,23 @@ import scalatags.JsDom.{svgAttrs, svgTags => svg}
 
 import scala.util.Try
 
+
+case class Troll(weapon: String)
+
 case class SVGNodeElement(id: String,
                           shapeElement: SVGGraphElement,
                           label: Text,
                           selectElem: SVGElement,
-                          group: G) extends GraphElement[SVGElement]
+                          group: G) extends GraphElement[SVGElement] {
+  override def elementType: ElementType = NodeType
+}
 
 case class SVGEdgeElement(id: String,
                           group: G,
                           label: Text,
-                          selectElem: SVGElement) extends GraphElement[SVGElement]
+                          selectElem: SVGElement) extends GraphElement[SVGElement] {
+  override def elementType: ElementType = EdgeType
+}
 
 object SVGGraphRenderer {
   val defaultTextColor = "#000000"

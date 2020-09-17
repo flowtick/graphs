@@ -22,7 +22,7 @@ class SVGPage(val root: SVG,
   type Point = SVGPoint
 
   var dragStartRef: Ref[IO, Option[DragStart[SVGElement]]] = Ref.unsafe(None)
-  var panStart: Option[DragContext] = None
+  var panStart: Option[PanContext] = None
 
   def tx: Double = pageMatrix.e
   def tx_= (value: Double): Unit = pageMatrix.e = value
@@ -39,7 +39,7 @@ class SVGPage(val root: SVG,
   def startPan(mouseEvent: MouseEvent): Unit = {
     if (panStart.isEmpty) {
       val cursor = screenCoordinates(mouseEvent.clientX, mouseEvent.clientY)
-      panStart = Some(DragContext(cursor.x, cursor.y, tx, ty))
+      panStart = Some(PanContext(cursor.x, cursor.y, tx, ty))
     }
   }
 

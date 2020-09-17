@@ -8,7 +8,9 @@ import cats.implicits._
 final case class Action(title: String,
                         shortCut: String,
                         handler: Any => Unit,
-                        icon: Option[String] = None)
+                        icon: Option[String] = None) {
+  def fullTitle = s"$title [$shortCut]"
+}
 
 sealed trait MenuType
 case object DropUp extends MenuType
@@ -36,7 +38,7 @@ trait EditorMenu extends EditorComponent {
       Action("Connect Selection", "alt+c", toggleConnect, icon = Some("code-branch"))
     )),
     EditorMenuSpec("View", Toolbar, actions = List(
-      Action("Reset View", "ctrl+0", triggerResetView, icon = Some("zoom")),
+      Action("Reset View", "ctrl+0", triggerResetView, icon = Some("search-location")),
       Action("Show Palette", "f4", togglePalette, icon = Some("palette")),
       Action("Show Properties", "f2", toggleEdit, icon = Some("edit")),
     ))

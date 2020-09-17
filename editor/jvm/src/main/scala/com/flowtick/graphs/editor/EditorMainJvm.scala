@@ -1,5 +1,8 @@
 package com.flowtick.graphs.editor
 
+import java.io.File
+import java.net.URL
+
 import cats.effect.IO
 import com.flowtick.graphs._
 import com.flowtick.graphs.graphml.GraphML
@@ -28,16 +31,26 @@ object EditorMainJvm extends JFXApp with EditorMain {
     scene = editorScene
   }
 
-  val initEditor: IO[Unit] = for {
+  def initEditor: IO[(EditorMessageBus, List[EditorComponent])] = for {
     editor <- createEditor(bus => List(
-      new RoutingFeature,
       new EditorModelUpdate,
-      new EditorViewJavaFx(bus, wholeLayout),
-      new EditorMenuJavaFx(bus, wholeLayout, stage)
+      new RoutingFeature,
+      new EditorMenuJavaFx(bus, wholeLayout, stage),
+      new EditorViewJavaFx(bus, wholeLayout)
     ))(None, None, None)
     (bus, _) = editor
-    _ <- bus.publish(SetGraph(GraphML.empty))
-  } yield ()
+    _ <- parameters.raw.headOption match {
+      case Some(firstArg) =>
+        for {
+          fileUrl <- IO(new URL(firstArg)).redeemWith(_ => IO(new URL(s"file://${new File(firstArg).getAbsolutePath}")), IO.pure)
+          _ <- IO(scala.io.Source.fromURL(fileUrl)).bracket { source =>
+            val format = if (fileUrl.getFile.endsWith(".json")) JsonFormat else GraphMLFormat
+            bus.publish(Load(source.getLines().mkString("\n"), format))
+          }(source => IO(source.close()))
+        } yield ()
+      case None => bus.publish(SetGraph(GraphML.empty))
+    }
+  } yield editor
 
   initEditor.unsafeRunSync()
 }

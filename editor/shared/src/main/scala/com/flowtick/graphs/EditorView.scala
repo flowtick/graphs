@@ -6,7 +6,7 @@ import cats.implicits._
 import com.flowtick.graphs.graphml.{GraphMLEdge, GraphMLGraph, GraphMLNode, PointSpec}
 import io.circe.Json
 
-final case class DragContext(mouseAnchorX: Double, mouseAnchorY: Double, translateAnchorX: Double, translateAnchorY: Double)
+final case class PanContext(mouseAnchorX: Double, mouseAnchorY: Double, translateAnchorX: Double, translateAnchorY: Double)
 
 final case class DragStart[T](cursorX: Double,
                               cursorY: Double,
@@ -39,6 +39,7 @@ trait GraphElement[+T] {
   def group: T
   def selectElem: T
   def label: T
+  def elementType: ElementType
 }
 
 final case class ViewModel[T](graphElements: Map[String, GraphElement[T]])
@@ -131,8 +132,8 @@ trait EditorView[T] extends EditorComponent {
       newPage <- createPage
       _ <- page.set(newPage)
       _ <- setNewPage(newPage, oldPage)
-      _ <- graphml.graph.edges.map(appendEdge(_, graphml)).toList.sequence
       _ <- graphml.graph.nodes.map(appendNode(_, graphml)).toList.sequence
+      _ <- graphml.graph.edges.map(appendEdge(_, graphml)).toList.sequence
     } yield ()
   }
 
@@ -163,7 +164,8 @@ trait EditorView[T] extends EditorComponent {
       p <- page.get
       center = p.pageCenter
     } yield {
-      ctx.copy(event = create.copy(x = create.x.orElse(Some(center.x)), y = create.y.orElse(Some(center.y))))
+      ctx
+        .copy(event = create.copy(x = create.x.orElse(Some(center.x)), y = create.y.orElse(Some(center.y))))
     }
   }
 

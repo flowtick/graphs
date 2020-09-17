@@ -1,6 +1,6 @@
 package com.flowtick.graphs
 
-import com.flowtick.graphs.graphml.GraphMLGraph
+import com.flowtick.graphs.graphml.{EdgePath, GraphMLGraph}
 import io.circe.Decoder.Result
 import io.circe.generic.auto._
 import io.circe.{Decoder, DecodingFailure, HCursor, Json}
@@ -36,7 +36,8 @@ case class Move(ref: ElementRef, x: Double, y: Double) extends EditorCommand
 case class AddEdge(id: String,
                    from: String,
                    to: String,
-                   stencilRef: Option[String] = None) extends EditorCommand
+                   stencilRef: Option[String] = None,
+                   path: Option[EdgePath] = None) extends EditorCommand
 
 case class ElementRef(id: String, elementType: ElementType)
 case class ElementUpdated(element: ElementRef, update: UpdateType = Changed) extends EditorEvent

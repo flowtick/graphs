@@ -55,7 +55,7 @@ class EditorMenuJs(menuContainerId: String)(val messageBus: EditorMessageBus) ex
               cls := "btn btn-secondary",
               data("toggle") := "tooltip",
               data("placement") := "top",
-              title := action.title,
+              title := action.fullTitle,
               onclick := action.handler,
               action
                 .icon.map(iconTag)
@@ -85,7 +85,7 @@ class EditorMenuJs(menuContainerId: String)(val messageBus: EditorMessageBus) ex
               onclick := action.handler,
               action.icon.map(iconTag).getOrElse(""),
               " ",
-              action.title
+              action.fullTitle
             )
           ))
         )

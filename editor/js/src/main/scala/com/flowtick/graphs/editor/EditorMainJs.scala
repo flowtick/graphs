@@ -32,8 +32,8 @@ object EditorMainJs extends EditorMain {
       .getOrElse(IO.pure(EditorOptions()))
 
     editor <- createEditor(bus => List(
-      Some(new RoutingFeature),
       Some(new EditorModelUpdate),
+      Some(new RoutingFeature),
       Some(new EditorPropertiesJs(containerElementId)(bus)),
       Some(new EditorViewJs(containerElementId)(bus)),
       options.paletteContainerId.map(new EditorPaletteJs(_)(bus)),
