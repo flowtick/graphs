@@ -5,6 +5,7 @@ import java.net.URL
 
 import cats.effect.IO
 import com.flowtick.graphs._
+import com.flowtick.graphs.editor.feature.RoutingFeature
 import com.flowtick.graphs.graphml.GraphML
 import scalafx.application.JFXApp
 import scalafx.scene.layout.BorderPane
@@ -33,8 +34,6 @@ object EditorMainJvm extends JFXApp with EditorMain {
 
   def initEditor: IO[(EditorMessageBus, List[EditorComponent])] = for {
     editor <- createEditor(bus => List(
-      new EditorModelUpdate,
-      new RoutingFeature,
       new EditorMenuJavaFx(bus, wholeLayout, stage),
       new EditorViewJavaFx(bus, wholeLayout)
     ))(None, None, None)

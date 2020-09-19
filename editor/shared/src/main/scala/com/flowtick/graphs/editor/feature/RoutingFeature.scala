@@ -1,10 +1,14 @@
-package com.flowtick.graphs
+package com.flowtick.graphs.editor.feature
 
 import cats.effect.IO
-import com.flowtick.graphs.graphml.{EdgePath, EdgeShape, GraphMLEdge, GraphMLGraph, GraphMLNode, ShapeType}
+import com.flowtick.graphs.editor._
+import com.flowtick.graphs.graphml.{EdgePath, EdgeShape, GraphMLEdge, GraphMLNode, ShapeType}
+import com.flowtick.graphs.{Edge, Node}
 import io.circe.Json
 
 class RoutingFeature extends EditorComponent {
+
+  override def order: Double = 0.2
 
   def isRectangleNode(node: Node[GraphMLNode[Json]]): Boolean = node.value.shape.flatMap(_.shapeType) match {
     case Some(ShapeType.Rectangle) => true
@@ -62,15 +66,15 @@ class RoutingFeature extends EditorComponent {
 
     ctx
       .copy(model = ctx.model.copy(graphml = ctx.model.graphml.updateEdge(edge.id, _.copy(shape = newShape))))
-      .addNotification(this, ElementUpdated(ElementRef(edge.id, EdgeType)))
+      .addNotification(this, ElementUpdated(ElementRef(edge.id, EdgeType), Internal))
   }
 
   override def eval: Eval = ctx => IO(ctx.transform {
-    case ElementUpdated(ElementRef(id, EdgeType), Created) =>
+    case ElementUpdated(ElementRef(id, EdgeType), Created, _) =>
       val newEdge = ctx.model.graphml.graph.findEdge(id)
       newEdge.map(updateRouting(ctx, _)).getOrElse(ctx)
 
-    case ElementUpdated(ElementRef(id, NodeType), _) =>
+    case ElementUpdated(ElementRef(id, NodeType), _, _) =>
       val edges = ctx.model.graphml.graph.incoming(id) ++ ctx.model.graphml.graph.outgoing(id)
 
       edges.foldLeft(ctx) {

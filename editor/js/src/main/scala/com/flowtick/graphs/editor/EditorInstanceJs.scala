@@ -1,7 +1,5 @@
 package com.flowtick.graphs.editor
 
-import com.flowtick.graphs.{EditorCommand, EditorMessageBus}
-
 import scala.scalajs.js.annotation.JSExport
 
 class EditorInstanceJs(val messageBus: EditorMessageBus) {

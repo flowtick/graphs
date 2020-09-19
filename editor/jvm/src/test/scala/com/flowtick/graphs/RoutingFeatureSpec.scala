@@ -4,6 +4,8 @@ import java.io.FileOutputStream
 import java.util.UUID
 
 import cats.effect.IO
+import com.flowtick.graphs.editor.feature.RoutingFeature
+import com.flowtick.graphs.editor.{AddEdge, CreateNode, EditorComponent, EditorMain, EditorMessageBus, EditorModel, EditorModelUpdate, ElementRef, Export, ExportedGraph, JsonFormat, MoveTo, NodeType, SetGraph}
 import com.flowtick.graphs.graphml.{GraphMLGraph, GraphMLMeta, PointSpec}
 import io.circe.Json
 import org.scalatest.flatspec.AnyFlatSpec
@@ -44,7 +46,7 @@ class RoutingFeatureSpec extends AnyFlatSpec with Matchers {
       _ <- messageBus.publish(CreateNode(firstNodeId, None, Some(100.0), Some(100.0)))
       _ <- messageBus.publish(CreateNode(secondNodeId, None, Some(200.0), Some(200.0)))
       added <- messageBus.publish(AddEdge(edgeId, firstNodeId, secondNodeId, None))
-      moved <- messageBus.publish(Move(ElementRef(firstNodeId, NodeType), 110.0, 110.0))
+      moved <- messageBus.publish(MoveTo(ElementRef(firstNodeId, NodeType), 110.0, 110.0))
       exported <- messageBus.publish(Export(JsonFormat))
     } yield (added, moved)).unsafeRunSync()
 

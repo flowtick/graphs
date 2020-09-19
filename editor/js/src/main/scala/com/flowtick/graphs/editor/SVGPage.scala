@@ -36,11 +36,12 @@ class SVGPage(val root: SVG,
   def scaley: Double = pageMatrix.d
   def scaley_= (value: Double): Unit = pageMatrix.d = value
 
-  def startPan(mouseEvent: MouseEvent): Unit = {
-    if (panStart.isEmpty) {
+  def startPan(mouseEvent: MouseEvent): Boolean = {
+    if (panStart.isEmpty && mouseEvent.button == 2) {
       val cursor = screenCoordinates(mouseEvent.clientX, mouseEvent.clientY)
       panStart = Some(PanContext(cursor.x, cursor.y, tx, ty))
     }
+    false
   }
 
   def stopPan(mouseEvent: MouseEvent): Unit = {
@@ -121,12 +122,14 @@ class SVGPage(val root: SVG,
     dragStart <- IO {
       val elem = evt.target.asInstanceOf[SVGElement]
       if (elem.classList.contains("draggable")) {
-        val startCursor = screenCoordinates(evt.clientX, evt.clientY)
+        val startCursor = pageCoordinates(evt.clientX, evt.clientY)
         val selectElement = elem.asInstanceOf[SVGRectElement]
         val elementRef = referenceFromElement(selectElement)
-        val matrix = selectElement.getCTM()
+        val matrix = selectElement.getCTM() // screen level transformation
 
-        Some(DragStart[SVGElement](startCursor.x, startCursor.y, matrix.e, matrix.f, selectElement, elementRef, None))
+        val pageTransform = pageCoordinates(matrix.e, matrix.f)
+
+        Some(DragStart[SVGElement](startCursor.x, startCursor.y, pageTransform.x, pageTransform.y, selectElement, elementRef, None, 0.0, 0.0))
       } else None
     }
     _ <- dragStartRef.set(dragStart)
@@ -135,21 +138,21 @@ class SVGPage(val root: SVG,
   def drag: MouseEvent => Unit = evt => dragStartRef.update {
     case Some(dragStart: DragStart[SVGElement]) =>
       evt.preventDefault()
-      val dragCursor = screenCoordinates(evt.clientX, evt.clientY)
+      val dragCursor = pageCoordinates(evt.clientX, evt.clientY)
 
       val gridSize: Int = 10
 
       val deltaX = dragCursor.x - dragStart.cursorX
       val deltaY = dragCursor.y - dragStart.cursorY
 
-      val point = pageCoordinates(dragStart.transformX + deltaX, dragStart.transformY + deltaY)
+      val screenPoint = screenCoordinates(dragStart.transformX + deltaX, dragStart.transformY + deltaY)
 
-      val tx = (point.x.toInt / gridSize) * gridSize
-      val ty = (point.y.toInt / gridSize) * gridSize
+      val tx = (screenPoint.x.toInt / gridSize) * gridSize
+      val ty = (screenPoint.y.toInt / gridSize) * gridSize
 
       SVGUtil.setTransform(dragStart.dragElem, s"translate($tx $ty)")
 
-      Some(dragStart.copy(lastPos = Some(tx, ty)))
+      Some(dragStart.copy(lastPos = Some(tx, ty), deltaX = deltaX, deltaY = deltaY))
     case None => None
   }.unsafeRunSync()
 
@@ -183,7 +186,7 @@ class SVGPage(val root: SVG,
     _ <- IO(element.label.parentNode.removeChild(element.label)).attempt.void
   } yield ()
 
-  override def reset: IO[Unit] = IO {
+  override def resetTransformation: IO[Unit] = IO {
     pageMatrix = root.createSVGMatrix()
     SVGUtil.setMatrix(viewPort, pageMatrix)
   }
@@ -192,7 +195,7 @@ class SVGPage(val root: SVG,
 object SVGPage {
   lazy val scrollSpeed: Double = if (dom.window.navigator.userAgent.contains("Firefox")) 0.03 else 0.003
 
-  def apply(handleSelect: ElementRef => IO[Unit],
+  def apply(handleSelect: ElementRef => Boolean => IO[Unit],
             handleDrag: Option[DragStart[SVGElement]] => IO[Unit],
             handleDoubleClick: MouseEvent => IO[Unit]): SVGPage = {
     val panZoomRect = svg.rect(
@@ -284,22 +287,37 @@ object SVGPage {
     page.root.addEventListener("wheel", page.zoom _)
 
     page.root.addEventListener("mousedown", (e: MouseEvent) => {
-      page
-        .click(e)
-        .orElse(page.startDrag(e).map(_.element)) match {
-        case Some(elementRef) => handleSelect(elementRef).unsafeRunSync()
-        case None =>
+      page.startDrag(e) match {
+        case Some(_) => // we already have a selection
+        case None => page.click(e).foreach { clicked =>
+          handleSelect(clicked)(e.ctrlKey).unsafeRunSync()
+        }
       }
     })
 
     page.root.addEventListener("mousemove", page.drag)
-    page.root.addEventListener("mouseup", (e: MouseEvent) => handleDrag(page.endDrag(e)).unsafeRunSync())
+    page.root.addEventListener("mouseup", (e: MouseEvent) => {
+      val drag = page.endDrag(e)
+      handleDrag(drag).unsafeRunSync()
+
+      // handle up as a selection if we did not drag more the one pixel
+      drag match {
+        case Some(drag) if Math.abs(drag.deltaX) < 2 && Math.abs(drag.deltaY) < 2 => page.click(e).foreach { element =>
+          handleSelect(element)(false).unsafeRunSync()
+        }
+        case _ =>
+      }
+    })
+
     page.root.addEventListener("mouseleave", (e: MouseEvent) => {
       page.stopPan(e)
       handleDrag(page.endDrag(e))
     })
 
-    page.root.ondblclick = e => handleDoubleClick(e).unsafeRunSync()
+    page.root.ondblclick = e => {
+      handleDoubleClick(e).unsafeRunSync()
+    }
+
     page
   }
 }

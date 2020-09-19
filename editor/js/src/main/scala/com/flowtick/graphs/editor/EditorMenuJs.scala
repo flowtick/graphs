@@ -12,6 +12,9 @@ import scalatags.JsDom.all._
 import scala.scalajs.js
 
 class EditorMenuJs(menuContainerId: String)(val messageBus: EditorMessageBus) extends EditorMenu {
+
+  override def order: Double = 0.6
+
   lazy val menuContainer = org.scalajs.dom.window.document.getElementById(menuContainerId)
 
   lazy val downloadLink = a(

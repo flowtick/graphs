@@ -1,7 +1,6 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import com.flowtick.graphs._
 import scalafx.scene.Node
 import scalafx.scene.layout.BorderPane
 

@@ -16,9 +16,9 @@ import scalafx.scene.text.{Text, TextAlignment}
 import scalafx.scene.transform.Affine
 import scalafx.scene.{Group, Node}
 
-final case class JFXElement(id: String, group: Node, selectElem: Node, label : Node, elementType: ElementType) extends GraphElement[Node]
+final case class JFXElement(id: ElementRef, group: Node, selectElem: Node, label : Node) extends GraphElement[Node]
 
-class EditorGraphPane(handleSelect: ElementRef => IO[Unit],
+class EditorGraphPane(handleSelect: ElementRef => Boolean => IO[Unit],
                       handleDrag: Option[DragStart[Node]] => IO[Unit],
                       handleDoubleClick: Any => IO[Unit]) extends BorderPane with Page[Node]{
   var panContext = PanContext(0.0, 0.0, 0.0, 0.0)
@@ -53,7 +53,6 @@ class EditorGraphPane(handleSelect: ElementRef => IO[Unit],
       event.consume()
 
       if (event.getClickCount == 2) {
-        println("double click")
         handleDoubleClick(()).unsafeRunSync()
       }
 
@@ -191,14 +190,14 @@ class EditorGraphPane(handleSelect: ElementRef => IO[Unit],
 
       selectLine.onMousePressed = new EventHandler[MouseEvent] {
         override def handle(t: MouseEvent): Unit = {
-          handleSelect(ElementRef(edge.id, EdgeType)).unsafeRunSync()
+          handleSelect(ElementRef(edge.id, EdgeType))(t.isControlDown).unsafeRunSync()
           selectGroup.visible = true
         }
       }
 
       group.children.add(edgeGroup)
 
-      JFXElement(edge.id, edgeGroup, selectGroup, label, EdgeType)
+      JFXElement(ElementRef(edge.id, EdgeType), edgeGroup, selectGroup, label)
     }
   }
 
@@ -211,16 +210,16 @@ class EditorGraphPane(handleSelect: ElementRef => IO[Unit],
       group.children.add(graphNode)
       group.children.add(graphNode.selectRect)
 
-      JFXElement(node.id, graphNode, graphNode.selectRect, graphNode.label, NodeType)
+      JFXElement(ElementRef(node.id, NodeType), graphNode, graphNode.selectRect, graphNode.label)
     }
   }
 
-  override def setSelection(element: GraphElement[Node]): IO[Unit] = element.elementType match {
+  override def setSelection(element: GraphElement[Node]): IO[Unit] = element.id.elementType match {
     case NodeType => IO(element.selectElem.setVisible(true))
     case EdgeType => IO(element.selectElem.visible = true)
   }
 
-  override def unsetSelection(element: GraphElement[Node]): IO[Unit] = element.elementType match {
+  override def unsetSelection(element: GraphElement[Node]): IO[Unit] = element.id.elementType match {
     case NodeType => IO(element.selectElem.setVisible(false))
     case EdgeType => IO(element.selectElem.visible = false)
   }
@@ -230,7 +229,7 @@ class EditorGraphPane(handleSelect: ElementRef => IO[Unit],
     group.children.remove(element.selectElem)
   }
 
-  override def reset: IO[Unit] = IO {
+  override def resetTransformation: IO[Unit] = IO {
     transformation.setToIdentity()
   }
 }

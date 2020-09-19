@@ -1,5 +1,6 @@
-package com.flowtick.graphs
+package com.flowtick.graphs.editor
 
+import com.flowtick.graphs.Edge
 import com.flowtick.graphs.graphml.{EdgePath, EdgeShape, GraphMLEdge, GraphMLGraph, PointSpec}
 import io.circe.Json
 

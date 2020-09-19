@@ -92,11 +92,11 @@ final case class GraphMLNode[N](
   value: N,
   shape: Option[NodeShape] = None,
   schemaRef: Option[String] = None) extends GraphMLElement[N] {
-  def updateNodeGeometry(x: Double, y: Double): GraphMLNode[N] =
+  def updateNodeGeometry(fx: Double => Double, fy: Double => Double): GraphMLNode[N] =
     copy(shape = for {
       shape <- shape
       geo <- shape.geometry
-    } yield shape.copy(geometry = Some(DefaultGeometry(x, y, geo.width, geo.height))))
+    } yield shape.copy(geometry = Some(DefaultGeometry(fx(geo.x), fy(geo.y), geo.width, geo.height))))
 
   def updateNodeLabel(textValue: String): GraphMLNode[N] =
     copy(shape = for {

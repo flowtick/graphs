@@ -2,7 +2,7 @@ package com.flowtick.graphs.editor
 
 import cats.effect.IO
 import cats.effect.concurrent.Ref
-import com.flowtick.graphs.{ElementRef, json, _}
+import com.flowtick.graphs.json
 import com.flowtick.graphs.graphml.{GraphMLElement, GraphMLGraph}
 import com.flowtick.graphs.json.schema.Schema
 import io.circe.Json
@@ -63,6 +63,8 @@ final case class PropertySpec(key: Option[String] = None, // no key means its th
 
 class EditorPropertiesJs(containerId: String)(messageBus: EditorMessageBus) extends EditorComponent {
 
+  override def order: Double = 0.3
+
   lazy val currentElement: Ref[IO, Option[ElementRef]] = Ref.unsafe(None)
   lazy val currentProperties: Ref[IO, List[PropertyFormGroup]] = Ref.unsafe(List.empty)
 
@@ -78,7 +80,6 @@ class EditorPropertiesJs(containerId: String)(messageBus: EditorMessageBus) exte
     _ <- elem match {
       case Some(ref) =>
         IO(f(value)(ref)).flatMap { events =>
-          println(s"events $events")
           events.map {
             case command: EditorCommand => messageBus.publish(command)
             case other => messageBus.notifyEvent(this, other)
@@ -90,17 +91,13 @@ class EditorPropertiesJs(containerId: String)(messageBus: EditorMessageBus) exte
 
   override lazy val eval: Eval = ctx => ctx.effect(this) {
     case Selected(elements, _) =>
-      println(s"selected $elements")
-
       elements
         .headOption
         .flatMap(getElementProperties(_, ctx.model.graphml, ctx.model.schema))
         .map(setElementAndReset)
         .getOrElse(IO.unit)
 
-    case ElementUpdated(updatedElement, _) =>
-      println(s"updated $updatedElement")
-
+    case ElementUpdated(updatedElement, _, _) =>
       for {
       current <- currentElement.get
       _ <- if (current.contains(updatedElement)) {

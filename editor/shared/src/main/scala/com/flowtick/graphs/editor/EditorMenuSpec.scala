@@ -1,9 +1,10 @@
-package com.flowtick.graphs
+package com.flowtick.graphs.editor
 
 import java.util.UUID
 
 import cats.effect.IO
 import cats.implicits._
+import com.flowtick.graphs.graphml.{GraphML, GraphMLGraph}
 
 final case class Action(title: String,
                         shortCut: String,
@@ -26,15 +27,17 @@ trait EditorMenu extends EditorComponent {
 
   lazy val editorMenus: List[EditorMenuSpec] = List (
     EditorMenuSpec("File", Toolbar, actions = List(
+      Action("New File", "ctrl+n", triggerFileNew, Some("file")),
       Action("Open File", "ctrl+o", triggerFileOpen, Some("upload")),
       Action("Export JSON", "ctrl+shift+e", triggerExportJson, icon = Some("file-download")),
       Action("Export XML", "ctrl+e", triggerExportXML, Some("file-code"))
     ), icon = Some("file")),
     EditorMenuSpec("Edit", Toolbar, actions = List(
-      //Action("Undo", "ctrl+z", (e) => println("undo stuff")),
+      Action("Undo", "ctrl+z", triggerUndo, icon = Some("undo")),
       Action("Insert Element", "ins", triggerAdd, icon = Some("plus-circle")),
+      Action("Select All", "alt+a", triggerSelectAll, icon = Some("object-group")),
+      Action("Unselect", "alt+shift+a", triggerUnselect, icon = Some("object-ungroup")),
       Action("Delete Selection", "del", triggerDelete, icon = Some("trash")),
-      Action("Unselect", "home", triggerUnselect, icon = Some("object-ungroup")),
       Action("Connect Selection", "alt+c", toggleConnect, icon = Some("code-branch"))
     )),
     EditorMenuSpec("View", Toolbar, actions = List(
@@ -69,6 +72,10 @@ trait EditorMenu extends EditorComponent {
     messageBus.publish(Toggle(Toggle.connectKey, true)).unsafeRunSync()
   }
 
+  def triggerFileNew: Any => Unit = _ => {
+    messageBus.publish(SetGraph(GraphML.empty)).unsafeRunSync()
+  }
+
   def togglePalette: Any => Unit = _ => {
     messageBus.publish(Toggle(Toggle.paletteKey, true)).unsafeRunSync()
   }
@@ -78,11 +85,11 @@ trait EditorMenu extends EditorComponent {
   }
 
   def triggerUnselect: Any => Unit = _ => {
-    messageBus.publish(Select(List.empty)).unsafeRunSync()
+    messageBus.publish(Select(Set.empty)).unsafeRunSync()
   }
 
   def triggerResetView: Any => Unit = _ => {
-    messageBus.publish(Reset).unsafeRunSync()
+    messageBus.publish(ResetTransformation).unsafeRunSync()
   }
 
   def triggerExportXML: Any => Unit = _ => {
@@ -94,6 +101,8 @@ trait EditorMenu extends EditorComponent {
   }
 
   def triggerDelete : Any => Unit = _ => messageBus.publish(DeleteSelection).unsafeRunSync()
+  def triggerUndo : Any => Unit = _ => messageBus.publish(Undo).unsafeRunSync()
+  def triggerSelectAll : Any => Unit = _ => messageBus.publish(SelectAll).unsafeRunSync()
 
   def triggerAdd: Any => Unit = _ => {
     val id = UUID.randomUUID().toString

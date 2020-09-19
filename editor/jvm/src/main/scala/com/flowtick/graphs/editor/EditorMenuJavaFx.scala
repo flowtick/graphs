@@ -75,7 +75,6 @@ class EditorMenuJavaFx(val messageBus: EditorMessageBus, layout: BorderPane, sta
       val currentHandler = Option[EventHandler[_ >: KeyEvent]](stage.scene.value.getOnKeyReleased)
       stage.scene.value.setOnKeyReleased((event) => {
         if(combination.`match`(event)) {
-          println(s"combination $combination")
           event.consume()
           action.handler(event)
         } else {

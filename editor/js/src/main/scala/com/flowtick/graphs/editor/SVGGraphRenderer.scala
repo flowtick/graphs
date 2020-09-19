@@ -1,6 +1,6 @@
 package com.flowtick.graphs.editor
 
-import com.flowtick.graphs.{DrawUtil, Edge, EdgeType, ElementType, GraphElement, NodeType}
+import com.flowtick.graphs.Edge
 import com.flowtick.graphs.editor.SVGGraphRenderer.SVGGraphElement
 import com.flowtick.graphs.graphml.{BorderStyle, EdgePath, EdgeShape, Fill, Free, GraphMLEdge, GraphMLGraph, GraphMLNode, GraphMLResource, LabelLike, NodeShape, PointSpec, ShapeType}
 import io.circe.Json
@@ -15,20 +15,16 @@ import scala.util.Try
 
 case class Troll(weapon: String)
 
-case class SVGNodeElement(id: String,
+case class SVGNodeElement(id: ElementRef,
                           shapeElement: SVGGraphElement,
                           label: Text,
                           selectElem: SVGElement,
-                          group: G) extends GraphElement[SVGElement] {
-  override def elementType: ElementType = NodeType
-}
+                          group: G) extends GraphElement[SVGElement]
 
-case class SVGEdgeElement(id: String,
+case class SVGEdgeElement(id: ElementRef,
                           group: G,
                           label: Text,
-                          selectElem: SVGElement) extends GraphElement[SVGElement] {
-  override def elementType: ElementType = EdgeType
-}
+                          selectElem: SVGElement) extends GraphElement[SVGElement]
 
 object SVGGraphRenderer {
   val defaultTextColor = "#000000"
@@ -40,11 +36,13 @@ object SVGGraphRenderer {
   def setSelection(element: GraphElement[SVGElement]): Unit = {
     element.selectElem.setAttribute("stroke", "#555555")
     element.selectElem.setAttribute("stroke-dasharray", "3 5")
+    element.selectElem.classList.add("draggable")
   }
 
   def unsetSelection(element: GraphElement[SVGElement]): Unit = {
     element.selectElem.setAttribute("stroke", null)
     element.selectElem.setAttribute("stroke-dasharray", null)
+    element.selectElem.classList.remove("draggable")
   }
 
   def renderNode(id: String, shape: NodeShape, resources: Map[String, GraphMLResource]): SVGNodeElement = {
@@ -75,7 +73,7 @@ object SVGGraphRenderer {
     selectRect.setAttribute("data-type", "node")
 
     SVGNodeElement(
-      id,
+      ElementRef(id, NodeType),
       shapeElement,
       label,
       selectRect,
@@ -166,7 +164,7 @@ object SVGGraphRenderer {
                        height: Double): RectElement = {
     val offset = 6
     val select = svg.rect(
-      cls := "draggable",
+      cls := "selectable",
       svgAttrs.width :=  width + offset,
       svgAttrs.height := height + offset,
       svgAttrs.x := - offset / 2,
@@ -265,7 +263,7 @@ object SVGGraphRenderer {
 
       group = svg.g(id := edge.id, line, selectLine).render
 
-    } yield SVGEdgeElement(edge.id, group, label, group)
+    } yield SVGEdgeElement(ElementRef(edge.id, EdgeType), group, label, group)
   }
 
 }

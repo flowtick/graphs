@@ -1,4 +1,4 @@
-package com.flowtick.graphs
+package com.flowtick.graphs.editor
 
 final case class Vector2(x: Double, y: Double) {
   def -(other: Vector2): Vector2 = copy(x = x - other.x, y = y - other.y)

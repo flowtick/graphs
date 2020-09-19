@@ -1,4 +1,4 @@
-package com.flowtick.graphs
+package com.flowtick.graphs.editor
 
 import cats.effect.IO
 import cats.effect.concurrent.Ref
@@ -45,7 +45,7 @@ final case class EditorContext(event: EditorEvent,
     copy(commands = commands.:+(command))
 
   def updateModel(update: EditorModel => EditorModel): EditorContext =
-    copy(model = update(model))
+    copy(model = update(model).copy(version = model.version +1))
 }
 
 class EditorController(logRef: Ref[IO, List[EditorEvent]],

@@ -10,6 +10,8 @@ import org.scalajs.dom.raw.{Event, HTMLElement}
 import scalatags.JsDom.all._
 
 class EditorPaletteJs(paletteElementId: String)(messageBus: EditorMessageBus) extends EditorComponent {
+  override def order: Double = 0.5
+
   val currentStencilItemRef: Ref[IO, Option[Stencil]] = Ref.unsafe(None)
   val currentConnectorItemRef: Ref[IO, Option[Connector]] = Ref.unsafe(None)
 
@@ -119,7 +121,6 @@ class EditorPaletteJs(paletteElementId: String)(messageBus: EditorMessageBus) ex
         current <- currentConnectorItemRef.get
       } yield current match {
         case Some(item) =>
-          println(current)
           ctx.copy(event = addEdge.copy(stencilRef = Some(item.id)))
         case None => ctx
       }

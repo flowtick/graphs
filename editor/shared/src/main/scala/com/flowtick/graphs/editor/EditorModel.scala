@@ -1,22 +1,23 @@
-package com.flowtick.graphs
+package com.flowtick.graphs.editor
 
 import java.util.UUID
 
 import cats.data.Validated.{Valid, _}
 import cats.data.ValidatedNel
 import cats.effect.IO
-import com.flowtick.graphs.graphml.{Datatype, DatatypeString, Fill, FromGraphML, GraphMLEdge, GraphMLGraph, GraphMLKey, GraphMLMeta, GraphMLNode, GraphMLResource, Image, NodeLabel, NodeShape, ShapeType, ToGraphML, graphMLDataType}
-import com.flowtick.graphs.json.{FromJson, JsonGraph, ToJson}
-import com.flowtick.graphs.layout.DefaultGeometry
-import io.circe.{Decoder, Json}
-import com.flowtick.graphs.json.format.default._
+import com.flowtick.graphs.graphml.{Datatype, DatatypeString, FromGraphML, GraphMLEdge, GraphMLGraph, GraphMLKey, GraphMLMeta, GraphMLNode, GraphMLResource, Image, NodeShape, ToGraphML, graphMLDataType}
 import com.flowtick.graphs.json.schema.{JsonSchema, Schema}
-import com.flowtick.graphs.json.schema.JsonSchema._
-import io.circe._
+import com.flowtick.graphs.json.{FromJson, ToJson}
+import com.flowtick.graphs.layout.DefaultGeometry
+import com.flowtick.graphs.{Edge, Node}
+import io.circe.{Json, _}
 
 import scala.xml.NodeSeq
 
 class EditorModelUpdate extends EditorComponent {
+
+  override def order: Double = 0.1
+
   implicit val jsonDataType = EditorModel.jsonDataType(true)
 
   val handleAddNode: Transform = ctx => ctx.transform {
@@ -83,7 +84,6 @@ class EditorModelUpdate extends EditorComponent {
     ctx
       .copy(model = ctx.model.updateGraphMl(updatedGraph))
       .addNotification(this, ElementUpdated(ElementRef(newNode.id, NodeType), Created))
-      .addCommand(Select(List(ElementRef(newNode.id, NodeType))))
   }
 
   val handleAddEdge: Transform = ctx => ctx.transform {
@@ -97,8 +97,6 @@ class EditorModelUpdate extends EditorComponent {
       .stencilRef
       .flatMap(id => allItems.find(_.id == id))
       .orElse(allItems.headOption)
-
-    println(s"using $connector")
 
     val mlEdge = GraphMLEdge(
       edge.id,
@@ -148,13 +146,29 @@ class EditorModelUpdate extends EditorComponent {
       }
   }
 
+  val setModel: Transform = ctx => ctx.transform {
+    case SetModel(model) => ctx.copy(model = model)
+  }
+
   val moveNode: Transform = ctx => ctx.transform {
-    case Move(ElementRef(id, NodeType), x, y) =>
-      val updatedGraph = ctx.model.graphml.graph.updateNode(id)(_.updateNodeGeometry(x, y))
+    case move@MoveTo(ElementRef(id, NodeType), x, y) =>
+      val updatedGraph = ctx.model.graphml.graph.updateNode(id)(_.updateNodeGeometry(_ => x, _ => y))
 
       ctx
         .copy(model = ctx.model.updateGraphMl(ctx.model.graphml.copy(graph = updatedGraph)))
-        .addNotification(this, ElementUpdated(ElementRef(id, NodeType)))
+        .addNotification(this, ElementUpdated(ElementRef(id, NodeType), Changed, causedBy = Some(move)))
+
+    case move@MoveBy(deltaX, deltaY) =>
+      ctx.model.selection.foldLeft(ctx) {
+        case (updatedCtx, ElementRef(id, NodeType)) =>
+          val updatedGraph = updatedCtx.model.graphml.graph.updateNode(id)(node => node.updateNodeGeometry(_ + deltaX, _ + deltaY))
+
+          updatedCtx
+            .copy(model = updatedCtx.model.updateGraphMl(updatedCtx.model.graphml.copy(graph = updatedGraph)))
+            .addNotification(this, ElementUpdated(ElementRef(id, NodeType), Changed, causedBy = Some(move)))
+
+        case (updatedCtx, _) => updatedCtx
+      }
   }
 
   val setNodeLabel: Transform = ctx => ctx.transform {
@@ -219,8 +233,8 @@ class EditorModelUpdate extends EditorComponent {
         graphWithSchema(ctx.model.graphml, ctx.model.schema)
       ).toString, GraphMLFormat))
     case Export(JsonFormat) =>
-      import io.circe.generic.auto._
       import com.flowtick.graphs.json.format.default._
+      import io.circe.generic.auto._
 
       ctx.addNotification(this, ExportedGraph(
         ctx.model.graphml.meta.id.getOrElse("graph"),
@@ -252,31 +266,39 @@ class EditorModelUpdate extends EditorComponent {
   }
 
   val handleSelect: Transform = ctx => ctx.transform {
-    case Select(selection) =>
-      val newSelection = selection.flatMap {
-        case ElementRef(id, NodeType) =>
-          ctx.model.graphml.graph.findNode(id).map(node => ElementRef(node.id, NodeType))
-        case ElementRef(id, EdgeType) =>
-          ctx.model.graphml.graph.findEdge(id).map(edge => ElementRef(edge.id, EdgeType))
-      }
+    case SelectAll =>
+      val allNodes = ctx.model.graphml.graph.nodes.map(node => ElementRef(node.id, NodeType)).toSet
+      withSelection(ctx, allNodes, append = false)
 
-      val oldSelection = ctx.model.selection
+    case Select(selection, append) =>
+      withSelection(ctx, selection, append)
+  }
 
-      val withConnected: Option[EditorContext] = for {
-        from <- oldSelection.headOption
-        if ctx.model.connectSelection
-        to <- newSelection.headOption
-        if from.elementType == NodeType && to.elementType == NodeType
-      } yield {
-        ctx
-          .addCommand(AddEdge(UUID.randomUUID().toString, from.id, to.id))
-          .updateModel(_.copy(connectSelection = false))
-      }
+  private def withSelection(ctx: EditorContext, selection: Set[ElementRef], append: Boolean) = {
+    val oldSelection = ctx.model.selection
 
-      withConnected
-        .getOrElse(ctx)
-        .updateModel(_.copy(selection = newSelection))
-        .addNotification(this, Selected(newSelection, oldSelection))
+    val newSelection = selection.flatMap {
+      case ElementRef(id, NodeType) =>
+        ctx.model.graphml.graph.findNode(id).map(node => ElementRef(node.id, NodeType))
+      case ElementRef(id, EdgeType) =>
+        ctx.model.graphml.graph.findEdge(id).map(edge => ElementRef(edge.id, EdgeType))
+    } ++ (if (append) oldSelection else List.empty)
+
+    val withConnected: Option[EditorContext] = for {
+      from <- oldSelection.headOption
+      if ctx.model.connectSelection
+      to <- newSelection.headOption
+      if from.elementType == NodeType && to.elementType == NodeType
+    } yield {
+      ctx
+        .addCommand(AddEdge(UUID.randomUUID().toString, from.id, to.id))
+        .updateModel(_.copy(connectSelection = false))
+    }
+
+    withConnected
+      .getOrElse(ctx)
+      .updateModel(_.copy(selection = newSelection))
+      .addNotification(this, Selected(newSelection, oldSelection))
   }
 
   val handleConnectToggle: Transform = ctx => ctx.transform {
@@ -313,6 +335,7 @@ class EditorModelUpdate extends EditorComponent {
     .andThen(setNodeJson)
     .andThen(moveNode)
     .andThen(load)
+    .andThen(setModel)
     .andThen(handleExport)
     .andThen(handleSelect)
     .andThen(handleConnectToggle)
@@ -323,12 +346,13 @@ class EditorModelUpdate extends EditorComponent {
 
 final case class EditorModel(graphml: GraphMLGraph[Json, Json],
                              schema: EditorModel.EditorSchema,
-                             selection: Seq[ElementRef] = Seq.empty,
+                             selection: Set[ElementRef] = Set.empty,
                              connectSelection: Boolean = false,
-                             palette: Palette) {
-  def updateGraphMl(updated: GraphMLGraph[Json, Json]): EditorModel = copy(graphml = updated)
+                             palette: Palette,
+                             version: Long = 0) {
+  def updateGraphMl(updated: GraphMLGraph[Json, Json]): EditorModel = copy(graphml = updated, version = version + 1)
   override def toString: String = {
-    s"""connect = $connectSelection\n,selection = $selection"""
+    s"""version = $version, connect = $connectSelection, selection = $selection"""
   }
 
   def withSchema(schema: EditorModel.EditorSchema): EditorModel = copy(schema = schema)

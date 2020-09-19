@@ -1,4 +1,4 @@
-package com.flowtick.graphs
+package com.flowtick.graphs.editor
 
 import com.flowtick.graphs.graphml.{EdgePath, GraphMLGraph}
 import io.circe.Decoder.Result
@@ -16,6 +16,7 @@ case class SetJson(elementRef: ElementRef, json: Json => Json) extends EditorCom
 
 case class Load(value: String, format: FileFormat) extends EditorCommand
 case class SetGraph(graphml: GraphMLGraph[Json, Json]) extends EditorCommand
+case class SetModel(model: EditorModel) extends EditorCommand
 
 sealed trait FileFormat {
   def extension: String
@@ -31,7 +32,8 @@ case object JsonFormat extends FileFormat {
 case class Export(format: FileFormat) extends EditorCommand
 case class ExportedGraph(name: String, value: String, format: FileFormat) extends EditorEvent
 
-case class Move(ref: ElementRef, x: Double, y: Double) extends EditorCommand
+case class MoveTo(ref: ElementRef, x: Double, y: Double) extends EditorCommand
+case class MoveBy(deltaX: Double, deltaY: Double) extends EditorCommand
 
 case class AddEdge(id: String,
                    from: String,
@@ -40,14 +42,16 @@ case class AddEdge(id: String,
                    path: Option[EdgePath] = None) extends EditorCommand
 
 case class ElementRef(id: String, elementType: ElementType)
-case class ElementUpdated(element: ElementRef, update: UpdateType = Changed) extends EditorEvent
+case class ElementUpdated(element: ElementRef, update: UpdateType = Changed, causedBy: Option[EditorEvent] = None) extends EditorEvent
 
-case object Reset extends EditorCommand
-case class Select(selection: Seq[ElementRef]) extends EditorCommand
-case class Selected(elements: Seq[ElementRef], oldSelection: Seq[ElementRef]) extends EditorEvent
+case object ResetTransformation extends EditorCommand
+case class Select(selection: Set[ElementRef], append: Boolean = false) extends EditorCommand
+case class Selected(elements: Set[ElementRef], oldSelection: Set[ElementRef]) extends EditorEvent
 
 case object DeleteSelection extends EditorCommand
 case class Toggle(key: String, value: Boolean) extends EditorCommand
+case object Undo extends EditorCommand
+case object SelectAll extends EditorCommand
 
 case class EditorErrorMessage(message: String) extends EditorEvent
 
@@ -62,6 +66,11 @@ sealed trait UpdateType
 case object Created extends UpdateType
 case object Changed extends UpdateType
 case object Deleted extends UpdateType
+
+// updates that are only used for internal communication between components
+// these should not be considered for undo etc.
+// TODO: maybe have more specialized events to trigger wanted behaviour like redraw?
+case object Internal extends UpdateType
 
 object Toggle {
   val connectKey = "connect"

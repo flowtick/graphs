@@ -1,7 +1,6 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import com.flowtick.graphs.{DragStart, ElementRef, NodeType}
 import com.flowtick.graphs.graphml.{BorderStyle, NodeShape}
 import com.flowtick.graphs.layout.DefaultGeometry
 import javafx.event.EventHandler
@@ -17,7 +16,7 @@ class EditorGraphNode(nodeId: String,
                       geometry: DefaultGeometry,
                       shape: NodeShape)(
                       transformation: Affine,
-                      handleSelect: ElementRef => IO[Unit],
+                      handleSelect: ElementRef => Boolean => IO[Unit],
                       handleDrag: Option[DragStart[Node]] => IO[Unit]) extends Group { self =>
   val borderStyle = shape.borderStyle.orElse(Some(BorderStyle("#888888", styleType = "line", width = 1.0)))
 
@@ -63,22 +62,26 @@ class EditorGraphNode(nodeId: String,
 
   var nodeDragStart: Option[DragStart[Node]] = None
 
-  val pressedHandler = new EventHandler[MouseEvent] {
+  onMousePressed = new EventHandler[MouseEvent] {
     override def handle(event: MouseEvent): Unit = {
-      event.consume()
-
-      val mousePos = transformation.inverseTransform(event.getSceneX, event.getSceneY)
-
-      handleSelect(ElementRef(nodeId, NodeType)).unsafeRunSync()
-
-      if (event.isPrimaryButtonDown) {
-        nodeDragStart = Some(DragStart(mousePos.getX, mousePos.getY, selectRect.x.value, selectRect.y.value, self, ElementRef(nodeId, NodeType), None))
-      }
+      handleSelect(ElementRef(nodeId, NodeType))(event.isControlDown).unsafeRunSync()
     }
   }
 
-  selectRect.onMousePressed = pressedHandler
-  onMousePressed = pressedHandler
+  selectRect.onMousePressed = new EventHandler[MouseEvent]  {
+    override def handle(event: MouseEvent): Unit = {
+      event.consume()
+      val mousePos = transformation.inverseTransform(event.getSceneX, event.getSceneY)
+
+      if (event.getClickCount == 2) {
+        handleSelect(ElementRef(nodeId, NodeType))(false).unsafeRunSync()
+      }
+
+      if (event.isPrimaryButtonDown) {
+        nodeDragStart = Some(DragStart(mousePos.getX, mousePos.getY, selectRect.x.value, selectRect.y.value, self, ElementRef(nodeId, NodeType), None, 0.0, 0.0))
+      }
+    }
+  }
 
   val dragHandler = new EventHandler[MouseEvent] {
     override def handle(event: MouseEvent): Unit = {
@@ -88,29 +91,34 @@ class EditorGraphNode(nodeId: String,
 
       if (event.isPrimaryButtonDown) {
         nodeDragStart = nodeDragStart.map { dragStart =>
-          val newX = dragStart.transformX + ((mousePos.getX - dragStart.cursorX))
-          val newY = dragStart.transformY + ((mousePos.getY - dragStart.cursorY))
+          val deltaX = mousePos.getX - dragStart.cursorX
+          val deltaY = mousePos.getY - dragStart.cursorY
+
+          val newX = dragStart.transformX + deltaX
+          val newY = dragStart.transformY + deltaY
 
           selectRect.x = newX
           selectRect.y = newY
 
-          dragStart.copy(lastPos = Some(newX, newY))
+          dragStart.copy(lastPos = Some(newX, newY), deltaX = deltaX, deltaY = deltaY)
         }
       }
     }
   }
 
   selectRect.onMouseDragged = dragHandler
-  onMouseDragged = dragHandler
 
   val releaseHandler = new EventHandler[MouseEvent] {
-    override def handle(t: MouseEvent): Unit = {
-      t.consume()
+    override def handle(event: MouseEvent): Unit = {
+      nodeDragStart match {
+        case Some(drag) if Math.abs(drag.deltaX) < 2 && Math.abs(drag.deltaY) < 2 =>
+          handleSelect(drag.element)(false).unsafeRunSync()
+        case _ =>
+      }
+
       handleDrag(nodeDragStart).unsafeRunSync()
-      nodeDragStart = None
     }
   }
 
   selectRect.onMouseReleased = releaseHandler
-  onMouseReleased = releaseHandler
 }
