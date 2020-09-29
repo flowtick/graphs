@@ -11,7 +11,7 @@ final case class GraphMLKey(
   yfilesType: Option[String] = None,
   graphsType: Option[String] = None) {}
 
-final case class Fill(color: Option[String], transparent: Boolean = false)
+final case class Fill(color: Option[String], transparent: Option[Boolean] = None) extends FillLike
 
 sealed trait LabelModel
 case object Custom extends LabelModel
@@ -26,6 +26,10 @@ sealed trait LabelLike {
   def position: Option[PointSpec]
 }
 
+sealed trait FillLike {
+  def color: Option[String]
+}
+
 final case class NodeLabel(text: String,
                            textColor: Option[String] = None,
                            fontSize: Option[String] = None,
@@ -38,7 +42,7 @@ final case class NodeLabel(text: String,
   }
 }
 
-final case class BorderStyle(color: String, styleType: String, width: Double)
+final case class BorderStyle(color: String, styleType: Option[String], width: Option[Double])
 final case class SVGContent(refId: String)
 final case class Image(refId: String)
 
@@ -85,6 +89,7 @@ sealed trait GraphMLElement[V] {
   def schemaRef: Option[String]
   def value: V
   def label: Option[LabelLike]
+  def fill: Option[FillLike]
 }
 
 final case class GraphMLNode[N](
@@ -105,12 +110,18 @@ final case class GraphMLNode[N](
       .map(_.copy(text = textValue))
       .orElse(Some(NodeLabel(textValue)))))
 
+  def updateNodeColor(color: String): GraphMLNode[N] =
+    copy(shape = for {
+      shape <- shape
+    } yield shape.copy(fill = shape.fill.map(_.copy(color = Some(color)))))
+
   def updateValue(update: N => N): GraphMLNode[N] =
     copy(value = update(value))
 
   def labelValue: Option[String] = shape.flatMap(_.label).map(_.text)
 
   override def label: Option[LabelLike] = shape.flatMap(_.label)
+  override def fill: Option[FillLike] = shape.flatMap(_.fill)
 }
 
 final case class GraphMLEdge[V](
@@ -121,6 +132,7 @@ final case class GraphMLEdge[V](
   shape: Option[EdgeShape] = None,
   schemaRef: Option[String] = None) extends GraphMLElement[V] {
   override def label: Option[LabelLike] = shape.flatMap(_.label)
+  override def fill: Option[FillLike] = shape.map(shape => Fill(shape.edgeStyle.map(_.color)))
 
   def updateEdgeLabel(textValue: String): GraphMLEdge[V] =
     copy(shape = for {

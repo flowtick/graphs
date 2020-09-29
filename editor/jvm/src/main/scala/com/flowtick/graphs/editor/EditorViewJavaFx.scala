@@ -7,7 +7,7 @@ import scalafx.scene.layout.BorderPane
 class EditorViewJavaFx(bus: EditorMessageBus, layout: BorderPane) extends EditorView[Node] {
   override def init(model: EditorModel): IO[Unit] = IO.unit
 
-  override def createPage: IO[Page[Node]] = IO(new EditorGraphPane(handleSelect, handleDrag, handleDoubleClick))
+  override def createPage: IO[Page[Node]] = IO(new EditorGraphPane(layout)(handleSelect, handleDrag, handleDoubleClick))
 
   override def messageBus: EditorMessageBus = bus
 

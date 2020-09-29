@@ -65,11 +65,11 @@ trait EditorView[T] extends EditorComponent {
   } yield ()
 
   def handleDoubleClick: Any => IO[Unit] = (_: Any) => {
-    messageBus.notifyEvent(this, Toggle(Toggle.editKey, true)).void
+    messageBus.publish(Toggle(Toggle.editKey, Some(true))).void
   }
 
   def handleDrag(drag: Option[DragStart[T]]): IO[Unit] = (for {
-    dragEvent <- drag
+    dragEvent <- drag.filter(value => Math.abs(value.deltaY) > 0 || Math.abs(value.deltaX) > 0)
   } yield messageBus.publish(MoveBy(dragEvent.deltaX, dragEvent.deltaY)).void).getOrElse(IO.unit)
 
   def appendEdge(graphml: GraphMLGraph[Json, Json])(edge: Edge[GraphMLEdge[Json]]): IO[Option[GraphElement[T]]] = for {

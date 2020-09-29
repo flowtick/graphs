@@ -9,12 +9,12 @@ import scalatags.JsDom
 
 import scala.scalajs.js
 
-final case class PropertyFormGroup(property: PropertySpec,
-                                   container: JsDom.TypedTag[Div],
-                                   init: () => Unit,
-                                   set: Json => Unit)
+final case class PropertyFormGroupJs(property: PropertySpec,
+                                     container: JsDom.TypedTag[Div],
+                                     init: () => Unit,
+                                     set: Json => Unit) extends PropertyFormGroup
 
-final case class PropertyForm(groups: List[PropertyFormGroup], html: Form)
+final case class PropertyForm(groups: List[PropertyFormGroupJs], html: Form)
 
 object EditorPropertiesHtml {
   import scalatags.JsDom.all._
@@ -66,7 +66,7 @@ object EditorPropertiesHtml {
     ))
   }
 
-  def propertyGroup(property: PropertySpec): PropertyFormGroup = property.inputType match {
+  def propertyGroup(property: PropertySpec): PropertyFormGroupJs = property.inputType match {
     case NumberInput =>
       lazy val numberInput = input(
         id := s"${property.key}_number",
@@ -77,7 +77,7 @@ object EditorPropertiesHtml {
 
       val (_, propertyContainer) = propertyContainers(property, numberInput)
 
-      PropertyFormGroup(property, propertyContainer,
+      PropertyFormGroupJs(property, propertyContainer,
         init = () => {
           numberInput.onchange = _ => property.handler(Json.fromDoubleOrString(numberInput.value.toDouble))
         },
@@ -93,7 +93,7 @@ object EditorPropertiesHtml {
 
       val (_, propertyContainer) = propertyContainers(property, checkbox)
 
-      PropertyFormGroup(property, propertyContainer, init = () => {
+      PropertyFormGroupJs(property, propertyContainer, init = () => {
         checkbox.onchange = _ => property.handler(if(checkbox.checked) Json.True else Json.False)
       }, set = json => checkbox.checked = BooleanInput.fromJson(property.key, json).getOrElse(false))
 
@@ -109,7 +109,7 @@ object EditorPropertiesHtml {
 
       val (_, propertyContainer) = propertyContainers(property, integerInput)
 
-      PropertyFormGroup(property, propertyContainer, init = () => {
+      PropertyFormGroupJs(property, propertyContainer, init = () => {
         integerInput.onchange = _ => property.handler(Json.fromInt(integerInput.value.toInt))
       }, set = json => integerInput.value = IntegerInput.fromJson(property.key, json).map(_.toString).getOrElse(""))
 
@@ -159,7 +159,7 @@ object EditorPropertiesHtml {
         }
       }).unsafeRunSync()
 
-      PropertyFormGroup(property, propertyContainer, init = () => editor, set = json => {
+      PropertyFormGroupJs(property, propertyContainer, init = () => editor, set = json => {
         val newValue = TextInput.fromJson(property.key, json).getOrElse("")
         editor match {
           case Right(ace) => ace.session.setValue(newValue)

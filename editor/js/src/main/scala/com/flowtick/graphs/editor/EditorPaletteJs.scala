@@ -1,20 +1,11 @@
 package com.flowtick.graphs.editor
 
-import java.util.UUID
-
 import cats.effect.IO
-import cats.effect.concurrent.Ref
-import com.flowtick.graphs._
 import org.scalajs.dom.html.{Button, Div, UList}
 import org.scalajs.dom.raw.{Event, HTMLElement}
 import scalatags.JsDom.all._
 
-class EditorPaletteJs(paletteElementId: String)(messageBus: EditorMessageBus) extends EditorComponent {
-  override def order: Double = 0.5
-
-  val currentStencilItemRef: Ref[IO, Option[Stencil]] = Ref.unsafe(None)
-  val currentConnectorItemRef: Ref[IO, Option[Connector]] = Ref.unsafe(None)
-
+class EditorPaletteJs(paletteElementId: String)(val messageBus: EditorMessageBus) extends EditorPalette {
   lazy val paletteContainer: HTMLElement = org.scalajs.dom.window.document
     .getElementById(paletteElementId)
     .asInstanceOf[HTMLElement]
@@ -91,47 +82,13 @@ class EditorPaletteJs(paletteElementId: String)(messageBus: EditorMessageBus) ex
     )
   }.render
 
-  def selectPaletteItem(paletteItem: Stencil): Unit = {
-    currentStencilItemRef.set(Some(paletteItem)).attempt.unsafeRunSync()
-  }
-
-  def selectConnectorItem(connectorItem: Connector): Unit = {
-    currentConnectorItemRef.set(Some(connectorItem)).attempt.unsafeRunSync()
-  }
-
-  def createPaletteItem(paletteItem: Stencil): Unit = {
-    messageBus
-      .publish(CreateNode(UUID.randomUUID().toString, Some(paletteItem.id)))
-      .attempt
-      .unsafeRunSync()
-  }
-
-  override def eval: Eval = ctx => ctx.effect(this) {
-    case Toggle(Toggle.paletteKey, enabled) => IO(toggleView(enabled))
-  }.flatMap(_.transformIO {
-    case create: CreateNode =>
-      for {
-        current <- currentStencilItemRef.get
-      } yield current match {
-        case Some(item) => ctx.copy(event = create.copy(stencilRef = Some(item.id)))
-        case None => ctx
-      }
-    case addEdge: AddEdge =>
-      for {
-        current <- currentConnectorItemRef.get
-      } yield current match {
-        case Some(item) =>
-          ctx.copy(event = addEdge.copy(stencilRef = Some(item.id)))
-        case None => ctx
-      }
-  })
-
-  def toggleView(enabled: Boolean): Unit = {
+  override def toggleView(enabled: Boolean): IO[Boolean] = IO {
     if (enabled) {
       paletteContainer.classList.remove("d-none")
     } else {
       paletteContainer.classList.add("d-none")
     }
+    enabled
   }
 
   lazy val closeButton: Button =
@@ -141,13 +98,12 @@ class EditorPaletteJs(paletteElementId: String)(messageBus: EditorMessageBus) ex
       data("dismiss") := "modal",
       aria.label := "Close",
       span(aria.hidden := "true", "×"),
-      onclick := ((_: Event) => messageBus.publish(Toggle(Toggle.paletteKey, value = false)).unsafeRunSync())
+      onclick := ((_: Event) => messageBus.publish(Toggle(Toggle.paletteKey, Some(false))).unsafeRunSync())
     ).render
 
-  override def init(model: EditorModel): IO[Unit] = for {
+  override def initPalette(model: EditorModel): IO[Unit] = for {
     newPaletteElement <- IO.pure(stencilNavList(model.palette))
     newConnectorsElement <- IO.pure(connectorNavList(model.palette))
-    _ <- IO(toggleView(false))
     _ <- IO {
       paletteContainer.appendChild(newPaletteElement)
       paletteContainer.appendChild(newConnectorsElement)

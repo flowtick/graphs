@@ -16,11 +16,9 @@ import com.flowtick.graphs.json.schema.Schema
 import com.flowtick.graphs.json.schema.JsonSchema._
 import org.scalajs.dom.Event
 
-final case class EditorOptions(paletteContainerId: Option[String] = None,
-                               menuContainerId: Option[String] = None,
-                               palette: Option[Palette] = None,
-                               initial: Option[JsonGraph[Json, GraphMLEdge[Json], GraphMLNode[Json]]] = None,
-                               schema: Option[EditorModel.EditorSchema] = None)
+final case class EditorOptionsJs(paletteContainerId: Option[String] = None,
+                                 menuContainerId: Option[String] = None,
+                                 options: EditorOptions)
 
 @JSExportTopLevel("graphs")
 object EditorMainJs extends EditorMain {
@@ -29,20 +27,15 @@ object EditorMainJs extends EditorMain {
   def createEditor(containerElementId: String,
                    optionsObj: js.UndefOr[js.Object]): EditorInstanceJs = (for {
     options <- optionsObj
-      .toOption.map(obj => IO.fromEither(io.circe.parser.decode[EditorOptions](JSON.stringify(obj))))
-      .getOrElse(IO.pure(EditorOptions()))
+      .toOption.map(obj => IO.fromEither(io.circe.parser.decode[EditorOptionsJs](JSON.stringify(obj))))
+      .getOrElse(IO.pure(EditorOptionsJs(None, None, EditorOptions())))
 
     editor <- createEditor(bus => List(
       Some(new EditorPropertiesJs(containerElementId)(bus)),
       Some(new EditorViewJs(containerElementId)(bus)),
       options.paletteContainerId.map(new EditorPaletteJs(_)(bus)),
       options.menuContainerId.map(new EditorMenuJs(_)(bus))
-    ).flatten)(options.initial.map(jsonGraph => GraphMLGraph[Json, Json](
-      jsonGraph.graph,
-      GraphMLMeta(None, Seq.empty, resources = Seq.empty))),
-      options.palette,
-      options.schema
-    )
+    ).flatten)(options.options)
     (bus, _) = editor
     // we use right click for panning, prevent context menu
     _ <- IO(org.scalajs.dom.window.document.addEventListener("contextmenu", (event: Event) => {

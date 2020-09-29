@@ -33,7 +33,7 @@ object Palette {
       )
     ),
     stencils = List(
-      StencilGroup("shapes", List(
+      StencilGroup("Default Shapes", List(
         Stencil("white_rect", "White Rectangle",
           shape = Some(NodeShape(
             shapeType = Some(ShapeType.Rectangle),
@@ -42,5 +42,13 @@ object Palette {
           )),
           // TODO: replace with svg
           previewImageRef = Some("white_rect")
-        )))))
+        ),
+        Stencil("red_rect", "Red Rectangle",
+          shape = Some(NodeShape(
+            shapeType = Some(ShapeType.Rectangle),
+            label = Some(NodeLabel("Red")),
+            fill = Some(Fill(color = Some("#FF0000")))
+          ))
+        )
+      ))))
 }

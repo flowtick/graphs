@@ -1,6 +1,7 @@
 package com.flowtick.graphs.editor
 
-import com.flowtick.graphs.graphml.{EdgePath, GraphMLGraph}
+import com.flowtick.graphs.graphml.{EdgePath, GraphMLEdge, GraphMLGraph, GraphMLNode}
+import com.flowtick.graphs.json.JsonGraph
 import io.circe.Decoder.Result
 import io.circe.generic.auto._
 import io.circe.{Decoder, DecodingFailure, HCursor, Json}
@@ -11,6 +12,7 @@ case class CreateNode(id: String,
                       y: Option[Double] = None) extends EditorCommand
 
 case class SetLabel(elementRef: ElementRef, label: String) extends EditorCommand
+case class SetColor(elementRef: ElementRef, color: String) extends EditorCommand
 case class SetJsonString(elementRef: ElementRef, json: String) extends EditorCommand
 case class SetJson(elementRef: ElementRef, json: Json => Json) extends EditorCommand
 
@@ -49,7 +51,7 @@ case class Select(selection: Set[ElementRef], append: Boolean = false) extends E
 case class Selected(elements: Set[ElementRef], oldSelection: Set[ElementRef]) extends EditorEvent
 
 case object DeleteSelection extends EditorCommand
-case class Toggle(key: String, value: Boolean) extends EditorCommand
+case class Toggle(key: String, value: Option[Boolean]) extends EditorCommand
 case object Undo extends EditorCommand
 case object SelectAll extends EditorCommand
 
@@ -77,6 +79,11 @@ object Toggle {
   val editKey = "edit"
   val paletteKey = "palette"
 }
+
+
+final case class EditorOptions(palette: Option[Palette] = None,
+                               initial: Option[JsonGraph[Json, GraphMLEdge[Json], GraphMLNode[Json]]] = None,
+                               schema: Option[EditorModel.EditorSchema] = None)
 
 object EditorCommand {
   implicit val decoder = new Decoder[EditorCommand] {

@@ -9,7 +9,7 @@ import io.circe.Json
 import javafx.event.EventHandler
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.geometry.VPos
-import scalafx.scene.layout.{BorderPane, Pane}
+import scalafx.scene.layout.{BorderPane, Pane, Priority}
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.{Circle, Line, Polygon, Polyline}
 import scalafx.scene.text.{Text, TextAlignment}
@@ -18,7 +18,7 @@ import scalafx.scene.{Group, Node}
 
 final case class JFXElement(id: ElementRef, group: Node, selectElem: Node, label : Node) extends GraphElement[Node]
 
-class EditorGraphPane(handleSelect: ElementRef => Boolean => IO[Unit],
+class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean => IO[Unit],
                       handleDrag: Option[DragStart[Node]] => IO[Unit],
                       handleDoubleClick: Any => IO[Unit]) extends BorderPane with Page[Node]{
   var panContext = PanContext(0.0, 0.0, 0.0, 0.0)
@@ -35,20 +35,23 @@ class EditorGraphPane(handleSelect: ElementRef => Boolean => IO[Unit],
 
   center = group
 
-  onScroll = new EventHandler[ScrollEvent]() {
+  vgrow = Priority.Always
+  hgrow = Priority.Always
+
+  layout.onScroll = new EventHandler[ScrollEvent]() {
     override def handle(event: ScrollEvent): Unit = {
       event.consume()
 
       if (event.getDeltaY != 0) {
         val scaleFactor = if (event.getDeltaY > 0) scaleDelta else 1 / scaleDelta
 
-        val pivot = transformation.inverseTransform(event.getX, event.getY)
+        val pivot = transformation.inverseTransform(event.getX - layoutX.value, event.getY - layoutY.value)
         transformation.appendScale(scaleFactor, scaleFactor, pivot.getX, pivot.getY)
       }
     }
   }
 
-  onMousePressed = new EventHandler[MouseEvent] {
+  layout.onMousePressed = new EventHandler[MouseEvent] {
     override def handle(event: MouseEvent): Unit = {
       event.consume()
 
@@ -66,7 +69,7 @@ class EditorGraphPane(handleSelect: ElementRef => Boolean => IO[Unit],
     }
   }
 
-  onMouseDragged = new EventHandler[MouseEvent] {
+  layout.onMouseDragged = new EventHandler[MouseEvent] {
     override def handle(event: MouseEvent): Unit = {
       event.consume()
 
@@ -175,16 +178,16 @@ class EditorGraphPane(handleSelect: ElementRef => Boolean => IO[Unit],
 
       val label = new Text() {
         text = textValue
+        x = secondLast.x
         y = secondLast.y
-        wrappingWidth = 12.0
         textAlignment = TextAlignment.Center
-        textOrigin = VPos.Center
       }
 
       val edgeGroup = new Group {
         children.add(edgeLine)
         children.add(arrowHead)
         children.add(selectGroup)
+        children.add(label)
         viewOrder_(-10)
       }
 

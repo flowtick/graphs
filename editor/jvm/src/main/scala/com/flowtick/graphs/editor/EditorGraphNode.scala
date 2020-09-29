@@ -1,16 +1,17 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import com.flowtick.graphs.graphml.{BorderStyle, NodeShape}
+import com.flowtick.graphs.graphml.{BorderStyle, NodeShape, ShapeType}
 import com.flowtick.graphs.layout.DefaultGeometry
 import javafx.event.EventHandler
 import javafx.scene.input.MouseEvent
 import scalafx.geometry.VPos
-import scalafx.scene.{Group, Node}
+import scalafx.scene.image.ImageView
 import scalafx.scene.paint.Color
-import scalafx.scene.shape.Rectangle
+import scalafx.scene.shape.{Ellipse, Rectangle, Shape}
 import scalafx.scene.text.{Text, TextAlignment}
 import scalafx.scene.transform.Affine
+import scalafx.scene.{Group, Node}
 
 class EditorGraphNode(nodeId: String,
                       geometry: DefaultGeometry,
@@ -18,18 +19,50 @@ class EditorGraphNode(nodeId: String,
                       transformation: Affine,
                       handleSelect: ElementRef => Boolean => IO[Unit],
                       handleDrag: Option[DragStart[Node]] => IO[Unit]) extends Group { self =>
-  val borderStyle = shape.borderStyle.orElse(Some(BorderStyle("#888888", styleType = "line", width = 1.0)))
+  val defaultBorderStyle = shape.borderStyle.orElse(Some(BorderStyle("#888888", styleType = Some("line"), width = Some(1.0))))
 
-  val nodeShape = new Rectangle {
+  lazy val fallBackShape = new Rectangle {
     x = 0
     y = 0
-    arcWidth = 5.0
-    arcHeight = 5.0
     width = geometry.width
     height = geometry.height
-    fill = Color.web(shape.fill.flatMap(_.color).getOrElse("#FFFFFF"))
-    stroke = borderStyle.map(border => Color.web(border.color)) getOrElse Color.Transparent
-    strokeWidth = borderStyle.map(_.width).getOrElse(0.0)
+    fill = shape.fill.flatMap(_.color).map(Color.web).getOrElse(Color.Transparent)
+    stroke = defaultBorderStyle.map(border => Color.web(border.color)) getOrElse Color.Transparent
+    strokeWidth = defaultBorderStyle.flatMap(_.width).getOrElse(0.0)
+  }
+
+  val vectorShape: Shape = shape.shapeType match {
+    case Some(ShapeType.Ellipse) => new Ellipse {
+      centerX = geometry.width / 2
+      centerY = geometry.height / 2
+      radiusX = geometry.width / 2
+      radiusY = geometry.height / 2
+      fill = shape.fill.flatMap(_.color).map(Color.web).getOrElse(Color.Transparent)
+      stroke = shape.borderStyle.map(border => Color.web(border.color)) getOrElse Color.Transparent
+      strokeWidth = shape.borderStyle.flatMap(_.width).getOrElse(0.0)
+    }
+    case Some(ShapeType.RoundRectangle) =>
+      new Rectangle {
+        x = 0
+        y = 0
+        arcWidth = 5.0
+        arcHeight = 5.0
+        width = geometry.width
+        height = geometry.height
+        fill = shape.fill.flatMap(_.color).map(Color.web).getOrElse(Color.Transparent)
+        stroke = shape.borderStyle.map(border => Color.web(border.color)) getOrElse Color.Transparent
+        strokeWidth = shape.borderStyle.flatMap(_.width).getOrElse(0.0)
+      }
+    case _ => fallBackShape
+  }
+
+  val nodeShape: Node = shape.image.flatMap(img => ImageLoader.getImage(img.refId)) match {
+    case Some(loaded) => new ImageView {
+      fitWidth = geometry.width
+      fitHeight = geometry.height
+      image = loaded
+    }
+    case _ => vectorShape
   }
 
   val selectRect = new Rectangle {

@@ -106,7 +106,8 @@ lazy val editor = (crossProject(JVMPlatform, JSPlatform) in file(".") / "editor"
       "io.circe" %%% "circe-generic",
       "io.circe" %%% "circe-parser"
     ).map(_ % circeVersion),
-    libraryDependencies += "org.typelevel" %%% "cats-effect" % "2.1.3"
+    libraryDependencies += "org.typelevel" %%% "cats-effect" % "2.1.3",
+    libraryDependencies += "org.apache.xmlgraphics" % "batik-rasterizer" % "1.13"
   ).dependsOn(core, graphml, json, cats)
 
 lazy val editorJS = editor.js.settings(
@@ -127,6 +128,7 @@ lazy val javaFXModules = Seq("base", "controls", "fxml", "graphics", "media", "s
 
 lazy val editorJVM = editor.jvm.settings(
   libraryDependencies += "org.scalafx" %% "scalafx" % "14-R19",
+  libraryDependencies += "org.fxmisc.richtext" % "richtextfx" % "0.10.5",
   libraryDependencies ++= javaFXModules.map( m =>
     "org.openjfx" % s"javafx-$m" % "14.0.1" classifier osName
   )

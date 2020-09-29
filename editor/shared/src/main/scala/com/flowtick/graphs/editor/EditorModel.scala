@@ -18,7 +18,7 @@ class EditorModelUpdate extends EditorComponent {
 
   override def order: Double = 0.1
 
-  implicit val jsonDataType = EditorModel.jsonDataType(true)
+  implicit val jsonDataType: Datatype[Json] = EditorModel.jsonDataType(emptyOnError = true)
 
   val handleAddNode: Transform = ctx => ctx.transform {
     case add: CreateNode =>
@@ -35,7 +35,7 @@ class EditorModelUpdate extends EditorComponent {
             geometry = Some(DefaultGeometry(
               xPos,
               yPos,
-              item.shape.flatMap(_.geometry.map(_.width)).getOrElse(80.0),
+              item.shape.flatMap(_.geometry.map(_.width)).getOrElse(50.0),
               item.shape.flatMap(_.geometry.map(_.height)).getOrElse(50.0))
             )
 
@@ -185,6 +185,13 @@ class EditorModelUpdate extends EditorComponent {
       ctx
         .copy(model = ctx.model.updateGraphMl(ctx.model.graphml.copy(graph = updatedGraph)))
         .addNotification(this, ElementUpdated(ElementRef(id, NodeType)))
+
+    case SetColor(ElementRef(id, NodeType), color) =>
+      val updatedGraph = ctx.model.graphml.graph.updateNode(id)(_.updateNodeColor(color))
+
+      ctx
+        .copy(model = ctx.model.updateGraphMl(ctx.model.graphml.copy(graph = updatedGraph)))
+        .addNotification(this, ElementUpdated(ElementRef(id, NodeType)))
   }
 
   val setNodeJson: Transform = ctx => ctx.transform {
@@ -274,7 +281,7 @@ class EditorModelUpdate extends EditorComponent {
       withSelection(ctx, selection, append)
   }
 
-  private def withSelection(ctx: EditorContext, selection: Set[ElementRef], append: Boolean) = {
+  private def withSelection(ctx: EditorContext, selection: Set[ElementRef], append: Boolean): EditorContext = {
     val oldSelection = ctx.model.selection
 
     val newSelection = selection.flatMap {
@@ -302,7 +309,7 @@ class EditorModelUpdate extends EditorComponent {
   }
 
   val handleConnectToggle: Transform = ctx => ctx.transform {
-    case Toggle(Toggle.connectKey, toggle) => ctx.copy(model = ctx.model.copy(connectSelection = toggle))
+    case Toggle(Toggle.connectKey, Some(toggle)) => ctx.copy(model = ctx.model.copy(connectSelection = toggle))
   }
 
   val handleDelete: Transform = ctx => ctx.transform {
@@ -360,7 +367,8 @@ final case class EditorModel(graphml: GraphMLGraph[Json, Json],
 
 final case class EditorSchemaHints(copyToLabel: Option[Boolean] = None,
                                    hideLabelProperty: Option[Boolean] = None,
-                                   highlight: Option[String] = None)
+                                   highlight: Option[String] = None,
+                                   showJsonProperty: Option[Boolean] = None)
 
 object EditorModel {
   type EditorSchema = Schema[EditorSchemaHints]

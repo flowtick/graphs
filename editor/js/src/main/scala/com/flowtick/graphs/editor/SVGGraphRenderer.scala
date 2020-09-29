@@ -141,7 +141,7 @@ object SVGGraphRenderer {
 
   def nodeStyle(shape: NodeShape): Seq[String] = {
     val borderProps: Option[List[String]] = for {
-      bs <- shape.borderStyle.orElse(Some(BorderStyle("#000000", styleType = "line", width = 1.0)))
+      bs <- shape.borderStyle.orElse(Some(BorderStyle("#000000", styleType = Some("line"), width = Some(1.0))))
     } yield List(
       s"stroke:${bs.color}",
       s"stroke-width:${bs.width}"

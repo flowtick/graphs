@@ -80,8 +80,8 @@ class GraphMLNodeDatatype[T](nodeValueDatatype: Datatype[T]) extends Datatype[Gr
         val fill = for {
           color <- GraphMLDatatype.singleAttributeValue("color", elem).orElse(Some("#FFFFFF"))
           hasColor <- GraphMLDatatype.singleAttributeValue("hasColor", elem).orElse(Some("true"))
-          transparent <- GraphMLDatatype.singleAttributeValue("transparent", elem)
-        } yield Fill(if (hasColor.toBoolean) Some(color) else None, transparent.toBoolean)
+          transparent = GraphMLDatatype.singleAttributeValue("transparent", elem)
+        } yield Fill(if (hasColor.toBoolean) Some(color) else None, transparent.map(_.toBoolean))
         shape.copy(fill = fill)
 
       case (shape, elem) if elem.label == "Shape" =>
@@ -90,9 +90,9 @@ class GraphMLNodeDatatype[T](nodeValueDatatype: Datatype[T]) extends Datatype[Gr
       case (shape, elem) if elem.label == "BorderStyle" =>
         val borderStyle = for {
           color <- GraphMLDatatype.singleAttributeValue("color", elem)
-          styleType <- GraphMLDatatype.singleAttributeValue("type", elem)
-          width <- GraphMLDatatype.singleAttributeValue("width", elem)
-        } yield BorderStyle(color, styleType, width.toDouble)
+          styleType = GraphMLDatatype.singleAttributeValue("type", elem)
+          width = GraphMLDatatype.singleAttributeValue("width", elem)
+        } yield BorderStyle(color, styleType, width.map(_.toDouble))
         shape.copy(borderStyle = borderStyle)
 
       case (shape, elem) if elem.label == "SVGModel" =>
@@ -137,7 +137,7 @@ object GraphMLNodeDatatype {
       {
       nodeShape
         .borderStyle
-        .map(borderStyle => <y:BorderStyle color={borderStyle.color} raised="false" type={borderStyle.styleType} width={borderStyle.width.toString}/>)
+        .map(borderStyle => <y:BorderStyle color={borderStyle.color} raised="false" type={borderStyle.styleType.getOrElse("line")} width={borderStyle.width.getOrElse(0.0).toString}/>)
         .getOrElse(<!-- no border style defined -->)
       }
 

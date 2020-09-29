@@ -5,7 +5,7 @@ import java.util.UUID
 
 import cats.effect.IO
 import com.flowtick.graphs.editor.feature.RoutingFeature
-import com.flowtick.graphs.editor.{AddEdge, CreateNode, EditorComponent, EditorMain, EditorMessageBus, EditorModel, EditorModelUpdate, ElementRef, Export, ExportedGraph, JsonFormat, MoveTo, NodeType, SetGraph}
+import com.flowtick.graphs.editor.{AddEdge, CreateNode, EditorComponent, EditorMain, EditorMessageBus, EditorModel, EditorModelUpdate, EditorOptions, ElementRef, Export, ExportedGraph, JsonFormat, MoveTo, NodeType, SetGraph}
 import com.flowtick.graphs.graphml.{GraphMLGraph, GraphMLMeta, PointSpec}
 import io.circe.Json
 import org.scalatest.flatspec.AnyFlatSpec
@@ -39,7 +39,7 @@ class RoutingFeatureSpec extends AnyFlatSpec with Matchers {
         printView(bus),
         new EditorModelUpdate(),
         new RoutingFeature(),
-      ))(None, None, None)
+      ))(EditorOptions())
       (messageBus, _) = editor
       _ <- messageBus.publish(SetGraph(GraphMLGraph[Json, Json](Graph.empty, GraphMLMeta())))
 
