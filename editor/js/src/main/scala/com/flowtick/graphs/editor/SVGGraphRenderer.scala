@@ -124,7 +124,7 @@ object SVGGraphRenderer {
           svgAttrs.height := height,
           svgAttrs.xLinkHref := s"data:application/svg+xml,${imageResource.data.replaceAll("\n", "")}"
         )
-      case Some(imageUrl) if imageUrl.imageType == "dataUrl" => svg.image(
+      case Some(imageUrl) if imageUrl.imageType == "dataUrl" || imageUrl.imageType == "url" => svg.image(
         svgAttrs.width :=  width,
         svgAttrs.height := height,
         svgAttrs.xLinkHref := imageUrl.data
@@ -138,7 +138,7 @@ object SVGGraphRenderer {
       bs <- shape.borderStyle.orElse(Some(BorderStyle("#000000", styleType = Some("line"), width = Some(1.0))))
     } yield List(
       s"stroke:${bs.color}",
-      s"stroke-width:${bs.width}"
+      s"stroke-width:${bs.width.getOrElse(1.0)}"
     )
 
     val fillProps: Option[List[String]] = for {
