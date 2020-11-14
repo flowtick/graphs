@@ -145,6 +145,7 @@ flowtick/graphs
   <li><a href="json.html" class="page">JSON support</a></li>
   <li><a href="graphml.html" class="page">GraphML support</a></li>
   <li><a href="cats.html" class="page">cats support</a></li>
+  <li><a href="editor.html" class="page">Editor</a></li>
 </ul>
 <nav class="md-nav md-nav--secondary">
 <label class="md-nav__title" for="__toc">Table of contents</label>
@@ -162,7 +163,7 @@ flowtick/graphs
 <ul style="display: none">
 <li class="md-nav__item md-version" id="project.version">
 <label class="md-nav__link" for="__version">
-<i class="md-icon" title="Version">label_outline</i> 0.4.0
+<i class="md-icon" title="Version">label_outline</i> 0.4.0+6-31433d58+20201114-1711*
 </label>
 </li>
 </ul>
@@ -193,7 +194,7 @@ flowtick/graphs
 <h1><a href="#creating-graphs" name="creating-graphs" class="anchor"><span class="anchor-link"></span></a>Creating graphs</h1>
 <p>A <em>graph</em> consists of <em>nodes</em> which represent some objects or values and <em>edges</em> which express a relation between this objects.</p>
 <p><code>graphs</code> has a default builder <code>--&gt;</code> that you can use with arbitrary node types. By importing this builder, you can instantly start creating simple graphs:</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.4.0/examples/shared/src/main/scala/SimpleGraphExample.scala#L3-L11" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/master/examples/shared/src/main/scala/SimpleGraphExample.scala#L3-L11" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
 
 val graph: Graph[Unit, String] = Graph.fromEdges(Set(
@@ -204,7 +205,7 @@ val graph: Graph[Unit, String] = Graph.fromEdges(Set(
 println(graph.edges)</code></pre>
 <p>Edges can also have values associated with them, for example a distance between nodes that represent locations. </p>
 <p>Numeric edge values can be used in algorithms like Dijkstras algorithm to find the shortest path between two nodes.</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.4.0/examples/shared/src/main/scala/DijkstraExample.scala#L8-L19" target="_blank" title="Go to snippet source"></a><code class="language-scala">val cities: Graph[Int, String] = Graph.fromEdges(Set(
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/master/examples/shared/src/main/scala/DijkstraExample.scala#L8-L19" target="_blank" title="Go to snippet source"></a><code class="language-scala">val cities: Graph[Int, String] = Graph.fromEdges(Set(
   &quot;Frankfurt&quot; --&gt; (85, &quot;Mannheim&quot;),
   &quot;Frankfurt&quot; --&gt; (217, &quot;Wuerzburg&quot;),
   &quot;Frankfurt&quot; --&gt; (173, &quot;Kassel&quot;),
@@ -229,7 +230,7 @@ println(graph.edges)</code></pre>
   <p>a graph with edges of type <code>Double</code> value connecting nodes of type <code>String</code></p>
 </blockquote>
 <p><code>Graph</code> has common methods to work with graph instances:</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.4.0/core/shared/src/main/scala/com/flowtick/graphs/Graph.scala#L171-L212" target="_blank" title="Go to snippet source"></a><code class="language-scala">trait Graph[E, N] {
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/master/core/shared/src/main/scala/com/flowtick/graphs/Graph.scala#L171-L212" target="_blank" title="Go to snippet source"></a><code class="language-scala">trait Graph[E, N] {
   def edges: Iterable[Edge[E]]
   def nodes: Iterable[Node[N]]
 
@@ -273,7 +274,7 @@ println(graph.edges)</code></pre>
 </code></pre>
 <h2><a href="#identity" name="identity" class="anchor"><span class="anchor-link"></span></a>Identity</h2>
 <p>Nodes and Edges have an <code>id</code> field of type <code>String</code>. Most of the graph API is built around this <code>id</code>. During graph creation, the <code>id</code> is derived from the node / edge value via the <code>Identifiable</code> type:</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.4.0/core/shared/src/main/scala/com/flowtick/graphs/Graph.scala#L11-L18" target="_blank" title="Go to snippet source"></a><code class="language-scala">trait Identifiable[-T] {
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/master/core/shared/src/main/scala/com/flowtick/graphs/Graph.scala#L11-L18" target="_blank" title="Go to snippet source"></a><code class="language-scala">trait Identifiable[-T] {
   def apply(value: T): String
 }
 
@@ -284,7 +285,7 @@ object Identifiable {
 <p>The defaults contain some default identities for common primitive types, for complex custom types you need to provide a corresponding instance.</p>
 <h2><a href="#custom-graph-types" name="custom-graph-types" class="anchor"><span class="anchor-link"></span></a>Custom Graph Types</h2>
 <p>Since the graph type itself is parametrized, you can just plug in your types:</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.4.0/examples/shared/src/main/scala/CustomGraphExample.scala#L6-L15" target="_blank" title="Go to snippet source"></a><code class="language-scala">final case class MyNode(id: String, someCustomProperty: String)
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/master/examples/shared/src/main/scala/CustomGraphExample.scala#L6-L15" target="_blank" title="Go to snippet source"></a><code class="language-scala">final case class MyNode(id: String, someCustomProperty: String)
 
 implicit val myNodeId: Identifiable[MyNode] = new Identifiable[MyNode] {
   override def apply(value: MyNode): String = value.id
@@ -296,13 +297,13 @@ val graph = Graph.fromEdges(Set(
 println(graph.edges)</code></pre>
 </div>
 <div>
-<a href="https://github.com/flowtick/graphs/tree/v0.4.0/docs/creating-graphs.md" title="Edit this page" class="md-source-file md-edit">
+<a href="https://github.com/flowtick/graphs/tree/master/docs/creating-graphs.md" title="Edit this page" class="md-source-file md-edit">
 Edit this page
 </a>
 </div>
 <div class="print-only">
 <span class="md-source-file md-version">
-0.4.0
+0.4.0+6-31433d58+20201114-1711*
 </span>
 </div>
 </article>
