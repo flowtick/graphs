@@ -1,8 +1,8 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import com.flowtick.graphs.graphml.{BorderStyle, NodeShape, ShapeType}
-import com.flowtick.graphs.layout.DefaultGeometry
+import com.flowtick.graphs.style._
+import com.flowtick.graphs.layout.Geometry
 import javafx.event.EventHandler
 import javafx.scene.input.MouseEvent
 import scalafx.geometry.VPos
@@ -13,12 +13,13 @@ import scalafx.scene.text.{Text, TextAlignment}
 import scalafx.scene.transform.Affine
 import scalafx.scene.{Group, Node}
 
-class EditorGraphNode(nodeId: String,
-                      geometry: DefaultGeometry,
-                      shape: NodeShape)(
-                      transformation: Affine,
-                      handleSelect: ElementRef => Boolean => IO[Unit],
-                      handleDrag: Option[DragStart[Node]] => IO[Unit]) extends Group { self =>
+class EditorGraphNodeFx(nodeId: String,
+                        geometry: Geometry,
+                        labelValue: Option[String],
+                        shape: NodeShape)(transformation: Affine,
+                                          handleSelect: ElementRef => Boolean => IO[Unit],
+                                          handleDrag: Option[DragStart[Node]] => IO[Unit],
+                                          handleDoubleClick: Any => IO[Unit]) extends Group { self =>
   val defaultBorderStyle = shape.borderStyle.orElse(Some(BorderStyle("#888888", styleType = Some("line"), width = Some(1.0))))
 
   lazy val fallBackShape = new Rectangle {
@@ -41,6 +42,7 @@ class EditorGraphNode(nodeId: String,
       stroke = shape.borderStyle.map(border => Color.web(border.color)) getOrElse Color.Transparent
       strokeWidth = shape.borderStyle.flatMap(_.width).getOrElse(0.0)
     }
+
     case Some(ShapeType.RoundRectangle) =>
       new Rectangle {
         x = 0
@@ -56,12 +58,15 @@ class EditorGraphNode(nodeId: String,
     case _ => fallBackShape
   }
 
-  val nodeShape: Node = shape.image.flatMap(img => ImageLoader.getImage(img.refId)) match {
+  val nodeShape: Node = shape.image
+    .flatMap(img => ImageLoaderFx.getImage(img))
+    .orElse(shape.svgContent.flatMap(svg => ImageLoaderFx.getImage(svg.refId))) match {
     case Some(loaded) => new ImageView {
       fitWidth = geometry.width
       fitHeight = geometry.height
       image = loaded
     }
+
     case _ => vectorShape
   }
 
@@ -77,10 +82,8 @@ class EditorGraphNode(nodeId: String,
     viewOrder_(-20)
   }
 
-  val textValue = shape.label.map(_.text).getOrElse("")
-
   val label = new Text() {
-    text = textValue
+    text = labelValue.getOrElse("")
     y = geometry.height / 2.0
     wrappingWidth = geometry.width
     textAlignment = TextAlignment.Center
@@ -107,7 +110,7 @@ class EditorGraphNode(nodeId: String,
       val mousePos = transformation.inverseTransform(event.getSceneX, event.getSceneY)
 
       if (event.getClickCount == 2) {
-        handleSelect(ElementRef(nodeId, NodeType))(false).unsafeRunSync()
+        handleDoubleClick(event).unsafeRunSync()
       }
 
       if (event.isPrimaryButtonDown) {
@@ -133,7 +136,7 @@ class EditorGraphNode(nodeId: String,
           selectRect.x = newX
           selectRect.y = newY
 
-          dragStart.copy(lastPos = Some(newX, newY), deltaX = deltaX, deltaY = deltaY)
+          dragStart.copy(lastPos = Some(PagePoint(newX, newY)), deltaX = deltaX, deltaY = deltaY)
         }
       }
     }

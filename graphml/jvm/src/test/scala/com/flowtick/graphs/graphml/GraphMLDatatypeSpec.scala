@@ -4,6 +4,7 @@ import cats.data.NonEmptyList
 import cats.data.Validated.Valid
 import com.flowtick.graphs.{Graph, Node}
 import com.flowtick.graphs.graphml.generic._
+import com.flowtick.graphs.style.{NodeLabel, NodeShape, PointSpec}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -92,14 +93,14 @@ class GraphMLDatatypeSpec extends AnyFlatSpec with Matchers {
         graphml.graph.nodes.find(_.id == "n0") match {
           case Some(n0) =>
             n0.id should be("n0")
-            n0.value.shape.flatMap(_.label.map(_.text)) should be(Some("Kassel"))
+            n0.value.labelValue should be(Some("Kassel"))
           case _ => fail("unable to find node n0")
         }
 
         graphml.graph.edges.map(_.value).find(_.id == "e1") match {
           case Some(e1) =>
             e1.value should equal("85")
-            e1.shape.flatMap(_.label.map(_.text)) should be(empty)
+            e1.labelValue should be(empty)
           case _ => fail("unable to find edge e1")
         }
       case Left(errors) => fail(s"error during parsing: ${errors.toString}")
@@ -142,14 +143,12 @@ class GraphMLDatatypeSpec extends AnyFlatSpec with Matchers {
     val converter = new GraphMLConverterOps(cities)
 
     val graphML = converter.asGraphML(Some({
-      case (labelString, _) => NodeShape(label = {
-        labelString.map(NodeLabel(_, textColor = Some("#000000"), fontSize = Some("12"), fontFamily = Some("Dialog"), modelName = Some("custom"), position = Some(PointSpec(0.0, 0.0))))
-      })
+      case (_, _) => NodeShape(labelStyle =
+        Some(NodeLabel(textColor = Some("#000000"), fontSize = Some("12"), fontFamily = Some("Dialog"), modelName = Some("custom"), position = Some(PointSpec(0.0, 0.0))))
+      )
     }))
 
     val xml = graphML.xml
-
-    xml.headOption.foreach(println)
 
     val parsed: Either[NonEmptyList[Throwable], GraphMLGraph[Int, String]] = FromGraphML[Int, String](xml.toString)
 

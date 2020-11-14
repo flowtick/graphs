@@ -3,12 +3,10 @@ package com.flowtick.graphs.editor
 import cats.effect.IO
 import com.flowtick.graphs
 import com.flowtick.graphs._
-import com.flowtick.graphs.graphml.{GraphMLEdge, GraphMLGraph, GraphMLNode, NodeShape, PointSpec}
-import com.flowtick.graphs.layout.DefaultGeometry
-import io.circe.Json
+import com.flowtick.graphs.style._
+import com.flowtick.graphs.layout.Geometry
 import javafx.event.EventHandler
 import javafx.scene.input.{MouseEvent, ScrollEvent}
-import scalafx.geometry.VPos
 import scalafx.scene.layout.{BorderPane, Pane, Priority}
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.{Circle, Line, Polygon, Polyline}
@@ -20,7 +18,7 @@ final case class JFXElement(id: ElementRef, group: Node, selectElem: Node, label
 
 class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean => IO[Unit],
                       handleDrag: Option[DragStart[Node]] => IO[Unit],
-                      handleDoubleClick: Any => IO[Unit]) extends BorderPane with Page[Node]{
+                      handleDoubleClick: Any => IO[Unit]) extends BorderPane with Page[Node, MouseEvent]{
   var panContext = PanContext(0.0, 0.0, 0.0, 0.0)
 
   val transformation = new Affine()
@@ -123,16 +121,15 @@ class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean =>
     }
   }
 
-  override def addEdge(edge: Edge[GraphMLEdge[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[Node]]] = IO {
+  override def addEdge(edge: Edge[EditorGraphEdge], graph: EditorGraph): IO[Option[GraphElement[Node]]] = IO {
     for {
-      edgePoints <- DrawUtil.getLinePoints(edge, graphml).map(_.toList.reverse)
-      shape = edge.value.shape
+      edgePoints <- DrawUtil.getLinePoints(edge, graph).map(_.toList.reverse)
       last <- edgePoints.headOption
       secondLast <- edgePoints.tail.headOption
 
       arrowHead = createArrowHead(secondLast.x, secondLast.y, last.x, last.y)
     } yield {
-      val textValue = shape.flatMap(_.label.map(_.text)).getOrElse("")
+      val textValue = edge.value.label.getOrElse("")
 
       val edgeLine = new Polyline {
         edgePoints.foreach(point => points.addAll(point.x, point.y))
@@ -204,12 +201,12 @@ class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean =>
     }
   }
 
-  override def addNode(node: graphs.Node[GraphMLNode[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[Node]]] = IO {
+  override def addNode(node: graphs.Node[EditorGraphNode], graph: EditorGraph): IO[Option[GraphElement[Node]]] = IO {
     for {
-      geometry: DefaultGeometry <- node.value.shape.flatMap(_.geometry)
-      shape: NodeShape <- node.value.shape
+      geometry: Geometry <- graph.layout.nodes.get(node.id)
+      shape = graph.styleSheet.getNodeStyle(Some(node.id), node.value.stencil.toList)
     } yield {
-      val graphNode = new EditorGraphNode(node.id, geometry, shape)(transformation, handleSelect, handleDrag)
+      val graphNode = new EditorGraphNodeFx(node.id, geometry, node.value.label, shape)(transformation, handleSelect, handleDrag, handleDoubleClick)
       group.children.add(graphNode)
       group.children.add(graphNode.selectRect)
 
@@ -235,4 +232,14 @@ class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean =>
   override def resetTransformation: IO[Unit] = IO {
     transformation.setToIdentity()
   }
+
+  override def screenCoordinates(x: Double, y: Double): Point = throw new UnsupportedOperationException("not implemented yet")
+
+  override def pageCoordinates(x: Double, y: Double): Point = throw new UnsupportedOperationException("not implemented yet")
+
+  override def beforeDrag: MouseEvent => Unit = throw new UnsupportedOperationException("not implemented yet")
+
+  override def eventCoordinates(event: MouseEvent): Point = throw new UnsupportedOperationException("not implemented yet")
+
+  override def applyDrag: DragStart[Node] => Unit = throw new UnsupportedOperationException("not implemented yet")
 }

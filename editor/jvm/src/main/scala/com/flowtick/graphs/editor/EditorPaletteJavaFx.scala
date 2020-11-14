@@ -1,15 +1,11 @@
 package com.flowtick.graphs.editor
 
-import java.io.{File, FileInputStream, FileOutputStream}
-import java.util.Base64
-
 import cats.effect.IO
-import scalafx.geometry.{Insets, Pos}
+import scalafx.geometry.Insets
 import scalafx.scene.control.{Accordion, TitledPane, Tooltip}
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout._
 import scalafx.scene.paint.Color
-import scalafx.scene.text.Text
 
 class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane) extends EditorPalette {
   val pane = new BorderPane() {
@@ -54,14 +50,11 @@ class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane) 
           group.items.foreach { stencil =>
             val stencilImage = stencil
               .previewImageRef
-              .flatMap(model.palette.images.get) match {
-              case Some(image) => ImageLoader.registerImage(stencil.id, image)
-              case None => IO(fallBackImage)
-            }
+              .flatMap(ImageLoaderFx.getImage)
+              .getOrElse(fallBackImage)
 
             val stencilView = new ImageView {
-              // TODO: purify this
-              image = stencilImage.unsafeRunSync()
+              image = stencilImage
               fitWidth = 32
               fitHeight = 32
             }

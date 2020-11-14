@@ -1,6 +1,7 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
+import com.flowtick.graphs.style.{ImageSpec, StyleSheet}
 import org.scalajs.dom.html.{Button, Div, UList}
 import org.scalajs.dom.raw.{Event, HTMLElement}
 import scalatags.JsDom.all._
@@ -10,7 +11,7 @@ class EditorPaletteJs(paletteElementId: String)(val messageBus: EditorMessageBus
     .getElementById(paletteElementId)
     .asInstanceOf[HTMLElement]
 
-  def stencilNavList(palette: Palette): UList = ul(
+  def stencilNavList(palette: Palette, styleSheet: StyleSheet): UList = ul(
     cls := "nav",
   ).apply(palette.stencils.toArray.map(group =>
     div(
@@ -29,12 +30,12 @@ class EditorPaletteJs(paletteElementId: String)(val messageBus: EditorMessageBus
           title := item.title,
           onclick :=  ((_: Event) => selectPaletteItem(item)),
           ondblclick := ((_: Event) => createPaletteItem(item)),
-          imageOrTitle(palette.images, item.previewImageRef, item.title)
+          imageOrTitle(styleSheet.images, item.previewImageRef, item.title)
         )
       ))
     ))).render
 
-  def connectorNavList(palette: Palette): UList = ul(
+  def connectorNavList(palette: Palette, styleSheet: StyleSheet): UList = ul(
     cls := "nav",
   ).apply(palette.connectors.toArray.map(group =>
     div(
@@ -52,7 +53,7 @@ class EditorPaletteJs(paletteElementId: String)(val messageBus: EditorMessageBus
           data("placement") := "top",
           title := item.title,
           onclick := ((_: Event) => selectConnectorItem(item)),
-          imageOrTitle(palette.images, item.previewImageRef, item.title)
+          imageOrTitle(styleSheet.images, item.previewImageRef, item.title)
         )
       }
       ))
@@ -66,19 +67,19 @@ class EditorPaletteJs(paletteElementId: String)(val messageBus: EditorMessageBus
     }.getOrElse(title)
   }
 
-  def stencilsElement(palette: Palette): Div = {
+  def stencilsElement(palette: Palette, styleSheet: StyleSheet): Div = {
     div(
       cls := "collapse navbar-collapse",
       id := "paletteNavbarCollapse",
-      stencilNavList(palette)
+      stencilNavList(palette, styleSheet)
     )
   }.render
 
-  def connectorsElement(palette: Palette): Div = {
+  def connectorsElement(palette: Palette, styleSheet: StyleSheet): Div = {
     div(
       cls := "collapse navbar-collapse",
       id := "connectorNavbarCollapse",
-      connectorNavList(palette)
+      connectorNavList(palette, styleSheet)
     )
   }.render
 
@@ -98,12 +99,12 @@ class EditorPaletteJs(paletteElementId: String)(val messageBus: EditorMessageBus
       data("dismiss") := "modal",
       aria.label := "Close",
       span(aria.hidden := "true", "×"),
-      onclick := ((_: Event) => messageBus.publish(Toggle(Toggle.paletteKey, Some(false))).unsafeRunSync())
+      onclick := ((_: Event) => messageBus.publish(EditorToggle(EditorToggle.paletteKey, Some(false))).unsafeRunSync())
     ).render
 
   override def initPalette(model: EditorModel): IO[Unit] = for {
-    newPaletteElement <- IO.pure(stencilNavList(model.palette))
-    newConnectorsElement <- IO.pure(connectorNavList(model.palette))
+    newPaletteElement <- IO.pure(stencilNavList(model.palette, model.editorGraph.styleSheet))
+    newConnectorsElement <- IO.pure(connectorNavList(model.palette, model.editorGraph.styleSheet))
     _ <- IO {
       paletteContainer.appendChild(newPaletteElement)
       paletteContainer.appendChild(newConnectorsElement)

@@ -1,10 +1,8 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import cats.effect.concurrent.Ref
-import com.flowtick.graphs.graphml.{GraphMLEdge, GraphMLGraph, GraphMLNode, PointSpec}
 import com.flowtick.graphs._
-import io.circe.Json
+import com.flowtick.graphs.style._
 import org.scalajs.dom
 import org.scalajs.dom.raw.{Node => _, _}
 import org.scalajs.dom.svg.{G, RectElement, SVG}
@@ -18,10 +16,7 @@ class SVGPage(val root: SVG,
               val selectGroup: G,
               val labelGroup: G,
               val panZoomRect: RectElement,
-              var pageMatrix: SVGMatrix) extends Page[SVGElement] {
-  type Point = SVGPoint
-
-  var dragStartRef: Ref[IO, Option[DragStart[SVGElement]]] = Ref.unsafe(None)
+              var pageMatrix: SVGMatrix) extends Page[SVGElement, Event] {
   var panStart: Option[PanContext] = None
 
   def tx: Double = pageMatrix.e
@@ -52,14 +47,16 @@ class SVGPage(val root: SVG,
     val pt = root.createSVGPoint()
     pt.x = x
     pt.y = y
-    pt.matrixTransform(root.getScreenCTM.inverse)
+    val transformed = pt.matrixTransform(root.getScreenCTM.inverse)
+    PagePoint(transformed.x, transformed.y)
   }
 
   def pageCoordinates(x: Double, y: Double): Point = {
     val pt = root.createSVGPoint()
     pt.x = x
     pt.y = y
-    pt.matrixTransform(pageMatrix.inverse())
+    val transformed = pt.matrixTransform(pageMatrix.inverse())
+    PagePoint(transformed.x, transformed.y)
   }
 
   def pageCenter: PointSpec = {
@@ -135,45 +132,22 @@ class SVGPage(val root: SVG,
     _ <- dragStartRef.set(dragStart)
   } yield dragStart).unsafeRunSync()
 
-  def drag: MouseEvent => Unit = evt => dragStartRef.update {
-    case Some(dragStart: DragStart[SVGElement]) =>
-      evt.preventDefault()
-      val dragCursor = pageCoordinates(evt.clientX, evt.clientY)
-
-      val gridSize: Int = 10
-
-      val deltaX = dragCursor.x - dragStart.cursorX
-      val deltaY = dragCursor.y - dragStart.cursorY
-
-      val screenPoint = screenCoordinates(dragStart.transformX + deltaX, dragStart.transformY + deltaY)
-
-      val tx = (screenPoint.x.toInt / gridSize) * gridSize
-      val ty = (screenPoint.y.toInt / gridSize) * gridSize
-
-      SVGUtil.setTransform(dragStart.dragElem, s"translate($tx $ty)")
-
-      Some(dragStart.copy(lastPos = Some(tx, ty), deltaX = deltaX, deltaY = deltaY))
-    case None => None
-  }.unsafeRunSync()
-
-  def endDrag: MouseEvent => Option[DragStart[SVGElement]] = _ => dragStartRef.getAndUpdate(_ => None).unsafeRunSync()
-
-  override def addEdge(edge: Edge[GraphMLEdge[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[SVGElement]]] = for {
-    edgeElement <- IO(SVGGraphRenderer.renderEdge(edge, graphml))
+  override def addEdge(edge: Edge[EditorGraphEdge], graph: EditorGraph): IO[Option[GraphElement[SVGElement]]] = for {
+    edgeElement <- IO(SVGGraphRenderer.renderEdge(edge, graph))
     _ <- IO(edgeElement.foreach(edge => {
       edgeGroup.appendChild(edge.group)
       labelGroup.appendChild(edge.label)
     }))
   } yield edgeElement
 
-  override def addNode(node: Node[GraphMLNode[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[SVGElement]]] = for {
-    node <- IO(node.value.shape.map { shape =>
-      val nodeElement = SVGGraphRenderer.renderNode(node.id, shape, graphml.resourcesById)
+  override def addNode(node: Node[EditorGraphNode], graph: EditorGraph): IO[Option[GraphElement[SVGElement]]] = for {
+    node <- IO {
+      val nodeElement = SVGGraphRenderer.renderNode(node, graph)
       nodeGroup.appendChild(nodeElement.group)
       selectGroup.appendChild(nodeElement.selectElem)
 
-      nodeElement
-    })
+      Some(nodeElement)
+    }
   } yield node
 
   override def setSelection(element: GraphElement[SVGElement]): IO[Unit] = IO(SVGGraphRenderer.setSelection(element))
@@ -190,6 +164,20 @@ class SVGPage(val root: SVG,
     pageMatrix = root.createSVGMatrix()
     SVGUtil.setMatrix(viewPort, pageMatrix)
   }
+
+  override def beforeDrag: Event => Unit = e => e.preventDefault()
+
+  override def eventCoordinates(event: Event): Point = event match {
+    case e: MouseEvent => PagePoint(e.clientX, e.clientY)
+    case _ => PagePoint(0, 0)
+  }
+
+  override def applyDrag: DragStart[SVGElement] => Unit = dragStart => dragStart.lastPos match {
+    case Some(pos) =>
+      SVGUtil.setTransform(dragStart.dragElem, s"translate(${pos.x} ${pos.y})")
+    case _ =>
+  }
+
 }
 
 object SVGPage {

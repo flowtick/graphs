@@ -1,9 +1,9 @@
 package com.flowtick.graphs.editor
 
-import com.flowtick.graphs.graphml.{EdgePath, GraphMLEdge, GraphMLGraph, GraphMLNode}
+import com.flowtick.graphs.style.{EdgePath, StyleSheet}
 import com.flowtick.graphs.json.JsonGraph
+import io.circe
 import io.circe.Decoder.Result
-import io.circe.generic.auto._
 import io.circe.{Decoder, DecodingFailure, HCursor, Json}
 
 case class CreateNode(id: String,
@@ -17,7 +17,7 @@ case class SetJsonString(elementRef: ElementRef, json: String) extends EditorCom
 case class SetJson(elementRef: ElementRef, json: Json => Json) extends EditorCommand
 
 case class Load(value: String, format: FileFormat) extends EditorCommand
-case class SetGraph(graphml: GraphMLGraph[Json, Json]) extends EditorCommand
+case class SetGraph(graph: EditorGraph) extends EditorCommand
 case class SetModel(model: EditorModel) extends EditorCommand
 
 sealed trait FileFormat {
@@ -51,7 +51,7 @@ case class Select(selection: Set[ElementRef], append: Boolean = false) extends E
 case class Selected(elements: Set[ElementRef], oldSelection: Set[ElementRef]) extends EditorEvent
 
 case object DeleteSelection extends EditorCommand
-case class Toggle(key: String, value: Option[Boolean]) extends EditorCommand
+case class EditorToggle(key: String, value: Option[Boolean]) extends EditorCommand
 case object Undo extends EditorCommand
 case object SelectAll extends EditorCommand
 
@@ -74,19 +74,16 @@ case object Deleted extends UpdateType
 // TODO: maybe have more specialized events to trigger wanted behaviour like redraw?
 case object Internal extends UpdateType
 
-object Toggle {
+object EditorToggle {
   val connectKey = "connect"
   val editKey = "edit"
   val paletteKey = "palette"
 }
 
-
-final case class EditorOptions(palette: Option[Palette] = None,
-                               initial: Option[JsonGraph[Json, GraphMLEdge[Json], GraphMLNode[Json]]] = None,
-                               schema: Option[EditorModel.EditorSchema] = None)
-
 object EditorCommand {
   implicit val decoder = new Decoder[EditorCommand] {
+    import io.circe.generic.auto._
+
     def convert[A](c: HCursor)(implicit decoder: Decoder[A]) =
       c.downField("name").delete.as[A]
 
@@ -96,5 +93,21 @@ object EditorCommand {
       case Right("add-node") => convert[CreateNode](c)
       case _ => Left(DecodingFailure("unknown command name", List.empty))
     }
+  }
+}
+
+final case class EditorOptions(palette: Option[Palette] = None,
+                               styleSheet: Option[StyleSheet] = None,
+                               initial: Option[JsonGraph[Json, EditorGraphEdge, EditorGraphNode]] = None,
+                               schema: Option[EditorModel.EditorSchema] = None)
+
+
+object EditorOptions {
+  import io.circe.generic.auto._
+  import com.flowtick.graphs.json.format.default._
+  import com.flowtick.graphs.json.schema.JsonSchema._
+
+  def decode(optionJson: String): Either[circe.Error, EditorOptions] = {
+    io.circe.parser.decode[EditorOptions](optionJson)
   }
 }

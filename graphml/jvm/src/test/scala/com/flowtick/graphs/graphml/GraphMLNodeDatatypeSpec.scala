@@ -3,6 +3,7 @@ package com.flowtick.graphs.graphml
 import cats.data.Validated.Valid
 import cats.data.ValidatedNel
 import com.flowtick.graphs.layout.DefaultGeometry
+import com.flowtick.graphs.style.{BorderStyle, Fill, NodeLabel, NodeShape}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -19,14 +20,20 @@ class GraphMLNodeDatatypeSpec extends AnyFlatSpec with Matchers {
 
     val targetHint = Some("node")
     val nodeShape = NodeShape(
-      geometry = Some(DefaultGeometry(0.0, 0.0, 30.0, 30.0)),
-      fill = Some(Fill(color = Some("#FFFFFF"), transparent = false)),
-      borderStyle = Some(BorderStyle("#000000", "line", 1.0)),
-      label = Some(NodeLabel("test")),
+      fill = Some(Fill(color = Some("#FFFFFF"), transparent = Some(false))),
+      borderStyle = Some(BorderStyle("#000000", Some("line"), Some(1.0))),
+      labelStyle = Some(NodeLabel()),
       shapeType = Some("rectangle")
     )
 
-    val serialized: NodeSeq = fooDataType.serialize(GraphMLNode(id = "test", value = SomeNodeValue("foo", "bar"), shape = Some(nodeShape)), targetHint)
+    val serialized: NodeSeq = fooDataType.serialize(GraphMLNode(
+      id = "test",
+      value = SomeNodeValue("foo", "bar"),
+      shape = Some(nodeShape),
+      geometry = Some(DefaultGeometry(0.0, 0.0, 30.0, 30.0)),
+      labelValue = Some("test")),
+      targetHint
+    )
     val expectedXml = <node id="test">
                         <data key="node_one" type="string">foo</data>
                         <data key="node_two" type="string">bar</data>

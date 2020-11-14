@@ -1,0 +1,68 @@
+package com.flowtick.graphs.editor
+
+import com.flowtick.graphs.{Edge, Graph, Node}
+import io.circe.Decoder.Result
+import io.circe.{Decoder, Encoder, HCursor, Json, _}
+
+import scala.collection.mutable.ListBuffer
+import io.circe.generic.auto._
+import com.flowtick.graphs.json.format.default._
+import com.flowtick.graphs.layout.{DefaultGeometry, Geometry}
+import com.flowtick.graphs.style.StyleSheet
+
+object EditorGraphJsonFormat {
+  implicit val geometryCode = new Codec[Geometry] {
+    override def apply(a: Geometry): Json = Json.obj(
+      "x" -> Json.fromDoubleOrNull(a.x),
+      "y" -> Json.fromDoubleOrNull(a.y),
+      "height" -> Json.fromDoubleOrNull(a.height),
+      "width" -> Json.fromDoubleOrNull(a.width)
+    )
+
+    override def apply(c: HCursor): Result[Geometry] = for {
+      x <- c.downField("x").as[Double]
+      y <- c.downField("y").as[Double]
+      width <- c.downField("width").as[Double]
+      height <- c.downField("height").as[Double]
+    } yield DefaultGeometry(x, y, width, height)
+  }
+
+
+  implicit val defaultEditorGraphEncoder: Encoder[EditorGraph] = new Encoder[EditorGraph] {
+    import io.circe.syntax._
+
+    override def apply(editorGraph: EditorGraph): Json = {
+      val fields = new ListBuffer[(String, Json)]
+      fields.append(
+        "graph" -> Json.obj(
+          "nodes" -> editorGraph.graph.nodes.asJson,
+          "edges" -> editorGraph.graph.edges.asJson
+        ),
+        "styleSheet" -> editorGraph.styleSheet.asJson,
+        "layout" -> editorGraph.layout.asJson,
+        "schema" -> editorGraph.schema.asJson
+      )
+
+      Json.fromFields(fields)
+    }
+  }
+
+  implicit val defaultEditorGraphDecoder: Decoder[EditorGraph] = new Decoder[EditorGraph] {
+    override def apply(json: HCursor): Result[EditorGraph] = for {
+      nodes <- json
+        .downField("graph")
+        .downField("nodes")
+        .as[List[Node[EditorGraphNode]]]
+        .map(_.iterator.map(node => (node.id, node)).toMap) // convert to map to look up edge references
+
+      edges <- json
+        .downField("graph")
+        .downField("edges")
+        .as[Option[List[Edge[EditorGraphEdge]]]]
+
+      styleSheet <- json.downField("styleSheet").as[StyleSheet]
+      layout <- json.downField("layout").as[EditorGraphLayout]
+      schema <- json.downField("schema").as[EditorModel.EditorSchema]
+    } yield EditorGraph(Graph.fromNodes(nodes).withEdges(edges.getOrElse(List.empty)), styleSheet, layout, schema)
+  }
+}

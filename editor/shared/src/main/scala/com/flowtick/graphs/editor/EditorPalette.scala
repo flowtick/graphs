@@ -17,7 +17,7 @@ trait EditorPalette extends EditorComponent {
   val visibleRef: Ref[IO, Option[Boolean]] = Ref.unsafe(None)
 
   override def eval: Eval = ctx => ctx.effect(this) {
-    case Toggle(Toggle.paletteKey, enabled) =>
+    case EditorToggle(EditorToggle.paletteKey, enabled) =>
       val show = if (enabled.isEmpty) {
         visibleRef
           .get

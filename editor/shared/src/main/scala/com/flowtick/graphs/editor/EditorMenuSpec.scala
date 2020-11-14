@@ -69,19 +69,19 @@ trait EditorMenu extends EditorComponent {
     editorMenus.flatMap(_.actions).map(bindShortcut).sequence.void
 
   def toggleConnect: Any => Unit = _ => {
-    messageBus.publish(Toggle(Toggle.connectKey, Some(true))).unsafeRunSync()
+    messageBus.publish(EditorToggle(EditorToggle.connectKey, Some(true))).unsafeRunSync()
   }
 
   def triggerFileNew: Any => Unit = _ => {
-    messageBus.publish(SetGraph(GraphML.empty)).unsafeRunSync()
+    messageBus.publish(SetGraph(EditorGraph.empty)).unsafeRunSync()
   }
 
   def togglePalette: Any => Unit = _ => {
-    messageBus.publish(Toggle(Toggle.paletteKey, None)).unsafeRunSync()
+    messageBus.publish(EditorToggle(EditorToggle.paletteKey, None)).unsafeRunSync()
   }
 
   def toggleEdit: Any => Unit = _ => {
-    messageBus.publish(Toggle(Toggle.editKey, None)).unsafeRunSync()
+    messageBus.publish(EditorToggle(EditorToggle.editKey, None)).unsafeRunSync()
   }
 
   def triggerUnselect: Any => Unit = _ => {

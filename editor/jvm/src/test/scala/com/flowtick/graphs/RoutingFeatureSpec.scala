@@ -5,8 +5,8 @@ import java.util.UUID
 
 import cats.effect.IO
 import com.flowtick.graphs.editor.feature.RoutingFeature
-import com.flowtick.graphs.editor.{AddEdge, CreateNode, EditorComponent, EditorMain, EditorMessageBus, EditorModel, EditorModelUpdate, EditorOptions, ElementRef, Export, ExportedGraph, JsonFormat, MoveTo, NodeType, SetGraph}
-import com.flowtick.graphs.graphml.{GraphMLGraph, GraphMLMeta, PointSpec}
+import com.flowtick.graphs.editor._
+import com.flowtick.graphs.graphml.GraphMLGraph
 import io.circe.Json
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -21,7 +21,7 @@ class RoutingFeatureSpec extends AnyFlatSpec with Matchers {
       }
 
       case ExportedGraph(name, value, format) => IO {
-        val out = new FileOutputStream("target/last_test" + format.`extension`)
+        val out = new FileOutputStream(s"target/last_test$name" + format.`extension`)
         out.write(value.getBytes("UTF-8"))
         out.flush()
         out.close()
@@ -37,46 +37,36 @@ class RoutingFeatureSpec extends AnyFlatSpec with Matchers {
     val (added, moved) = (for {
       editor <- createEditor(bus => List(
         printView(bus),
-        new EditorModelUpdate(),
-        new RoutingFeature(),
+        new EditorModelUpdate,
+        new RoutingFeature()
       ))(EditorOptions())
       (messageBus, _) = editor
-      _ <- messageBus.publish(SetGraph(GraphMLGraph[Json, Json](Graph.empty, GraphMLMeta())))
+      _ <- messageBus.publish(SetGraph(EditorGraph.empty))
 
       _ <- messageBus.publish(CreateNode(firstNodeId, None, Some(100.0), Some(100.0)))
       _ <- messageBus.publish(CreateNode(secondNodeId, None, Some(200.0), Some(200.0)))
       added <- messageBus.publish(AddEdge(edgeId, firstNodeId, secondNodeId, None))
       moved <- messageBus.publish(MoveTo(ElementRef(firstNodeId, NodeType), 110.0, 110.0))
-      exported <- messageBus.publish(Export(JsonFormat))
+      _ <- messageBus.publish(Export(JsonFormat))
     } yield (added, moved)).unsafeRunSync()
 
-    moved.model.graphml.graph.edgeIds should have size(1)
+    moved.model.editorGraph.graph.edgeIds should have size(1)
 
-    def nodeGeometry(id: String, graphml: GraphMLGraph[Json, Json]) = graphml
+    def nodeGeometry(graphml: GraphMLGraph[Json, Json]) = graphml
     .graph
     .findNode(firstNodeId)
-    .flatMap(_.value.shape)
-    .flatMap(_.geometry)
+    .flatMap(_.value.geometry)
     .get
 
-    val posAfterAdd = nodeGeometry(firstNodeId, added.model.graphml)
+    val posAfterAdd = added.model.editorGraph.layout.nodes(firstNodeId)
     posAfterAdd.x should be(100.0)
     posAfterAdd.y should be(100.0)
 
-    val posAfterMove = nodeGeometry(firstNodeId, moved.model.graphml)
+    val posAfterMove = moved.model.editorGraph.layout.nodes(firstNodeId)
     posAfterMove.x should be(110.0)
     posAfterMove.y should be(110.0)
 
-    val edgeAfterMove = moved.model.graphml.graph.findEdge(edgeId)
+    val edgeAfterMove = moved.model.editorGraph.graph.findEdge(edgeId)
     edgeAfterMove.isDefined should be(true)
-
-    val pathPoints: Seq[PointSpec] = edgeAfterMove
-      .flatMap(_.value.shape)
-      .flatMap(_.path)
-      .map(_.points)
-      .getOrElse(List.empty)
-
-
-
   }
 }

@@ -3,8 +3,16 @@ package com.flowtick.graphs.graphml
 import cats.data.ValidatedNel
 import cats.data.Validated._
 import com.flowtick.graphs.graphml.GraphMLDatatype.isValueProperty
+import com.flowtick.graphs.style._
 
 import scala.xml.{Node, NodeSeq}
+
+final case class GraphMLEdgeShape(edgeStyle: Option[EdgeShape] = None,
+                                  labelValue: Option[String] = None,
+                                  path: Option[EdgePath] = None)
+
+final case class EdgeValues(edgeEdge: Option[GraphMLEdgeShape] = None,
+                            valueXml: List[Node] = List.empty)
 
 class GraphMLEdgeDatatype[T](edgeDatatype: Datatype[T]) extends Datatype[GraphMLEdge[T]] {
 
@@ -25,8 +33,7 @@ class GraphMLEdgeDatatype[T](edgeDatatype: Datatype[T]) extends Datatype[GraphML
         <y:PolyLineEdge>
           {
             (for {
-              shape <- edge.shape
-              path <- shape.path
+              path <- edge.path
             } yield <y:Path sx={path.sourceX.toString} sy={path.sourceY.toString} tx={path.targetX.toString} ty={path.targetY.toString}>
                       {path.points.map(point => <y:Point x={point.x.toString} y={point.y.toString}/>)}
                     </y:Path>).getOrElse(<!-- no path defined -->)
@@ -49,7 +56,7 @@ class GraphMLEdgeDatatype[T](edgeDatatype: Datatype[T]) extends Datatype[GraphML
           {
           (for {
             shape <- edge.shape
-            label <- shape.label
+            label <- shape.labelStyle
             position <- label.position.orElse(Some(PointSpec(0.0, 0.0)))
           } yield <y:EdgeLabel alignment="center"
                                configuration="AutoFlippingLabel"
@@ -70,7 +77,7 @@ class GraphMLEdgeDatatype[T](edgeDatatype: Datatype[T]) extends Datatype[GraphML
                                visible="true"
                                width="30"
                                x={position.x.toString}
-                               y={position.y.toString}>{ label.text }<y:LabelModel>
+                               y={position.y.toString}>{ edge.labelValue.getOrElse("") }<y:LabelModel>
               <y:SmartEdgeLabelModel autoRotationEnabled="false" defaultAngle="0.0" defaultDistance="10.0"/>
             </y:LabelModel>
             <y:ModelParameter>
@@ -87,9 +94,6 @@ class GraphMLEdgeDatatype[T](edgeDatatype: Datatype[T]) extends Datatype[GraphML
     // format: ON
   }
 
-  final case class EdgeValues(shape: Option[EdgeShape] = None,
-                              valueXml: List[Node] = List.empty)
-
   override def deserialize(from: NodeSeq, graphKeys: collection.Map[String, GraphMLKey], targetHint: Option[String]): ValidatedNel[Throwable, GraphMLEdge[T]] =
     (for {
       edgeNode <- from.headOption
@@ -101,7 +105,7 @@ class GraphMLEdgeDatatype[T](edgeDatatype: Datatype[T]) extends Datatype[GraphML
 
       val edgeValues = properties.foldLeft(EdgeValues()) {
         case (edge, property) if graphKeys.get(property.key).exists(_.yfilesType.exists(_ == "edgegraphics")) =>
-          edge.copy(shape = extractEdgeShape(property))
+          edge.copy(edgeEdge = extractEdgeShape(property))
         case (edge, property) if isValueProperty(property, graphKeys, edgeDatatype.keys(Some("edge")).map(_.id)) =>
           edge.copy(valueXml = property.xml :: edge.valueXml)
         case (edge, _) => edge
@@ -115,7 +119,9 @@ class GraphMLEdgeDatatype[T](edgeDatatype: Datatype[T]) extends Datatype[GraphML
               value,
               source,
               target,
-              shape = edgeValues.shape)
+              shape = edgeValues.edgeEdge.flatMap(_.edgeStyle),
+              path = edgeValues.edgeEdge.flatMap(_.path),
+              labelValue = edgeValues.edgeEdge.flatMap(_.labelValue))
           }
         case None => invalidNel(new IllegalArgumentException(s"unable to parse id from edge ${from.toString}"))
       }
@@ -127,15 +133,14 @@ class GraphMLEdgeDatatype[T](edgeDatatype: Datatype[T]) extends Datatype[GraphML
    * @return
    */
 
-  protected def extractEdgeShape(property: GraphMLProperty): Option[EdgeShape] = property.xml
+  protected def extractEdgeShape(property: GraphMLProperty): Option[GraphMLEdgeShape] = property.xml
     .nonEmptyChildren
     .headOption
     .filter(_.label == "PolyLineEdge")
     .map { dataNode =>
-      dataNode.child.foldLeft(EdgeShape()) {
+      dataNode.child.foldLeft(GraphMLEdgeShape(Some(EdgeShape()))) {
         case (shape, elem) if elem.label == "EdgeLabel" =>
           val label = EdgeLabel(
-            elem.text.trim,
             GraphMLDatatype.singleAttributeValue("textColor", elem),
             GraphMLDatatype.singleAttributeValue("fontSize", elem),
             GraphMLDatatype.singleAttributeValue("fontFamily", elem),
@@ -145,19 +150,19 @@ class GraphMLEdgeDatatype[T](edgeDatatype: Datatype[T]) extends Datatype[GraphML
               y <- GraphMLDatatype.singleAttributeValue("y", elem).map(_.toDouble).orElse(Some(0.0))
             } yield PointSpec(x, y)
           )
-          shape.copy(label = Some(label))
+          shape.copy(edgeStyle = shape.edgeStyle.map(_.copy(labelStyle = Some(label))), labelValue = Some(elem.text.trim))
 
         case (shape, elem) if elem.label == "LineStyle" =>
           val edgeStyle = for {
             color <- GraphMLDatatype.singleAttributeValue("color", elem)
           } yield EdgeStyle(color, GraphMLDatatype.singleAttributeValue("width", elem).map(_.toDouble))
-          shape.copy(edgeStyle = edgeStyle)
+          shape.copy(edgeStyle = shape.edgeStyle.map(_.copy(edgeStyle = edgeStyle)))
 
         case (shape, elem) if elem.label == "Arrows" =>
-          shape.copy(arrows = Some(Arrows(
+          shape.copy(edgeStyle = shape.edgeStyle.map(_.copy(arrows = Some(Arrows(
             GraphMLDatatype.singleAttributeValue("source", elem),
             GraphMLDatatype.singleAttributeValue("target", elem)
-          )))
+          )))))
 
         case (shape, elem) if elem.label == "Path" =>
           val path = for {

@@ -4,10 +4,8 @@ import java.io.File
 import java.net.URL
 
 import cats.effect.IO
-import cats.implicits._
-import com.flowtick.graphs._
-import com.flowtick.graphs.graphml.GraphML
 import scalafx.application.JFXApp
+import scalafx.scene.image.Image
 import scalafx.scene.layout.BorderPane
 import scalafx.scene.{Group, Scene}
 
@@ -37,35 +35,29 @@ object EditorMainJvm extends JFXApp with EditorMain {
       IO(new File(userHome))
     }.getOrElse(IO.raiseError(new IllegalStateException("could not find user home")))
 
-    loadOptions <- IO {
-      val graphsDir = new File(home, ".graphs")
-      graphsDir.mkdir()
-      val configFile = new File(graphsDir, "config.json")
-      if (configFile.exists()) {
-
-        val configSource = scala.io.Source.fromFile(configFile)
-        val configContent = configSource.getLines().mkString("\n")
-        configSource.close()
-
-        // TODO: proper encoding of options
-
-        import io.circe.generic.auto._
-        import json.format.default._
-        import com.flowtick.graphs.json.schema.JsonSchema._
-
-        io.circe.parser.decode[EditorOptions](configContent)
-      } else Right(EditorOptions())
+    configFile <- IO {
+      sys.env.get("GRAPHS_CONFIG").map(new File(_)).getOrElse {
+        val graphsDir = new File(home, ".graphs")
+        graphsDir.mkdir()
+        new File(graphsDir, "config.json")
+      }
     }
-    options <- IO.fromEither(loadOptions)
-    _ <- options.palette.toList.flatMap(_.images).map {
-      case (ref, image) => ImageLoader.registerImage(ref, image)
-    }.sequence
 
+    loadOptions <-
+      if (configFile.exists()) {
+        IO(scala.io.Source.fromFile(configFile)).bracket { configSource =>
+          val configContent = configSource.getLines().mkString("\n")
+          IO(EditorOptions.decode(configContent))
+        }(source => IO(source.close()))
+      } else IO.pure(Right(EditorOptions()))
+
+    options <- IO.fromEither(loadOptions)
     editor <- createEditor(bus => List(
       new EditorMenuJavaFx(bus, editorLayout, stage),
       new EditorViewJavaFx(bus, editorLayout),
       new EditorPaletteJavaFx(bus, editorLayout),
-      new EditorPropertiesJavaFx(bus, editorLayout)
+      new EditorPropertiesJavaFx(bus, editorLayout),
+      new EditorImageLoader[Image](ImageLoaderFx)
     ))(options)
     (bus, _) = editor
     _ <- parameters.raw.headOption match {
@@ -77,7 +69,7 @@ object EditorMainJvm extends JFXApp with EditorMain {
             bus.publish(Load(source.getLines().mkString("\n"), format))
           }(source => IO(source.close()))
         } yield ()
-      case None => bus.publish(SetGraph(GraphML.empty))
+      case None => IO.unit
     }
   } yield editor
 

@@ -15,8 +15,6 @@ class JsonSpec extends AnyFlatSpec with Matchers {
     val graphJson: Json = ToJson[Unit, Unit, Int](numberGraph, None)
     val parsed: Either[Error, JsonGraph[Unit, Unit, Int]] = FromJson[Unit, Unit, Int](graphJson.noSpaces)
 
-    println(graphJson.spaces2)
-
     parsed.map(_.graph) should be(Right(numberGraph))
   }
 

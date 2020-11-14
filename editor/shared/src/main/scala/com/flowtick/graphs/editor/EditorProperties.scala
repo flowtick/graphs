@@ -1,9 +1,8 @@
 package com.flowtick.graphs.editor
 
-import cats.implicits._
 import cats.effect.IO
 import cats.effect.concurrent.Ref
-import com.flowtick.graphs.graphml.{GraphMLElement, GraphMLGraph}
+import cats.implicits._
 import com.flowtick.graphs.json.schema.Schema
 import io.circe.Json
 
@@ -26,6 +25,7 @@ case object TextInput extends PropertyInputType {
     key.flatMap(_.name).map(keyValue => json.hcursor.downField(keyValue)
       .focus
       .flatMap(_.asString)).getOrElse(json.asString)
+
   }
 }
 
@@ -107,7 +107,7 @@ trait EditorProperties extends EditorComponent {
     case Selected(elements, _) =>
       elements
         .headOption
-        .flatMap(getElementProperties(_, ctx.model.graphml, ctx.model.schema))
+        .flatMap(getElementProperties(_, ctx.model.editorGraph))
         .map(setElementAndReset)
         .getOrElse(IO.unit)
 
@@ -116,13 +116,13 @@ trait EditorProperties extends EditorComponent {
         current <- currentElement.get
         _ <- if (current.contains(updatedElement)) {
           current
-            .flatMap(getElementProperties(_, ctx.model.graphml, ctx.model.schema))
+            .flatMap(getElementProperties(_, ctx.model.editorGraph))
             .map(updateValues)
             .getOrElse(IO.unit)
         } else IO.unit
       } yield ()
 
-    case Toggle(Toggle.editKey, value) => for {
+    case EditorToggle(EditorToggle.editKey, value) => for {
       _ <- toggleEdit(value.getOrElse(true))
     } yield ()
   }
@@ -177,16 +177,18 @@ trait EditorProperties extends EditorComponent {
     setProperties(commonProperties ++ schemaProperties, elementProperties)
   }
 
-  def handleInputValue(f: PropertyValue => ElementRef => Vector[EditorEvent]): PropertyValue => Unit = (value: PropertyValue) => (for {
+  def handleInputValue(f: PartialFunction[PropertyValue, ElementRef => Vector[EditorEvent]]): PropertyValue => Unit = (value: PropertyValue) => (for {
     elem <- currentElement.get
     _ <- elem match {
       case Some(ref) =>
-        IO(f(value)(ref)).flatMap { events =>
-          events.map {
-            case command: EditorCommand => messageBus.publish(command)
-            case other => messageBus.notifyEvent(this, other)
-          }.sequence
-        }
+        if (f.isDefinedAt(value)) {
+          IO(f(value)(ref)).flatMap { events =>
+            events.map {
+              case command: EditorCommand => messageBus.publish(command)
+              case other => messageBus.notifyEvent(this, other)
+            }.sequence
+          }
+        } else IO.unit
       case None => IO.unit
     }
   } yield ()).unsafeRunSync()
@@ -215,15 +217,20 @@ trait EditorProperties extends EditorComponent {
   } yield ()
 
   def getElementProperties(elementRef: ElementRef,
-                           graphml: GraphMLGraph[Json, Json],
-                           schema: EditorModel.EditorSchema): Option[ElementProperties] = for {
+                           editorGraph: EditorGraph): Option[ElementProperties] = for {
     element <- elementRef match {
-      case ElementRef(id, NodeType) => graphml.graph.findNode(id).map[GraphMLElement[Json]](_.value)
-      case ElementRef(id, EdgeType) => graphml.graph.findEdge(id).map[GraphMLElement[Json]](_.value)
+      case ElementRef(id, NodeType) => editorGraph.graph.findNode(id).map[EditorGraphElement](_.value)
+      case ElementRef(id, EdgeType) => editorGraph.graph.findEdge(id).map[EditorGraphElement](_.value)
     }
-    definitions = schema.definitionsCompat getOrElse Map.empty
+
+    color = elementRef match {
+      case ElementRef(id, NodeType) => editorGraph.styleSheet.getNodeStyle(Some(id), List.empty).fill.flatMap(_.color)
+      case ElementRef(id, EdgeType) => editorGraph.styleSheet.getEdgeStyle(Some(id), List.empty).edgeStyle.map(_.color)
+    }
+
+    definitions = editorGraph.schema.definitionsCompat getOrElse Map.empty
     elementSchema <- element.schemaRef.flatMap(getElementSchema(_, definitions)).orElse(Some(Schema[EditorSchemaHints]()))
-  } yield ElementProperties(elementRef, element.label.map(_.text), element.fill.flatMap(_.color), elementSchema, element.value)
+  } yield ElementProperties(elementRef, element.label, color, elementSchema, element.data)
 
   def getElementSchema(schemaRef: String, definitions: Map[String, EditorModel.EditorSchema]): Option[EditorModel.EditorSchema] =
     for {

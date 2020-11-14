@@ -1,4 +1,6 @@
 package com.flowtick.graphs.editor
+import java.awt.BorderLayout
+
 import cats.effect.IO
 import io.circe.Json
 import javafx.beans.value.{ChangeListener, ObservableValue}
@@ -6,6 +8,7 @@ import javafx.scene.paint.Color
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control._
 import scalafx.scene.layout._
+import scalafx.scene.text.{Font, FontWeight, TextAlignment}
 
 case class PropertyFormGroupFx(property: PropertySpec,
                                init: () => Unit,
@@ -36,6 +39,15 @@ class EditorPropertiesJavaFx(val messageBus: EditorMessageBus, layout: BorderPan
 
       pane.children.clear()
 
+      val closeLabel = new Label("X") {
+        minHeight = 30.0
+        font = Font.apply("Arial", FontWeight.Bold, 20.0)
+      }
+
+      closeLabel.onMouseClicked = _ => {
+        messageBus.publish(EditorToggle(EditorToggle.editKey, Some(false))).unsafeRunSync()
+      }
+
       val grid = new GridPane()
       grid.setHgap(10)
       grid.setVgap(10)
@@ -45,10 +57,11 @@ class EditorPropertiesJavaFx(val messageBus: EditorMessageBus, layout: BorderPan
       AnchorPane.setTopAnchor(grid, 10.0)
       AnchorPane.setLeftAnchor(grid, 10.0)
 
+      grid.add(closeLabel, 2, 0)
       pane.children.add(grid)
 
       properties.sortBy(_.order).zipWithIndex.map {
-        case (property, index) => propertyGroup(property, index)(grid)
+        case (property, index) => propertyGroup(property, index + 1)(grid)
       }
     }
   } yield groups

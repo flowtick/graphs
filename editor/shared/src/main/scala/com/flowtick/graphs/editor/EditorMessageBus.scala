@@ -3,9 +3,6 @@ package com.flowtick.graphs.editor
 import cats.effect.IO
 import cats.effect.concurrent.Ref
 import cats.implicits._
-import com.flowtick.graphs.graphml.{GraphML, GraphMLGraph}
-import com.flowtick.graphs.json.schema.Schema
-import io.circe.Json
 
 trait EditorMessageBus {
   def subscribe(backend: EditorComponent): IO[EditorComponent]
@@ -50,13 +47,11 @@ final case class EditorContext(event: EditorEvent,
 
 class EditorController(logRef: Ref[IO, List[EditorEvent]],
                        listenersRef: Ref[IO, List[EditorComponent]],
-                       graphml: Option[GraphMLGraph[Json, Json]],
-                       palette: Option[Palette],
-                       schema: Option[EditorModel.EditorSchema]) extends EditorMessageBus {
+                       initial: EditorGraph,
+                       palette: Option[Palette]) extends EditorMessageBus {
   lazy val modelRef: Ref[IO, EditorModel] = Ref.unsafe[IO, EditorModel](EditorModel(
-    graphml = graphml.getOrElse(GraphML.empty),
-    palette = palette.getOrElse(Palette.defaultPalette),
-    schema = schema.getOrElse(Schema())
+    editorGraph = initial,
+    palette = palette.getOrElse(Palette.defaultPalette)
   ))
 
   override def subscribe(component: EditorComponent): IO[EditorComponent] =

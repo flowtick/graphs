@@ -3,7 +3,7 @@ import cats.effect.IO
 import com.flowtick.graphs.editor.vendor.{Ace, AceEditor}
 import io.circe.Json
 import org.scalajs.dom.experimental.Fullscreen
-import org.scalajs.dom.html.{Div, Element, Form, TextArea}
+import org.scalajs.dom.html.{Div, Form, TextArea}
 import org.scalajs.dom.raw.{Event, HTMLElement}
 import scalatags.JsDom
 
@@ -38,7 +38,7 @@ object EditorPropertiesHtml {
   }
 
   def propertyContainers(property: PropertySpec, input: HTMLElement): (Div, JsDom.TypedTag[Div]) = {
-    val propertyId = property.key.getOrElse(property.title).replaceAll(" ", "_").toLowerCase
+    val propertyId = property.key.flatMap(_.name).getOrElse(property.title).replaceAll(" ", "_").toLowerCase
 
     lazy val inputContainer: Div = div(
       cls := (if(property.collapsable.contains(false)) "d-none" else ""),
@@ -79,7 +79,7 @@ object EditorPropertiesHtml {
 
       PropertyFormGroupJs(property, propertyContainer,
         init = () => {
-          numberInput.onchange = _ => property.handler(Json.fromDoubleOrString(numberInput.value.toDouble))
+          numberInput.onchange = _ => property.handler(JsonValue(Json.fromDoubleOrString(numberInput.value.toDouble)))
         },
         set = json => numberInput.value = NumberInput.fromJson(property.key, json).map(_.toString).getOrElse("")
       )
@@ -94,7 +94,7 @@ object EditorPropertiesHtml {
       val (_, propertyContainer) = propertyContainers(property, checkbox)
 
       PropertyFormGroupJs(property, propertyContainer, init = () => {
-        checkbox.onchange = _ => property.handler(if(checkbox.checked) Json.True else Json.False)
+        checkbox.onchange = _ => property.handler(JsonValue(if(checkbox.checked) Json.True else Json.False))
       }, set = json => checkbox.checked = BooleanInput.fromJson(property.key, json).getOrElse(false))
 
     case IntegerInput =>
@@ -110,7 +110,7 @@ object EditorPropertiesHtml {
       val (_, propertyContainer) = propertyContainers(property, integerInput)
 
       PropertyFormGroupJs(property, propertyContainer, init = () => {
-        integerInput.onchange = _ => property.handler(Json.fromInt(integerInput.value.toInt))
+        integerInput.onchange = _ => property.handler(JsonValue(Json.fromInt(integerInput.value.toInt)))
       }, set = json => integerInput.value = IntegerInput.fromJson(property.key, json).map(_.toString).getOrElse(""))
 
     case TextInput | LabelInputType | JsonInputType =>
@@ -122,7 +122,7 @@ object EditorPropertiesHtml {
       val (inputContainer, propertyContainer) = propertyContainers(property, textAreaInput)
 
       lazy val textAreaInit = {
-        textAreaInput.onchange = _ => property.handler(Json.fromString(textAreaInput.value))
+        textAreaInput.onchange = _ => property.handler(JsonValue(Json.fromString(textAreaInput.value)))
       }
 
       lazy val editor: Either[TextArea, AceEditor] = (property.highlight match {
@@ -133,10 +133,10 @@ object EditorPropertiesHtml {
               property.inputType match {
                 case JsonInputType =>
                   io.circe.parser.decode[Json](editor.getValue()) match {
-                    case Right(json) => property.handler(json)
+                    case Right(json) => property.handler(JsonValue(json))
                     case Left(error) => println(error)
                   }
-                case _ =>  property.handler(Json.fromString(editor.getValue()))
+                case _ =>  property.handler(JsonValue(Json.fromString(editor.getValue())))
               }
             })
             editor.setTheme("ace/theme/github")
@@ -168,6 +168,10 @@ object EditorPropertiesHtml {
             text.rows = newValue.split("\n").length
         }
       })
+
+    case other => PropertyFormGroupJs(property, div(
+      pre(s"unsupported property type $other", style := "display: none")
+    ), () => (), _ => ())
   }
 
   lazy val propertiesBody = div(

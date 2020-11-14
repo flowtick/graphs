@@ -3,11 +3,12 @@ package com.flowtick.graphs.editor
 import cats.effect.IO
 import cats.effect.concurrent.Ref
 import cats.implicits._
-import com.flowtick.graphs.graphml.{GraphMLEdge, GraphMLGraph, GraphMLNode, PointSpec}
+import com.flowtick.graphs.style.PointSpec
 import com.flowtick.graphs.{Edge, Node}
-import io.circe.Json
 
 final case class PanContext(mouseAnchorX: Double, mouseAnchorY: Double, translateAnchorX: Double, translateAnchorY: Double)
+
+final case class PagePoint(x: Double, y: Double)
 
 final case class DragStart[T](cursorX: Double,
                               cursorY: Double,
@@ -15,18 +16,22 @@ final case class DragStart[T](cursorX: Double,
                               transformY: Double,
                               dragElem: T,
                               element: ElementRef,
-                              lastPos: Option[(Double, Double)],
+                              lastPos: Option[PagePoint],
                               deltaX: Double,
                               deltaY: Double)
 
-trait Page[T] {
+trait Page[T, E] {
+  type Point = PagePoint
+
+  var dragStartRef: Ref[IO, Option[DragStart[T]]] = Ref.unsafe(None)
+
   def root: T
   def pageCenter: PointSpec
 
-  def addEdge(edge: Edge[GraphMLEdge[Json]],
-              graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[T]]]
+  def addEdge(edge: Edge[EditorGraphEdge],
+              graph: EditorGraph): IO[Option[GraphElement[T]]]
 
-  def addNode(node: Node[GraphMLNode[Json]], graphml: GraphMLGraph[Json, Json]): IO[Option[GraphElement[T]]]
+  def addNode(node: Node[EditorGraphNode], graph: EditorGraph): IO[Option[GraphElement[T]]]
 
   def setSelection(element: GraphElement[T]): IO[Unit]
 
@@ -35,6 +40,42 @@ trait Page[T] {
   def deleteElement(element: GraphElement[T]): IO[Unit]
 
   def resetTransformation: IO[Unit]
+
+  def screenCoordinates(x: Double, y: Double): Point
+
+  def pageCoordinates(x: Double, y: Double): Point
+
+  def beforeDrag: E => Unit
+
+  def eventCoordinates(event: E): PagePoint
+
+  def applyDrag: DragStart[T] => Unit
+
+  def drag: E => Unit = evt => dragStartRef.update {
+    case Some(dragStart: DragStart[_]) =>
+      beforeDrag(evt)
+      val eventPoint = eventCoordinates(evt)
+      val dragCursor = pageCoordinates(eventPoint.x, eventPoint.y)
+
+      val gridSize: Int = 10
+
+      val deltaX = dragCursor.x - dragStart.cursorX
+      val deltaY = dragCursor.y - dragStart.cursorY
+
+      val screenPoint = screenCoordinates(dragStart.transformX + deltaX, dragStart.transformY + deltaY)
+
+      val tx = (screenPoint.x.toInt / gridSize) * gridSize
+      val ty = (screenPoint.y.toInt / gridSize) * gridSize
+
+      val newDragStart = dragStart.copy(lastPos = Some(PagePoint(tx, ty)), deltaX = deltaX, deltaY = deltaY)
+
+      applyDrag(newDragStart)
+
+      Some(newDragStart)
+    case None => None
+  }.unsafeRunSync()
+
+  def endDrag: E => Option[DragStart[T]] = _ => dragStartRef.getAndUpdate(_ => None).unsafeRunSync()
 }
 
 trait GraphElement[+T] {
@@ -46,13 +87,13 @@ trait GraphElement[+T] {
 
 final case class ViewModel[T](graphElements: Map[ElementRef, GraphElement[T]])
 
-trait EditorView[T] extends EditorComponent {
-  lazy val page = Ref.unsafe[IO, Page[T]](createPage.unsafeRunSync())
+trait EditorView[T, E] extends EditorComponent {
+  lazy val page = Ref.unsafe[IO, Page[T, E]](createPage.unsafeRunSync())
   lazy val viewModel: Ref[IO, ViewModel[T]] = Ref.unsafe(ViewModel(Map.empty))
 
   override def order: Double = 0.4
 
-  def createPage: IO[Page[T]]
+  def createPage: IO[Page[T, E]]
 
   def messageBus: EditorMessageBus
 
@@ -65,14 +106,14 @@ trait EditorView[T] extends EditorComponent {
   } yield ()
 
   def handleDoubleClick: Any => IO[Unit] = (_: Any) => {
-    messageBus.publish(Toggle(Toggle.editKey, Some(true))).void
+    messageBus.publish(EditorToggle(EditorToggle.editKey, Some(true))).void
   }
 
   def handleDrag(drag: Option[DragStart[T]]): IO[Unit] = (for {
     dragEvent <- drag.filter(value => Math.abs(value.deltaY) > 0 || Math.abs(value.deltaX) > 0)
   } yield messageBus.publish(MoveBy(dragEvent.deltaX, dragEvent.deltaY)).void).getOrElse(IO.unit)
 
-  def appendEdge(graphml: GraphMLGraph[Json, Json])(edge: Edge[GraphMLEdge[Json]]): IO[Option[GraphElement[T]]] = for {
+  def appendEdge(graphml: EditorGraph)(edge: Edge[EditorGraphEdge]): IO[Option[GraphElement[T]]] = for {
     page <- page.get
 
     edgeElement <- page.addEdge(edge, graphml)
@@ -87,7 +128,7 @@ trait EditorView[T] extends EditorComponent {
     }
   } yield edgeElement
 
-  def appendNode(graphml: GraphMLGraph[Json, Json])(node: Node[GraphMLNode[Json]]): IO[Option[GraphElement[T]]] = for {
+  def appendNode(graphml: EditorGraph)(node: Node[EditorGraphNode]): IO[Option[GraphElement[T]]] = for {
     pageElem <- page.get
     nodeElement <- pageElem.addNode(node, graphml)
     _ <- {
@@ -100,15 +141,15 @@ trait EditorView[T] extends EditorComponent {
   } yield nodeElement
 
   def updateEdge(id: String, ctx: EditorContext): IO[Option[GraphElement[T]]] =
-    ctx.model.graphml.graph
+    ctx.model.editorGraph.graph
       .findEdge(id)
-      .map(edge => updateElement(edge, ElementRef(id, EdgeType), ctx.model)(appendEdge(ctx.model.graphml)))
+      .map(edge => updateElement(edge, ElementRef(id, EdgeType), ctx.model)(appendEdge(ctx.model.editorGraph)))
       .getOrElse(IO.pure(None))
 
   def updateNode(id: String, ctx: EditorContext): IO[Option[GraphElement[T]]] =
-    ctx.model.graphml.graph
+    ctx.model.editorGraph.graph
       .findNode(id)
-      .map(edge => updateElement(edge, ElementRef(id, NodeType), ctx.model)(appendNode(ctx.model.graphml)))
+      .map(edge => updateElement(edge, ElementRef(id, NodeType), ctx.model)(appendNode(ctx.model.editorGraph)))
       .getOrElse(IO.pure(None))
 
   def updateElement[E](value: E,
@@ -135,18 +176,18 @@ trait EditorView[T] extends EditorComponent {
   } yield updated
 
   def handleLoaded(loaded: SetGraph): IO[Unit] = {
-    val graphml = loaded.graphml
+    val graphml = loaded.graph
 
     for {
       oldPage <- page.get
       newPage <- createPage
       _ <- page.set(newPage)
       _ <- setNewPage(newPage, oldPage)
-      rendered <- renderGraphML(graphml)
+      rendered <- renderGraph(graphml)
     } yield rendered
   }
 
-  def renderGraphML(graphml: GraphMLGraph[Json, Json]): IO[Unit] = for {
+  def renderGraph(graphml: EditorGraph): IO[Unit] = for {
     _ <- graphml.graph.nodes.map(appendNode(graphml)(_)).toList.sequence
     _ <- graphml.graph.edges.map(appendEdge(graphml)(_)).toList.sequence
   } yield ()
@@ -174,7 +215,7 @@ trait EditorView[T] extends EditorComponent {
   def handleSetModel(setModel: SetModel): IO[Unit] = for {
     vm <- viewModel.get
     _ <- vm.graphElements.keys.map(deleteElementRef).toList.sequence
-    _ <- renderGraphML(setModel.model.graphml)
+    _ <- renderGraph(setModel.model.editorGraph)
   } yield ()
 
   override lazy val eval: Eval = handleEvents
@@ -199,7 +240,7 @@ trait EditorView[T] extends EditorComponent {
       }
     } yield ()
 
-  def setNewPage(newPage: Page[T], oldPage: Page[T]): IO[Unit]
+  def setNewPage(newPage: Page[T, E], oldPage: Page[T, E]): IO[Unit]
 
   def deleteElementRef(elementRef: ElementRef): IO[Unit] = for {
     vm <- viewModel.get

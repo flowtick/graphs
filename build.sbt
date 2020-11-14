@@ -64,6 +64,15 @@ lazy val coreJS = core.js.settings(
 )
 lazy val coreJVM = core.jvm
 
+lazy val style = (crossProject(JVMPlatform, JSPlatform) in file(".") / "style")
+  .settings(commonSettings)
+  .settings(
+    name := "graphs-style",
+  ).dependsOn(core)
+
+lazy val styleJS = style.js
+lazy val styleJVM = style.jvm
+
 lazy val layout = (crossProject(JVMPlatform, JSPlatform) in file(".") / "layout")
   .settings(commonSettings)
   .settings(
@@ -92,7 +101,7 @@ lazy val graphml = (crossProject(JVMPlatform, JSPlatform) in file(".") / "graphm
     libraryDependencies ++= Seq(
       "com.flowtick" %%% "xmls" % xmlsV
     )
-  ).dependsOn(core, layout, cats)
+  ).dependsOn(core, style, layout, cats)
 
 lazy val graphmlJS = graphml.js
 lazy val graphmlJVM = graphml.jvm
@@ -200,7 +209,7 @@ lazy val graphs = (project in file("."))
     editorJS,
     editorJVM,
     jsonJS,
-    jsonJVM
+    jsonJVM,
+    styleJS,
+    styleJVM
   )
-
-addCommandAlias("testWithCoverage", ";clean;coverage;test;coverageReport")
