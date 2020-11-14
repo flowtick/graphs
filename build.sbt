@@ -121,7 +121,9 @@ lazy val editor = (crossProject(JVMPlatform, JSPlatform) in file(".") / "editor"
 
 lazy val editorJS = editor.js.settings(
   scalaJSUseMainModuleInitializer := true,
-  libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.1"
+  libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.1",
+  artifactPath in (Compile, fastOptJS) := baseDirectory.value / ".." / "dist" / "app.js",
+  artifactPath in (Compile, fullOptJS) := (artifactPath in (Compile, fastOptJS)).value
 )
 
 // Determine OS version of JavaFX binaries
@@ -194,7 +196,7 @@ lazy val graphs = (project in file("."))
     publishLocal := {},
     publish := {},
     test := {},
-    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(jsonJS, graphmlJS, coreJS, catsJS, layoutJS, editorJS, examplesJS)
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(jsonJS, graphmlJS, coreJS, catsJS, layoutJS, editorJS, examplesJS, styleJS)
   ).aggregate(
     coreJS,
     coreJVM,

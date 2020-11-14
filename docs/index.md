@@ -8,5 +8,6 @@
 * [JSON support](json.md)
 * [GraphML support](graphml.md)
 * [cats support](cats.md)
+* [Editor](editor.md)
 
 @@@
