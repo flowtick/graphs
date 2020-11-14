@@ -8,3 +8,5 @@ target
 ensime-langserver.log
 pc.stdout.log
 metals.sbt
+/editor/dist/app.js
+/editor/dist/app.js.map
