@@ -211,7 +211,7 @@ val graphML = simple.asGraphML().xml
 val loaded = FromGraphML[Int, String](graphML.toString)</code></pre>
 <h3><a href="#custom-node-types" name="custom-node-types" class="anchor"><span class="anchor-link"></span></a>Custom Node Types</h3>
 <p>Its possible to create GraphML graphs directly using the <code>ml</code> edge builder and serialize your own node types, this is implemeted using shapeless:</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/master/examples/shared/src/main/scala/GraphMLExample.scala#L22-L35" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/master/examples/shared/src/main/scala/GraphMLExample.scala#L22-L37" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
 import com.flowtick.graphs.graphml._
 import com.flowtick.graphs.graphml.generic._
 import scala.xml.NodeSeq
@@ -224,7 +224,9 @@ val customGraph: GraphMLGraph[Unit, MyNode] =
   ))
 
 val xml: NodeSeq = ToGraphML[Unit, MyNode](customGraph)
-val loaded = FromGraphML[Unit, MyNode](xml.toString)</code></pre>
+println(xml)
+val loaded = FromGraphML[Unit, MyNode](xml.toString)
+println(loaded)</code></pre>
 </div>
 <div>
 <a href="https://github.com/flowtick/graphs/tree/master/docs/graphml.md" title="Edit this page" class="md-source-file md-edit">
