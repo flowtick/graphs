@@ -34,6 +34,7 @@ class GraphMLNodeDatatypeSpec extends AnyFlatSpec with Matchers {
       labelValue = Some("test")),
       targetHint
     )
+
     val expectedXml = <node id="test">
                         <data key="node_one" type="string">foo</data>
                         <data key="node_two" type="string">bar</data>

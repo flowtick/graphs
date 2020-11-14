@@ -129,8 +129,10 @@ package object graphml {
       override def deserialize(from: NodeSeq, graphKeys: collection.Map[String, GraphMLKey], targetHint: Option[String]): ValidatedNel[Throwable, T] = {
         val values = from.collect {
           case e: Elem if e.label == "data" && e.attribute("key").isDefined =>
-            if (e.attribute("type").contains(Text("double"))) e.text.toDouble
-            else if (e.attribute("type").contains(Text("integer"))) e.text.toInt
+            val valueType = e.attribute("type").getOrElse(List.empty).mkString
+
+            if (valueType == "double") e.text.toDouble
+            else if (valueType == "integer") e.text.toInt
             else e.text
         }.take(genericValueKeys().runtimeLength)
 

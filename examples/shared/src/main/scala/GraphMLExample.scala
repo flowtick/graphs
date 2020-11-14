@@ -32,7 +32,9 @@ trait GraphMLExample {
       ))
 
     val xml: NodeSeq = ToGraphML[Unit, MyNode](customGraph)
+    println(xml)
     val loaded = FromGraphML[Unit, MyNode](xml.toString)
+    println(loaded)
     // #custom-node-graphml
   }
 }
