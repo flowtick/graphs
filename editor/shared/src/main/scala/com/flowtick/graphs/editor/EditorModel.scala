@@ -371,10 +371,10 @@ class EditorModelUpdate extends EditorComponent {
 final case class EditorGraphLayout(nodes: Map[String, Geometry] = Map.empty,
                                    edges: Map[String, EdgePath] = Map.empty) {
   def setNodeGeometry(id: String, geometry: Geometry): EditorGraphLayout =
-    copy(nodes = nodes.updatedWith(id)(_ => Some(geometry)))
+    copy(nodes = nodes + (id -> geometry))
 
   def updateNodePosition(id: String, fx: Double => Double, fy: Double => Double): EditorGraphLayout =
-    copy(nodes = nodes.updatedWith(id)(_.map(geo => DefaultGeometry(x = fx(geo.x), y = fy(geo.y), geo.width, geo.height))))
+    copy(nodes = nodes.get(id).map(geo => nodes + (id -> DefaultGeometry(x = fx(geo.x), y = fy(geo.y), geo.width, geo.height))).getOrElse(nodes))
 
   def setEdgePath(id: String, edgePath: EdgePath): EditorGraphLayout =
     copy(edges = edges + (id -> edgePath))

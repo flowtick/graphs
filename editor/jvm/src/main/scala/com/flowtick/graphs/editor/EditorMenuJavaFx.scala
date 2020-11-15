@@ -62,9 +62,9 @@ class EditorMenuJavaFx(val messageBus: EditorMessageBus, layout: BorderPane, sta
   override def bindShortcut(action: Action): IO[Unit] = IO {
     val matchingShortCut = action.shortCut.split("\\+").foldLeft[ShortCut](ShortCut()) {
       case (shortcut, nextPart) => nextPart match {
-        case "alt" => shortcut.copy(modifiers = shortcut.modifiers.appended(KeyCombination.AltDown))
-        case "ctrl" => shortcut.copy(modifiers = shortcut.modifiers.appended(KeyCombination.ControlDown))
-        case "shift" => shortcut.copy(modifiers = shortcut.modifiers.appended(KeyCombination.ShiftDown))
+        case "alt" => shortcut.copy(modifiers = shortcut.modifiers.::(KeyCombination.AltDown))
+        case "ctrl" => shortcut.copy(modifiers = shortcut.modifiers.::(KeyCombination.ControlDown))
+        case "shift" => shortcut.copy(modifiers = shortcut.modifiers.::(KeyCombination.ShiftDown))
         case "ins" => shortcut.copy(keyCode = Some(KeyCode.Insert))
         case "del" => shortcut.copy(keyCode = Some(KeyCode.Delete))
         case other => shortcut.copy(keyCode = KeyCode.values.find(_.name.toLowerCase == other.toLowerCase))

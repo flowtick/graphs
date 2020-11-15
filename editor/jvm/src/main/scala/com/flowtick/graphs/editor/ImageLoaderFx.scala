@@ -80,7 +80,7 @@ object ImageLoaderFx extends ImageLoader[Image] {
                   inputStream: InputStream,
                   scaleWidth: Option[Double],
                   scaleHeight: Option[Double]): IO[Image] = IO {
-    val image = new Image(inputStream, scaleWidth.getOrElse(defaultScale), scaleHeight.getOrElse(defaultScale), true, false)
+    val image = new Image(inputStream, scaleWidth.getOrElse(defaultScale.toDouble), scaleHeight.getOrElse(defaultScale.toDouble), true, false)
     if (image.isError) {
       throw new RuntimeException(s"unable to load image $id", image.exception.value)
     } else image

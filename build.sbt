@@ -140,6 +140,8 @@ lazy val javaFXModules = Seq("base", "controls", "fxml", "graphics", "media", "s
 lazy val editorJVM = editor.jvm.settings(
   libraryDependencies += "org.scalafx" %% "scalafx" % "14-R19",
   libraryDependencies += "org.fxmisc.richtext" % "richtextfx" % "0.10.5",
+  libraryDependencies += "org.apache.logging.log4j" % "log4j-api" % "2.14.0",
+  libraryDependencies += "org.apache.logging.log4j" % "log4j-core" % "2.14.0",
   libraryDependencies ++= javaFXModules.map( m =>
     "org.openjfx" % s"javafx-$m" % "14.0.1" classifier osName
   )

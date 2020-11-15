@@ -13,6 +13,7 @@ import scalafx.scene.shape.{Circle, Line, Polygon, Polyline}
 import scalafx.scene.text.{Text, TextAlignment}
 import scalafx.scene.transform.Affine
 import scalafx.scene.{Group, Node}
+import Line._
 
 final case class JFXElement(id: ElementRef, group: Node, selectElem: Node, label : Node) extends GraphElement[Node]
 

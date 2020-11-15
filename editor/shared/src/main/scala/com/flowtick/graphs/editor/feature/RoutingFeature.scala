@@ -4,6 +4,7 @@ import cats.effect.IO
 import com.flowtick.graphs.editor._
 import com.flowtick.graphs.style.EdgePath
 import com.flowtick.graphs.{Edge, Node}
+import MathUtil.{Vector2, LineSegment, Rectangle}
 
 class RoutingFeature extends EditorComponent {
 

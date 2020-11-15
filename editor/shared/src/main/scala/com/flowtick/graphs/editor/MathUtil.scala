@@ -1,28 +1,27 @@
 package com.flowtick.graphs.editor
 
-final case class Vector2(x: Double, y: Double) {
-  def -(other: Vector2): Vector2 = copy(x = x - other.x, y = y - other.y)
-  def +(other: Vector2): Vector2 = copy(x = x + other.x, y = y + other.y)
-  def *(other: Vector2): Double = x * other.x + y * other.y
-  def times(factor: Double): Vector2 = copy(x = x * factor, y = y * factor)
-  def cross(other: Vector2): Double = x * other.y - y * other.x
-  def same(other: Vector2): Boolean = MathUtil.isZero(x - other.x) && MathUtil.isZero(y - other.y)
-}
-
-final case class LineSegment(start: Vector2, end: Vector2)
-
-final case class Rectangle(topLeft: Vector2, bottomRight: Vector2) {
-  def top: LineSegment = LineSegment(topLeft, topLeft.copy(x = bottomRight.x))
-  def left: LineSegment = LineSegment(topLeft, topLeft.copy(y = bottomRight.y))
-  def bottom: LineSegment = LineSegment(bottomRight, bottomRight.copy(x = topLeft.x))
-  def right: LineSegment = LineSegment(bottomRight, bottomRight.copy(y = topLeft.y))
-}
-
 /**
  * line segment intersection adapted from
  * https://www.codeproject.com/tips/862988/find-the-intersection-point-of-two-line-segments
  */
 object MathUtil {
+  final case class Vector2(x: Double, y: Double) {
+    def -(other: Vector2): Vector2 = copy(x = x - other.x, y = y - other.y)
+    def +(other: Vector2): Vector2 = copy(x = x + other.x, y = y + other.y)
+    def *(other: Vector2): Double = x * other.x + y * other.y
+    def times(factor: Double): Vector2 = copy(x = x * factor, y = y * factor)
+    def cross(other: Vector2): Double = x * other.y - y * other.x
+    def same(other: Vector2): Boolean = MathUtil.isZero(x - other.x) && MathUtil.isZero(y - other.y)
+  }
+
+  final case class LineSegment(start: Vector2, end: Vector2)
+
+  final case class Rectangle(topLeft: Vector2, bottomRight: Vector2) {
+    def top: LineSegment = LineSegment(topLeft, topLeft.copy(x = bottomRight.x))
+    def left: LineSegment = LineSegment(topLeft, topLeft.copy(y = bottomRight.y))
+    def bottom: LineSegment = LineSegment(bottomRight, bottomRight.copy(x = topLeft.x))
+    def right: LineSegment = LineSegment(bottomRight, bottomRight.copy(y = topLeft.y))
+  }
 
   private val Epsilon: Double = 1e-10
 

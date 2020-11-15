@@ -8,16 +8,19 @@ import com.flowtick.graphs.editor.feature.RoutingFeature
 import com.flowtick.graphs.editor._
 import com.flowtick.graphs.graphml.GraphMLGraph
 import io.circe.Json
+import org.apache.logging.log4j.LogManager
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class RoutingFeatureSpec extends AnyFlatSpec with Matchers {
+  val log = LogManager.getLogger(getClass)
+
   def printView(bus: EditorMessageBus): EditorComponent = new EditorComponent {
     override def init(model: EditorModel): IO[Unit] = IO.unit
 
     override def eval: Eval = ctx => ctx.effect(this) {
       case SetGraph(graphml) => IO {
-        graphml.graph.edges.foreach(println)
+        graphml.graph.edges.foreach(log.debug)
       }
 
       case ExportedGraph(name, value, format) => IO {
@@ -27,7 +30,7 @@ class RoutingFeatureSpec extends AnyFlatSpec with Matchers {
         out.close()
       }
 
-      case event => IO(println(event))
+      case event => IO(log.debug(event))
     }
   }
 

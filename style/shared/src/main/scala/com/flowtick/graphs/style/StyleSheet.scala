@@ -16,7 +16,7 @@ final case class NodeStyles(classes: Map[String, NodeShape] = Map.empty,
     (defaultNode ++ classList.flatMap(classes.get) ++ id.flatMap(overrides.get)).foldLeft(NodeShape())(mergeNodeShape)
 
   def withOverride(id: String, nodeShape: Option[NodeShape] => Option[NodeShape]): NodeStyles =
-    copy(overrides = overrides.updatedWith(id)(nodeShape))
+    copy(overrides = nodeShape(overrides.get(id)).map(newShape => overrides + (id -> newShape)).getOrElse(overrides))
 }
 
 final case class EdgeStyles(classes: Map[String, EdgeShape] = Map.empty,
@@ -31,7 +31,7 @@ final case class EdgeStyles(classes: Map[String, EdgeShape] = Map.empty,
     (defaultEdge ++ classList.flatMap(classes.get) ++ id.flatMap(overrides.get)).foldLeft(EdgeShape())(mergeEdgeShape)
 
   def withOverride(id: String, edgeShape: Option[EdgeShape] => Option[EdgeShape]): EdgeStyles =
-    copy(overrides = overrides.updatedWith(id)(edgeShape))
+    copy(overrides = edgeShape(overrides.get(id)).map(newShape => overrides + (id -> newShape)).getOrElse(overrides))
 }
 
 final case class StyleSheet(defaultNode: Option[NodeShape] = None,
