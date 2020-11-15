@@ -1,4 +1,4 @@
-package com.flowtick.graphs.editor
+package com.flowtick.graphs.editor.util
 
 /**
  * line segment intersection adapted from

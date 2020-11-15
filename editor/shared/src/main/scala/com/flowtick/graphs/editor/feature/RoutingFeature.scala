@@ -2,9 +2,10 @@ package com.flowtick.graphs.editor.feature
 
 import cats.effect.IO
 import com.flowtick.graphs.editor._
+import com.flowtick.graphs.editor.util.MathUtil
 import com.flowtick.graphs.style.EdgePath
 import com.flowtick.graphs.{Edge, Node}
-import MathUtil.{Vector2, LineSegment, Rectangle}
+import com.flowtick.graphs.editor.util.MathUtil.{LineSegment, Rectangle, Vector2}
 
 class RoutingFeature extends EditorComponent {
 

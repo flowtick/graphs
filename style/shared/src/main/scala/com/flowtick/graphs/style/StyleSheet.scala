@@ -1,7 +1,7 @@
 package com.flowtick.graphs.style
 
-final case class NodeStyles(classes: Map[String, NodeShape] = Map.empty,
-                            overrides: Map[String, NodeShape] = Map.empty) {
+final case class NodeStyles(classes: Option[Map[String, NodeShape]] = None,
+                            overrides: Option[Map[String, NodeShape]] = None) {
   private def mergeNodeShape(left: NodeShape, right: NodeShape): NodeShape =
     left.copy(
       fill = right.fill.orElse(left.fill),
@@ -12,26 +12,41 @@ final case class NodeStyles(classes: Map[String, NodeShape] = Map.empty,
       svgContent = right.svgContent.orElse(left.svgContent),
     )
 
-  def getNodeStyle(id: Option[String], classList: List[String] = List.empty)(defaultNode: Option[NodeShape]): NodeShape =
-    (defaultNode ++ classList.flatMap(classes.get) ++ id.flatMap(overrides.get)).foldLeft(NodeShape())(mergeNodeShape)
+  def getNodeStyle(id: Option[String],
+                   classList: List[String] = List.empty)(defaultNode: Option[NodeShape]): NodeShape =
+    (defaultNode ++
+      classList.flatMap(classes.getOrElse(Map.empty).get) ++
+      id.flatMap(overrides.getOrElse(Map.empty).get)).foldLeft(NodeShape())(mergeNodeShape)
 
   def withOverride(id: String, nodeShape: Option[NodeShape] => Option[NodeShape]): NodeStyles =
-    copy(overrides = nodeShape(overrides.get(id)).map(newShape => overrides + (id -> newShape)).getOrElse(overrides))
+    copy(overrides = Some(
+      nodeShape(overrides.getOrElse(Map.empty).get(id))
+        .map(newShape => overrides.getOrElse(Map.empty) + (id -> newShape))
+        .getOrElse(overrides.getOrElse(Map.empty))
+    ))
 }
 
-final case class EdgeStyles(classes: Map[String, EdgeShape] = Map.empty,
-                            overrides: Map[String, EdgeShape] = Map.empty) {
+final case class EdgeStyles(classes: Option[Map[String, EdgeShape]] = Some(Map.empty),
+                            overrides: Option[Map[String, EdgeShape]] = Some(Map.empty)) {
   private def mergeEdgeShape(left: EdgeShape, right: EdgeShape): EdgeShape =
     left.copy(
       labelStyle = right.labelStyle.orElse(left.labelStyle),
-      edgeStyle = right.edgeStyle.orElse(left.edgeStyle)
+      edgeStyle = right.edgeStyle.orElse(left.edgeStyle),
+      arrows = right.arrows.orElse(left.arrows)
     )
 
-  def getEdgeStyle(id: Option[String], classList: List[String] = List.empty)(defaultEdge: Option[EdgeShape]): EdgeShape =
-    (defaultEdge ++ classList.flatMap(classes.get) ++ id.flatMap(overrides.get)).foldLeft(EdgeShape())(mergeEdgeShape)
+  def getEdgeStyle(id: Option[String],
+                   classList: List[String] = List.empty)(defaultEdge: Option[EdgeShape]): EdgeShape =
+    (defaultEdge ++
+      classList.flatMap(classes.getOrElse(Map.empty).get) ++
+      id.flatMap(overrides.getOrElse(Map.empty).get)).foldLeft(EdgeShape())(mergeEdgeShape)
 
   def withOverride(id: String, edgeShape: Option[EdgeShape] => Option[EdgeShape]): EdgeStyles =
-    copy(overrides = edgeShape(overrides.get(id)).map(newShape => overrides + (id -> newShape)).getOrElse(overrides))
+    copy(overrides = Some(
+      edgeShape(overrides.getOrElse(Map.empty).get(id))
+        .map(newShape => overrides.getOrElse(Map.empty) + (id -> newShape))
+        .getOrElse(overrides.getOrElse(Map.empty))
+    ))
 }
 
 final case class StyleSheet(defaultNode: Option[NodeShape] = None,

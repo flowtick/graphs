@@ -14,6 +14,7 @@ import scalafx.scene.text.{Text, TextAlignment}
 import scalafx.scene.transform.Affine
 import scalafx.scene.{Group, Node}
 import Line._
+import com.flowtick.graphs.editor.util.DrawUtil
 
 final case class JFXElement(id: ElementRef, group: Node, selectElem: Node, label : Node) extends GraphElement[Node]
 

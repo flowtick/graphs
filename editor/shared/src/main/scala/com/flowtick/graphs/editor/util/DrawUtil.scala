@@ -1,6 +1,7 @@
-package com.flowtick.graphs.editor
+package com.flowtick.graphs.editor.util
 
 import com.flowtick.graphs.Edge
+import com.flowtick.graphs.editor.{EditorGraph, EditorGraphEdge}
 import com.flowtick.graphs.style.PointSpec
 
 object DrawUtil {

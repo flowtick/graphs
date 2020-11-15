@@ -3,6 +3,7 @@ package com.flowtick.graphs.editor
 import com.flowtick.graphs.{Node => GraphNode}
 import com.flowtick.graphs.Edge
 import com.flowtick.graphs.editor.SVGGraphRenderer.SVGGraphElement
+import com.flowtick.graphs.editor.util.DrawUtil
 import com.flowtick.graphs.style._
 import org.scalajs.dom.raw._
 import org.scalajs.dom.svg.{G, RectElement, Text}
@@ -219,16 +220,16 @@ object SVGGraphRenderer {
       end <- points.reverse.headOption
 
       pointsString = points.map(p => s"${p.x} ${p.y}").mkString(", ")
-      shape <- Some(editorGraph.styleSheet.getEdgeStyle(Some(edge.id)))
+      style <- Some(editorGraph.styleSheet.getEdgeStyle(Some(edge.id), edge.value.connector.toList))
 
       line = {
         svg.polyline(
           svgAttrs.points := pointsString,
           svgAttrs.style := s"fill:none",
-          svgAttrs.stroke := shape.edgeStyle.map(_.color).getOrElse("#000000"),
-          svgAttrs.strokeWidth := shape.edgeStyle.flatMap(_.width).getOrElse(1.0),
-          svgAttrs.markerStart := shape.arrows.flatMap(_.source).map(source => s"url(#arrow_${source})").getOrElse(""),
-          svgAttrs.markerEnd :=  shape.arrows.flatMap(_.target).map(target => s"url(#arrow_${target})").getOrElse("")
+          svgAttrs.stroke := style.edgeStyle.map(_.color).getOrElse("#000000"),
+          svgAttrs.strokeWidth := style.edgeStyle.flatMap(_.width).getOrElse(1.0),
+          svgAttrs.markerStart := style.arrows.flatMap(_.source).map(source => s"url(#arrow_${source})").getOrElse(""),
+          svgAttrs.markerEnd :=  style.arrows.flatMap(_.target).map(target => s"url(#arrow_${target})").getOrElse("")
         ).render
       }
 
@@ -249,7 +250,7 @@ object SVGGraphRenderer {
       label =  {
         val bbox = line.getBBox()
         for {
-          edgeLabel <- shape.labelStyle
+          edgeLabel <- style.labelStyle
           pos <- edgeLabel.position.orElse(Some(PointSpec((end.x - start.x) / 2, (end.y - start.y) / 2)))
           withStartPoint = edgeLabel.copy(position = Some(PointSpec(pos.x + start.x, pos.y + start.y)))
         } yield renderLabel(edge.id, "edge", withStartPoint, edge.value.label.getOrElse(""), bbox.width, bbox.height)

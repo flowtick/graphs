@@ -12,7 +12,7 @@ class EditorImageLoader[Image](imageLoader: ImageLoader[Image]) extends EditorCo
   }
 
   override def eval: Eval = ctx => ctx.effect(this) {
-    case SetGraph(newGraph) => registerStyleSheetImages(newGraph.styleSheet).map(_ => ctx)
+    case SetGraph(newGraph) => registerStyleSheetImages(newGraph.styleSheet) *> IO.pure(ctx)
   }
 
   def registerStyleSheetImages(styleSheet: StyleSheet): IO[List[Either[Throwable, Image]]] =
