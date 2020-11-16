@@ -162,7 +162,7 @@ flowtick/graphs
 <ul style="display: none">
 <li class="md-nav__item md-version" id="project.version">
 <label class="md-nav__link" for="__version">
-<i class="md-icon" title="Version">label_outline</i> 0.4.0+6-31433d58+20201114-1711*
+<i class="md-icon" title="Version">label_outline</i> 0.5.0
 </label>
 </li>
 </ul>
@@ -192,11 +192,11 @@ flowtick/graphs
 <h2><a href="#json-support" name="json-support" class="anchor"><span class="anchor-link"></span></a>JSON support</h2>
 <p><code>graphs</code> supports the serialization of graphs as via <a href="https://github.com/circe/circe">circe</a>.</p>
 <p>You need to add the <code>graphs-json</code> dependency to use it:</p>
-<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-json&quot; % &quot;0.4.0+6-31433d58+20201114-1711-SNAPSHOT&quot;
+<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-json&quot; % &quot;0.5.0&quot;
 </code></pre>
 <p>For the conversion you need to have an <code>Identifiable</code> instance for the node type:</p>
 <h4><a href="#example-primitive-types-with-defaults" name="example-primitive-types-with-defaults" class="anchor"><span class="anchor-link"></span></a>Example: primitive types with defaults</h4>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/master/examples/shared/src/main/scala/JsonExample.scala#L4-L24" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.5.0/examples/shared/src/main/scala/JsonExample.scala#L4-L24" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.json._
 import com.flowtick.graphs.json.format.default._
@@ -218,7 +218,7 @@ val parsed: Either[circe.Error, JsonGraph[Unit, Unit, String]] = FromJson[Unit, 
 
 require(parsed.map(_.graph).contains(graph))</code></pre>
 <h4><a href="#example-providing-the-id-for-a-custom-type" name="example-providing-the-id-for-a-custom-type" class="anchor"><span class="anchor-link"></span></a>Example: providing the ID for a custom type</h4>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/master/examples/shared/src/main/scala/JsonExample.scala#L31-L54" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.5.0/examples/shared/src/main/scala/JsonExample.scala#L31-L54" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.json._
 import com.flowtick.graphs.json.format.default._
@@ -245,13 +245,13 @@ require(parsed.map(_.graph).contains(graph))</code></pre>
 <p>Note that this example is also importing to option to treat unit as <code>null</code> in the JSON representation. </p>
 </div>
 <div>
-<a href="https://github.com/flowtick/graphs/tree/master/docs/json.md" title="Edit this page" class="md-source-file md-edit">
+<a href="https://github.com/flowtick/graphs/tree/v0.5.0/docs/json.md" title="Edit this page" class="md-source-file md-edit">
 Edit this page
 </a>
 </div>
 <div class="print-only">
 <span class="md-source-file md-version">
-0.4.0+6-31433d58+20201114-1711*
+0.5.0
 </span>
 </div>
 </article>

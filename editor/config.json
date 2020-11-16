@@ -8,12 +8,6 @@
             "id": "default",
             "title": "default",
             "schemaRef": "#/$defs/textOnly",
-            "shape": {
-              "arrows": {
-                "source": "circle",
-                "target": "standard"
-              }
-            },
             "previewImageRef": "arrow_right"
           },
           {
@@ -136,9 +130,16 @@
         "smile": {
           "image": "smile"
         }
-      },
-      "overrides": {
-
+      }
+    },
+    "edges": {
+      "classes":  {
+        "default": {
+          "arrows": {
+            "source": "circle",
+            "target": "standard"
+          }
+        }
       }
     }
   }
