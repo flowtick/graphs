@@ -4,6 +4,7 @@ import cats.data.Validated._
 import cats.data._
 import cats.implicits._
 import com.flowtick.graphs.graphml.GraphMLDatatype.parseKeys
+import com.flowtick.graphs.style._
 import xmls.XMLS
 
 import scala.collection.GenTraversable
@@ -128,8 +129,10 @@ package object graphml {
       override def deserialize(from: NodeSeq, graphKeys: collection.Map[String, GraphMLKey], targetHint: Option[String]): ValidatedNel[Throwable, T] = {
         val values = from.collect {
           case e: Elem if e.label == "data" && e.attribute("key").isDefined =>
-            if (e.attribute("type").contains(Text("double"))) e.text.toDouble
-            else if (e.attribute("type").contains(Text("integer"))) e.text.toInt
+            val valueType = e.attribute("type").getOrElse(List.empty).mkString
+
+            if (valueType == "double") e.text.toDouble
+            else if (valueType == "integer") e.text.toInt
             else e.text
         }.take(genericValueKeys().runtimeLength)
 
@@ -213,7 +216,7 @@ package object graphml {
     edgeDataType: Datatype[E]): Datatype[GraphMLGraph[E, N]] = GraphMLDatatype[E, N]
 
   def ml[N](nodeValue: N, id: Option[String] = None): GraphMLNode[N] =
-    GraphMLNode(id.getOrElse(nodeValue.toString), nodeValue, None)
+    GraphMLNode(id.getOrElse(nodeValue.toString), nodeValue, None, None, None)
 
   implicit class GraphMLEdgeBuilder[X](node: GraphMLNode[X]) {
     def -->[V](value: V, to: GraphMLNode[X]): Relation[GraphMLEdge[V], GraphMLNode[X]] = Relation(GraphMLEdge(s"${node.id}-${to.id}", value, Some(node.id), Some(to.id)), Node.of(node), Node.of(to))
@@ -259,19 +262,17 @@ package object graphml {
 
     def asGraphML(nodeShape: Option[(Option[String], N) => NodeShape] = None): GraphMLGraph[E, N] = {
       val mlNodes: Iterable[Node[GraphMLNode[N]]] = graph.nodes.map { node =>
-        node.copy(value = GraphMLNode(node.id, node.value, nodeShape.map(f => f(nodeLabel(node), node.value))))
+        node.copy(value = GraphMLNode(node.id, node.value, nodeShape.map(f => f(nodeLabel(node), node.value)), None, nodeLabel(node)))
       }
 
       val mlEdges: Iterable[Edge[GraphMLEdge[E]]] = graph.edges.map { edge =>
-        val edgeShape: Option[EdgeShape] = edgeLabel(edge).map(labelValue => EdgeShape(Some(
-          EdgeLabel(labelValue)
-        )))
-
         val mlEdge = GraphMLEdge(
           edge.id,
           edge.value,
           Some(edge.from), Some(edge.to),
-          edgeShape)
+          Some(EdgeShape()),
+          None,
+          labelValue = edgeLabel(edge))
 
         Edge.of(mlEdge, edge.from, edge.to)
       }

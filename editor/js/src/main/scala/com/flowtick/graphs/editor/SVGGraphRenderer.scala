@@ -1,9 +1,10 @@
 package com.flowtick.graphs.editor
 
+import com.flowtick.graphs.{Node => GraphNode}
 import com.flowtick.graphs.Edge
 import com.flowtick.graphs.editor.SVGGraphRenderer.SVGGraphElement
-import com.flowtick.graphs.graphml.{BorderStyle, EdgePath, EdgeShape, Fill, Free, GraphMLEdge, GraphMLGraph, GraphMLNode, GraphMLResource, LabelLike, NodeShape, PointSpec, ShapeType}
-import io.circe.Json
+import com.flowtick.graphs.editor.util.DrawUtil
+import com.flowtick.graphs.style._
 import org.scalajs.dom.raw._
 import org.scalajs.dom.svg.{G, RectElement, Text}
 import scalatags.JsDom
@@ -12,23 +13,16 @@ import scalatags.JsDom.{svgAttrs, svgTags => svg}
 
 import scala.util.Try
 
-sealed trait GraphElement {
-  def id: String
-  def group: G
-  def selectElem: SVGElement
-  def label: Text
-}
+case class SVGNodeElement(id: ElementRef,
+                          shapeElement: SVGGraphElement,
+                          label: Text,
+                          selectElem: SVGElement,
+                          group: G) extends GraphElement[SVGElement]
 
-case class NodeElement(id: String,
-                       shapeElement: SVGGraphElement,
-                       label: Text,
-                       selectElem: SVGElement,
-                       group: G) extends GraphElement
-
-case class EdgeElement(id: String,
-                       group: G,
-                       label: Text,
-                       selectElem: SVGElement) extends GraphElement
+case class SVGEdgeElement(id: ElementRef,
+                          group: G,
+                          label: Text,
+                          selectElem: SVGElement) extends GraphElement[SVGElement]
 
 object SVGGraphRenderer {
   val defaultTextColor = "#000000"
@@ -37,67 +31,66 @@ object SVGGraphRenderer {
 
   type SVGGraphElement = SVGElement
 
-  def setSelection(element: GraphElement) = {
+  def setSelection(element: GraphElement[SVGElement]): Unit = {
     element.selectElem.setAttribute("stroke", "#555555")
     element.selectElem.setAttribute("stroke-dasharray", "3 5")
+    element.selectElem.classList.add("draggable")
   }
 
-  def unsetSelection(element: GraphElement) = {
+  def unsetSelection(element: GraphElement[SVGElement]): Unit = {
     element.selectElem.setAttribute("stroke", null)
     element.selectElem.setAttribute("stroke-dasharray", null)
+    element.selectElem.classList.remove("draggable")
   }
 
-  def renderNode(id: String, shape: NodeShape, resources: Map[String, GraphMLResource]): NodeElement = {
-    val x = shape.geometry.map(_.x).getOrElse(0.0)
-    val y = shape.geometry.map(_.y).getOrElse(0.0)
+  def renderNode(node: GraphNode[EditorGraphNode], editorGraph: EditorGraph): SVGNodeElement = {
+    val geometry = editorGraph.layout.nodes.get(node.id)
+    val shape = editorGraph.styleSheet.getNodeStyle(Some(node.id), node.value.stencil.toList)
 
-    val width = shape.geometry.map(_.width).getOrElse(80.0)
-    val height = shape.geometry.map(_.height).getOrElse(50.0)
+    val x = geometry.map(_.x).getOrElse(0.0)
+    val y = geometry.map(_.y).getOrElse(0.0)
 
-    val shapeElement = shape.svgContent.flatMap(content => resources.get(content.refId)) match {
-      case Some(resource) if resource.typeHint.forall(_ == "svg") =>
+    val width = geometry.map(_.width).getOrElse(80.0)
+    val height = geometry.map(_.height).getOrElse(50.0)
+
+    val shapeElement = shape.svgContent.flatMap(content => editorGraph.styleSheet.images.get(content.refId)) match {
+      case Some(image) if image.imageType == "svg" =>
         new DOMParser()
-          .parseFromString(unescapeXml(resource.value), "application/xml")
+          .parseFromString(image.data, "application/xml")
           .firstChild
           .asInstanceOf[SVGElement]
 
-      case _ => shapeTag(shape, width, height, resources)(
+      case _ => shapeTag(shape, editorGraph.styleSheet, width, height)(
         svgAttrs.style := nodeStyle(shape).mkString(";"),
       ).render
     }
+    val labelStyle = shape.labelStyle.getOrElse(NodeLabel())
 
-    val label: Text = shape.label
-      .map(renderLabel(id, "node", _, width, height))
-      .getOrElse(svg.text("").render)
+    val label: Text = renderLabel(node.id, "node", labelStyle, node.value.label.getOrElse(""), width, height)
 
     val selectRect = SVGGraphRenderer.renderSelectRect(x, y, width, height)
-    selectRect.setAttribute("data-id", id)
+    selectRect.setAttribute("data-id", node.id)
     selectRect.setAttribute("data-type", "node")
 
-    NodeElement(
-      id,
+    SVGNodeElement(
+      ElementRef(node.id, NodeType),
       shapeElement,
       label,
       selectRect,
       svg.g(
         svgAttrs.transform := s"translate($x $y)",
         data("type") := "node",
-        data("id") := id,
+        data("id") := node.id,
         shapeElement,
         label
       ).render
     )
   }
 
-  private def unescapeXml(xml: String): String = xml
-    .replaceAll("&gt;", ">")
-    .replaceAll("&lt;", "<")
-    .replaceAll("&#13;", "")
-
   def shapeTag(shape: NodeShape,
+               styleSheet: com.flowtick.graphs.style.StyleSheet,
                width: Double,
-               height: Double,
-               resources: Map[String, GraphMLResource]): JsDom.TypedTag[SVGGraphElement] = {
+               height: Double): JsDom.TypedTag[SVGGraphElement] = {
     lazy val fallback = svg.rect(
       svgAttrs.width :=  width,
       svgAttrs.height := height,
@@ -107,10 +100,10 @@ object SVGGraphRenderer {
 
     lazy val vectorShape = shape.shapeType match {
       case Some(ShapeType.Ellipse) => svg.ellipse(
-        svgAttrs.cx := width / 2,
-        svgAttrs.cy := height / 2,
-        svgAttrs.rx := width / 2,
-        svgAttrs.ry := height / 2
+        svgAttrs.cx := width / 2.0,
+        svgAttrs.cy := height / 2.0,
+        svgAttrs.rx := width / 2.0,
+        svgAttrs.ry := height / 2.0
       )
 
       case Some(ShapeType.RoundRectangle) => svg.rect(
@@ -125,17 +118,17 @@ object SVGGraphRenderer {
       case _ => fallback
     }
 
-    shape.image.flatMap(img => resources.get(img.refId)) match {
-      case Some(imageResource) if imageResource.typeHint.contains("java.awt.image.BufferedImage") =>
+    shape.image.flatMap(img => styleSheet.images.get(img)) match {
+      case Some(imageResource) if imageResource.imageType == "svg" =>
         svg.image(
           svgAttrs.width :=  width,
           svgAttrs.height := height,
-          svgAttrs.xLinkHref := s"data:image/png;base64,${unescapeXml(imageResource.value).replaceAll("\n", "")}"
+          svgAttrs.xLinkHref := s"data:application/svg+xml,${imageResource.data.replaceAll("\n", "")}"
         )
-      case Some(imageUrl) if imageUrl.typeHint.contains("dataUrl") => svg.image(
+      case Some(imageUrl) if imageUrl.imageType == "dataUrl" || imageUrl.imageType == "url" => svg.image(
         svgAttrs.width :=  width,
         svgAttrs.height := height,
-        svgAttrs.xLinkHref := imageUrl.value
+        svgAttrs.xLinkHref := imageUrl.data
       )
       case _ => vectorShape
     }
@@ -143,10 +136,10 @@ object SVGGraphRenderer {
 
   def nodeStyle(shape: NodeShape): Seq[String] = {
     val borderProps: Option[List[String]] = for {
-      bs <- shape.borderStyle.orElse(Some(BorderStyle("#000000", styleType = "line", width = 1.0)))
+      bs <- shape.borderStyle.orElse(Some(BorderStyle("#000000", styleType = Some("line"), width = Some(1.0))))
     } yield List(
       s"stroke:${bs.color}",
-      s"stroke-width:${bs.width}"
+      s"stroke-width:${bs.width.getOrElse(1.0)}"
     )
 
     val fillProps: Option[List[String]] = for {
@@ -166,7 +159,7 @@ object SVGGraphRenderer {
                        height: Double): RectElement = {
     val offset = 6
     val select = svg.rect(
-      cls := "draggable",
+      cls := "selectable",
       svgAttrs.width :=  width + offset,
       svgAttrs.height := height + offset,
       svgAttrs.x := - offset / 2,
@@ -182,14 +175,14 @@ object SVGGraphRenderer {
 
   def renderLabel(elementId: String,
                   elementType: String,
-                  label: LabelLike,
+                  labelStyle: LabelStyle,
+                  labelValue: String,
                   width: Double,
                   height: Double): Text = {
-    val lines = label.text.split("\n")
-
+    val lines = labelValue.split("\n")
     val textCenterX = width / 2
-    val textCenterY = (height / (1 + lines.size)) - Try(label.fontSize.getOrElse(defaultFontSize).toDouble * 0.6).getOrElse(10.0)
-    val isFree = label.model.contains(Free)
+    val textCenterY = (height / (1 + lines.size)) - Try(labelStyle.fontSize.getOrElse(defaultFontSize).toDouble * 0.6).getOrElse(10.0)
+    val isFree = labelStyle.model.contains(Free)
 
     // TODO: instead of marking every tspan selectable, we could group the label
 
@@ -206,48 +199,37 @@ object SVGGraphRenderer {
 
     val (finalX: Double, finalY: Double) = if (isFree) {
       (for {
-        pos <- label.position
+        pos <- labelStyle.position
       } yield (pos.x, pos.y)).getOrElse((0.0, 0.0))
     } else (textCenterX, textCenterY)
 
     svg.text(
       svgAttrs.transform := s"translate($finalX $finalY)",
       svgAttrs.textAnchor := "start",
-      svgAttrs.fontFamily := (if (label.fontFamily.contains("Dialog")) "Helvetica" else label.fontFamily.getOrElse(defaultFontFamily)), // Dialog does not exist in the most browser
-      svgAttrs.fontSize := label.fontSize.getOrElse(defaultFontSize),
-      svgAttrs.fill := label.textColor.getOrElse(defaultTextColor),
+      svgAttrs.fontFamily := (if (labelStyle.fontFamily.contains("Dialog")) "Helvetica" else labelStyle.fontFamily.getOrElse(defaultFontFamily)), // Dialog does not exist in the most browser
+      svgAttrs.fontSize := labelStyle.fontSize.getOrElse(defaultFontSize),
+      svgAttrs.fill := labelStyle.textColor.getOrElse(defaultTextColor),
     )(spans: _*)
   }.render
 
-  def renderEdge(edge: Edge[GraphMLEdge[Json]],
-                 graphml: GraphMLGraph[Json, Json]): Option[EdgeElement] = {
+  def renderEdge(edge: Edge[EditorGraphEdge],
+                 editorGraph: EditorGraph): Option[SVGEdgeElement] = {
     for {
-      fromNode <- graphml.graph.findNode(edge.from)
-      toNode <- graphml.graph.findNode(edge.to)
-      shape <- edge.value.shape.orElse(Some(EdgeShape()))
-      from <- fromNode.value.shape.flatMap(_.geometry)
-      to <- toNode.value.shape.flatMap(_.geometry)
+      points <- DrawUtil.getLinePoints(edge, editorGraph).map(_.toList)
+      start <- points.headOption
+      end <- points.reverse.headOption
 
-      fromCenterX = from.x + from.width / 2
-      fromCenterY = from.y + from.height / 2
-
-      toCenterX = to.x + to.width / 2
-      toCenterY = to.y + to.height / 2
-
-      path <- shape.path.orElse(Some(EdgePath(0, 0, 0, 0, List.empty)))
-      start = PointSpec(fromCenterX + path.sourceX, fromCenterY + path.sourceY)
-      end = PointSpec(toCenterX + path.targetX, toCenterY + path.targetY)
-      points = Iterator(start) ++ path.points ++ Iterator(end)
       pointsString = points.map(p => s"${p.x} ${p.y}").mkString(", ")
+      style <- Some(editorGraph.styleSheet.getEdgeStyle(Some(edge.id), edge.value.connector.toList))
 
       line = {
         svg.polyline(
           svgAttrs.points := pointsString,
           svgAttrs.style := s"fill:none",
-          svgAttrs.stroke := shape.edgeStyle.map(_.color).getOrElse("#000000"),
-          svgAttrs.strokeWidth := shape.edgeStyle.flatMap(_.width).getOrElse(1.0),
-          svgAttrs.markerStart := shape.arrows.flatMap(_.source).map(source => s"url(#arrow_${source})").getOrElse(""),
-          svgAttrs.markerEnd :=  shape.arrows.flatMap(_.target).map(target => s"url(#arrow_${target})").getOrElse("")
+          svgAttrs.stroke := style.edgeStyle.map(_.color).getOrElse("#000000"),
+          svgAttrs.strokeWidth := style.edgeStyle.flatMap(_.width).getOrElse(1.0),
+          svgAttrs.markerStart := style.arrows.flatMap(_.source).map(source => s"url(#arrow_${source})").getOrElse(""),
+          svgAttrs.markerEnd :=  style.arrows.flatMap(_.target).map(target => s"url(#arrow_${target})").getOrElse("")
         ).render
       }
 
@@ -268,15 +250,15 @@ object SVGGraphRenderer {
       label =  {
         val bbox = line.getBBox()
         for {
-          edgeLabel <- shape.label
+          edgeLabel <- style.labelStyle
           pos <- edgeLabel.position.orElse(Some(PointSpec((end.x - start.x) / 2, (end.y - start.y) / 2)))
           withStartPoint = edgeLabel.copy(position = Some(PointSpec(pos.x + start.x, pos.y + start.y)))
-        } yield renderLabel(edge.id, "edge", withStartPoint, bbox.width, bbox.height)
+        } yield renderLabel(edge.id, "edge", withStartPoint, edge.value.label.getOrElse(""), bbox.width, bbox.height)
       }.getOrElse(svg.text("").render)
 
       group = svg.g(id := edge.id, line, selectLine).render
 
-    } yield EdgeElement(edge.id, group, label, group)
+    } yield SVGEdgeElement(ElementRef(edge.id, EdgeType), group, label, group)
   }
 
 }

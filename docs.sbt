@@ -1,3 +1,5 @@
+import sbt.file
+
 enablePlugins(ParadoxMaterialThemePlugin, ParadoxSitePlugin, GhpagesPlugin)
 
 sourceDirectory in Paradox := baseDirectory.value / "docs"
@@ -7,7 +9,10 @@ ParadoxMaterialThemePlugin.paradoxMaterialThemeSettings(Paradox)
 paradoxProperties += ("version" -> version.value)
 
 mappings in makeSite ++= Seq(
-  file("LICENSE") -> "LICENSE"
+  file("LICENSE") -> "LICENSE",
+  file("editor/dist/app.js") -> "editor/app.js",
+  file("editor/dist/editor.html") -> "editor/index.html",
+  file("editor/dist/config.json") -> "editor/config.json"
 )
 
 paradoxMaterialTheme in Paradox := {

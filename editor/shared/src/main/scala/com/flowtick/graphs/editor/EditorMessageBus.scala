@@ -1,11 +1,8 @@
-package com.flowtick.graphs
+package com.flowtick.graphs.editor
 
 import cats.effect.IO
 import cats.effect.concurrent.Ref
 import cats.implicits._
-import com.flowtick.graphs.graphml.{GraphML, GraphMLGraph}
-import com.flowtick.graphs.json.schema.Schema
-import io.circe.Json
 
 trait EditorMessageBus {
   def subscribe(backend: EditorComponent): IO[EditorComponent]
@@ -45,26 +42,24 @@ final case class EditorContext(event: EditorEvent,
     copy(commands = commands.:+(command))
 
   def updateModel(update: EditorModel => EditorModel): EditorContext =
-    copy(model = update(model))
+    copy(model = update(model).copy(version = model.version +1))
 }
 
 class EditorController(logRef: Ref[IO, List[EditorEvent]],
                        listenersRef: Ref[IO, List[EditorComponent]],
-                       graphml: Option[GraphMLGraph[Json, Json]],
-                       palette: Option[Palette],
-                       schema: Option[EditorModel.EditorSchema]) extends EditorMessageBus {
+                       initial: EditorGraph,
+                       palette: Option[Palette]) extends EditorMessageBus {
   lazy val modelRef: Ref[IO, EditorModel] = Ref.unsafe[IO, EditorModel](EditorModel(
-    graphml = graphml.getOrElse(GraphML.empty),
-    palette = palette.getOrElse(Palette.defaultPalette),
-    schema = schema.getOrElse(Schema())
+    editorGraph = initial,
+    palette = palette.getOrElse(Palette.defaultPalette)
   ))
 
-  override def subscribe(backend: EditorComponent): IO[EditorComponent] =
+  override def subscribe(component: EditorComponent): IO[EditorComponent] =
     for {
-      _ <- listenersRef.getAndUpdate(backend :: _)
+      _ <- listenersRef.getAndUpdate(component :: _)
       model <- modelRef.get
-      _ <- backend.init(model)
-    } yield backend
+      _ <- component.init(model)
+    } yield component
 
   override def notifyEvent(source: EditorComponent, event: EditorEvent): IO[EditorContext] =
     listenersRef.get.map(_.filter(_ != source)).flatMap(notifyListeners(event, _))
@@ -75,7 +70,8 @@ class EditorController(logRef: Ref[IO, List[EditorEvent]],
       _ <- logRef.getAndUpdate(event :: _)
       graph <- modelRef.get
       context <- listeners.foldLeft(IO.pure(EditorContext(event, graph))) {
-        case (current, next) => current
+        case (current, next) =>
+          current
           .flatMap(next.eval)
           .redeemWith(
             error => IO.raiseError(new RuntimeException(s"unable to evaluate event $event in $next", error)),
@@ -88,11 +84,12 @@ class EditorController(logRef: Ref[IO, List[EditorEvent]],
           error => IO.raiseError(new RuntimeException(s"unable to evaluate effect in ${editorEffect.source}", error)),
           IO.pure
         )).sequence
-      _ <- context
+      _ <-
+        context
         .notifications
         .map(notification => notifyEvent(notification.source, notification.event))
         .sequence
-      _ <- publishAll(context.commands)
+      _ <- if (context.commands.nonEmpty) publishAll(context.commands) else IO.unit
     } yield context).redeemWith(
       error => IO {
         println(s"error $error during notify")

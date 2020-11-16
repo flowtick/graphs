@@ -39,6 +39,7 @@ Update Docs
 
 ```
 git checkout v<released_version>
+sbt editorJS/fullOptJS # to create the editor js app in 'editor/dist'
 sbt ghpagesPushSite
 ```
 

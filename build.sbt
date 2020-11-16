@@ -64,6 +64,15 @@ lazy val coreJS = core.js.settings(
 )
 lazy val coreJVM = core.jvm
 
+lazy val style = (crossProject(JVMPlatform, JSPlatform) in file(".") / "style")
+  .settings(commonSettings)
+  .settings(
+    name := "graphs-style",
+  ).dependsOn(core)
+
+lazy val styleJS = style.js
+lazy val styleJVM = style.jvm
+
 lazy val layout = (crossProject(JVMPlatform, JSPlatform) in file(".") / "layout")
   .settings(commonSettings)
   .settings(
@@ -92,7 +101,7 @@ lazy val graphml = (crossProject(JVMPlatform, JSPlatform) in file(".") / "graphm
     libraryDependencies ++= Seq(
       "com.flowtick" %%% "xmls" % xmlsV
     )
-  ).dependsOn(core, layout, cats)
+  ).dependsOn(core, style, layout, cats)
 
 lazy val graphmlJS = graphml.js
 lazy val graphmlJVM = graphml.jvm
@@ -106,14 +115,37 @@ lazy val editor = (crossProject(JVMPlatform, JSPlatform) in file(".") / "editor"
       "io.circe" %%% "circe-generic",
       "io.circe" %%% "circe-parser"
     ).map(_ % circeVersion),
-    libraryDependencies += "org.typelevel" %%% "cats-effect" % "2.1.3"
+    libraryDependencies += "org.typelevel" %%% "cats-effect" % "2.1.3",
+    libraryDependencies += "org.apache.xmlgraphics" % "batik-rasterizer" % "1.13"
   ).dependsOn(core, graphml, json, cats)
 
 lazy val editorJS = editor.js.settings(
   scalaJSUseMainModuleInitializer := true,
-  libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.1"
+  libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.1",
+  artifactPath in (Compile, fastOptJS) := baseDirectory.value / ".." / "dist" / "app.js",
+  artifactPath in (Compile, fullOptJS) := (artifactPath in (Compile, fastOptJS)).value
 )
-lazy val editorJVM = editor.jvm
+
+// Determine OS version of JavaFX binaries
+lazy val osName = System.getProperty("os.name") match {
+  case n if n.startsWith("Linux")   => "linux"
+  case n if n.startsWith("Mac")     => "mac"
+  case n if n.startsWith("Windows") => "win"
+  case _ => throw new Exception("Unknown platform!")
+}
+
+// Add dependency on JavaFX libraries, OS dependent
+lazy val javaFXModules = Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
+
+lazy val editorJVM = editor.jvm.settings(
+  libraryDependencies += "org.scalafx" %% "scalafx" % "14-R19",
+  libraryDependencies += "org.fxmisc.richtext" % "richtextfx" % "0.10.5",
+  libraryDependencies += "org.apache.logging.log4j" % "log4j-api" % "2.14.0",
+  libraryDependencies += "org.apache.logging.log4j" % "log4j-core" % "2.14.0",
+  libraryDependencies ++= javaFXModules.map( m =>
+    "org.openjfx" % s"javafx-$m" % "14.0.1" classifier osName
+  )
+)
 
 lazy val cats = (crossProject(JVMPlatform, JSPlatform) in file(".") / "cats")
   .settings(commonSettings)
@@ -166,7 +198,7 @@ lazy val graphs = (project in file("."))
     publishLocal := {},
     publish := {},
     test := {},
-    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(jsonJS, graphmlJS, coreJS, catsJS, layoutJS, editorJS, examplesJS)
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(jsonJS, graphmlJS, coreJS, catsJS, layoutJS, editorJS, examplesJS, styleJS)
   ).aggregate(
     coreJS,
     coreJVM,
@@ -181,7 +213,7 @@ lazy val graphs = (project in file("."))
     editorJS,
     editorJVM,
     jsonJS,
-    jsonJVM
+    jsonJVM,
+    styleJS,
+    styleJVM
   )
-
-addCommandAlias("testWithCoverage", ";clean;coverage;test;coverageReport")
