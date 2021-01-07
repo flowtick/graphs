@@ -1,65 +1,62 @@
 package com.flowtick.graphs.editor
 
-import java.util.UUID
+import com.flowtick.graphs.json.schema.Schema
+import com.flowtick.graphs.style.{ImageSpec, StyleSheet}
 
-import cats.effect.IO
-import cats.effect.concurrent.Ref
+/**
+ *
+ * @param id the id of the stencil, this will be used as a reference to the style sheet
+ * @param title title to show
+ * @param image an image spec to be used in the palette, this is not referencing the stylesheet images
+ *              because the stencil style might actually not be an image, making a preview hard to reproduce
+ * @param schemaRef reference to the schema definition, not the full path, only the fragment
+ */
+final case class Stencil(id: String,
+                         title: String,
+                         image: Option[ImageSpec] = None,
+                         schemaRef: Option[String] = None)
 
-trait EditorPalette extends EditorComponent {
-  def messageBus: EditorMessageBus
-  def toggleView(enabled: Boolean): IO[Boolean]
-  def initPalette(model: EditorModel): IO[Unit]
+final case class Connector(id: String,
+                           title: String,
+                           image: Option[ImageSpec] = None,
+                           schemaRef: Option[String] = None)
 
-  override def order: Double = 0.5
+final case class ConnectorGroup(title: String, items: List[Connector])
+final case class StencilGroup(title: String, items: List[Stencil])
 
-  val currentStencilItemRef: Ref[IO, Option[Stencil]] = Ref.unsafe(None)
-  val currentConnectorItemRef: Ref[IO, Option[Connector]] = Ref.unsafe(None)
-  val visibleRef: Ref[IO, Option[Boolean]] = Ref.unsafe(None)
+final case class Palette(stencils: List[StencilGroup] = List.empty,
+                         connectors: List[ConnectorGroup] = List.empty,
+                         styleSheet: StyleSheet,
+                         schema: Schema[EditorSchemaHints])
 
-  override def eval: Eval = ctx => ctx.effect(this) {
-    case EditorToggle(EditorToggle.paletteKey, enabled) =>
-      val show = if (enabled.isEmpty) {
-        visibleRef
-          .get
-          .flatMap(visible => toggleView(visible.forall(state => !state)))
-      } else toggleView(enabled.getOrElse(true))
+trait EditorPaletteLike {
+  private lazy val stencilById: Map[String, Stencil] =
+    palettes
+      .flatMap(_.stencils)
+      .flatMap(_.items)
+      .map(stencil => (stencil.id, stencil))
+      .toMap
 
-      show.flatMap(visible => visibleRef.set(Some(visible)))
-  }.flatMap(_.transformIO {
-    case create: CreateNode =>
-      for {
-        current <- currentStencilItemRef.get
-      } yield current match {
-        case Some(item) => ctx.copy(event = create.copy(stencilRef = Some(item.id)))
-        case None => ctx
-      }
-    case addEdge: AddEdge =>
-      for {
-        current <- currentConnectorItemRef.get
-      } yield current match {
-        case Some(item) =>
-          ctx.copy(event = addEdge.copy(stencilRef = Some(item.id)))
-        case None => ctx
-      }
-  })
+  private lazy val connectorsById: Map[String, Connector] =
+    palettes
+      .flatMap(_.connectors)
+      .flatMap(_.items)
+      .map(connector => (connector.id, connector))
+      .toMap
 
-  override def init(model: EditorModel): IO[Unit] = for {
-    _ <- IO(toggleView(false))
-    _ <- initPalette(model)
-  } yield ()
+  def palettes: List[Palette]
 
-  def selectPaletteItem(paletteItem: Stencil): Unit = {
-    currentStencilItemRef.set(Some(paletteItem)).attempt.unsafeRunSync()
-  }
+  def stencils: Iterable[Stencil] = stencilById.values
 
-  def selectConnectorItem(connectorItem: Connector): Unit = {
-    currentConnectorItemRef.set(Some(connectorItem)).attempt.unsafeRunSync()
-  }
+  def connectors: Iterable[Connector] = connectorsById.values
 
-  def createPaletteItem(paletteItem: Stencil): Unit = {
-    messageBus
-      .publish(CreateNode(UUID.randomUUID().toString, Some(paletteItem.id)))
-      .attempt
-      .unsafeRunSync()
-  }
+  def findStencil(id: String): Option[Stencil] = stencilById.get(id)
+
+  def findConnector(id: String): Option[Connector] = connectorsById.get(id)
+
+  def stencilGroups: Iterable[StencilGroup] = palettes.view.flatMap(_.stencils)
+
+  def connectorGroups: Iterable[ConnectorGroup] = palettes.view.flatMap(_.connectors)
 }
+
+final case class EditorPalettes(palettes: List[Palette]) extends EditorPaletteLike

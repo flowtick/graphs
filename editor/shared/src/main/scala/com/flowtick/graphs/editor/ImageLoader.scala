@@ -5,9 +5,7 @@ import com.flowtick.graphs.style.ImageSpec
 
 trait ImageLoader[T] {
   def registerImage(ref: String,
-                    imageSpec: ImageSpec,
-                    scaleWidth: Option[Double] = None,
-                    scaleHeight: Option[Double] = None): IO[T]
+                    imageSpec: ImageSpec): IO[T]
   def getImage(ref: String): Option[T]
 }
 

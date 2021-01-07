@@ -29,9 +29,9 @@ trait Page[T, E] {
   def pageCenter: PointSpec
 
   def addEdge(edge: Edge[EditorGraphEdge],
-              graph: EditorGraph): IO[Option[GraphElement[T]]]
+              editorModel: EditorModel): IO[Option[GraphElement[T]]]
 
-  def addNode(node: Node[EditorGraphNode], graph: EditorGraph): IO[Option[GraphElement[T]]]
+  def addNode(node: Node[EditorGraphNode], editorModel: EditorModel): IO[Option[GraphElement[T]]]
 
   def setSelection(element: GraphElement[T]): IO[Unit]
 
@@ -113,10 +113,10 @@ trait EditorView[T, E] extends EditorComponent {
     dragEvent <- drag.filter(value => Math.abs(value.deltaY) > 0 || Math.abs(value.deltaX) > 0)
   } yield messageBus.publish(MoveBy(dragEvent.deltaX, dragEvent.deltaY)).void).getOrElse(IO.unit)
 
-  def appendEdge(graphml: EditorGraph)(edge: Edge[EditorGraphEdge]): IO[Option[GraphElement[T]]] = for {
+  def appendEdge(editorModel: EditorModel)(edge: Edge[EditorGraphEdge]): IO[Option[GraphElement[T]]] = for {
     page <- page.get
 
-    edgeElement <- page.addEdge(edge, graphml)
+    edgeElement <- page.addEdge(edge, editorModel)
 
     _ <- {
       def withEdge(vm: ViewModel[T]): ViewModel[T] = edgeElement match {
@@ -128,9 +128,9 @@ trait EditorView[T, E] extends EditorComponent {
     }
   } yield edgeElement
 
-  def appendNode(graphml: EditorGraph)(node: Node[EditorGraphNode]): IO[Option[GraphElement[T]]] = for {
+  def appendNode(editorModel: EditorModel)(node: Node[EditorGraphNode]): IO[Option[GraphElement[T]]] = for {
     pageElem <- page.get
-    nodeElement <- pageElem.addNode(node, graphml)
+    nodeElement <- pageElem.addNode(node, editorModel)
     _ <- {
       def withNode(vm: ViewModel[T]): ViewModel[T] = nodeElement
         .map(elem => vm.copy(graphElements = vm.graphElements + (elem.id -> elem)))
@@ -141,20 +141,20 @@ trait EditorView[T, E] extends EditorComponent {
   } yield nodeElement
 
   def updateEdge(id: String, ctx: EditorContext): IO[Option[GraphElement[T]]] =
-    ctx.model.editorGraph.graph
+    ctx.model.graph
       .findEdge(id)
-      .map(edge => updateElement(edge, ElementRef(id, EdgeType), ctx.model)(appendEdge(ctx.model.editorGraph)))
+      .map(edge => updateElement(edge, ElementRef(id, EdgeType), ctx.model)(appendEdge(ctx.model)))
       .getOrElse(IO.pure(None))
 
   def updateNode(id: String, ctx: EditorContext): IO[Option[GraphElement[T]]] =
-    ctx.model.editorGraph.graph
+    ctx.model.graph
       .findNode(id)
-      .map(edge => updateElement(edge, ElementRef(id, NodeType), ctx.model)(appendNode(ctx.model.editorGraph)))
+      .map(edge => updateElement(edge, ElementRef(id, NodeType), ctx.model)(appendNode(ctx.model)))
       .getOrElse(IO.pure(None))
 
-  def updateElement[E](value: E,
-                       id: ElementRef,
-                       model: EditorModel)(update: E => IO[Option[GraphElement[T]]]): IO[Option[GraphElement[T]]] = for {
+  def updateElement[EL](value: EL,
+                    id: ElementRef,
+                    model: EditorModel)(update: EL => IO[Option[GraphElement[T]]]): IO[Option[GraphElement[T]]] = for {
     vm <- viewModel.get
     p <- page.get
     updated <- vm.graphElements.get(id) match {
@@ -175,29 +175,29 @@ trait EditorView[T, E] extends EditorComponent {
     }
   } yield updated
 
-  def handleLoaded(loaded: SetGraph): IO[Unit] = {
-    val graphml = loaded.graph
-
+  def handleLoaded(editorModel: EditorModel): IO[Unit] = {
     for {
       oldPage <- page.get
       newPage <- createPage
       _ <- page.set(newPage)
       _ <- setNewPage(newPage, oldPage)
-      rendered <- renderGraph(graphml)
+      rendered <- renderGraph(editorModel)
     } yield rendered
   }
 
-  def renderGraph(graphml: EditorGraph): IO[Unit] = for {
-    _ <- graphml.graph.nodes.map(appendNode(graphml)(_)).toList.sequence
-    _ <- graphml.graph.edges.map(appendEdge(graphml)(_)).toList.sequence
+  def renderGraph(editorModel: EditorModel): IO[Unit] = for {
+    vm <- viewModel.get
+    _ <- vm.graphElements.keys.map(deleteElementRef).toList.sequence
+    _ <- editorModel.graph.nodes.map(appendNode(editorModel)(_)).toList.sequence
+    _ <- editorModel.graph.edges.map(appendEdge(editorModel)(_)).toList.sequence
   } yield ()
 
   def handleEvents: Eval = ctx => ctx.effect(this) {
     case ResetTransformation => handleResetTransformation
 
-    case loaded: SetGraph => handleLoaded(loaded).void
+    case Reset => handleLoaded(ctx.model).void
 
-    case setModel: SetModel => handleSetModel(setModel)
+    case setModel: SetModel => renderGraph(setModel.model)
 
     case selected: Selected => updateSelections(selected.oldSelection, selected.elements)
 
@@ -212,16 +212,10 @@ trait EditorView[T, E] extends EditorComponent {
     _ <- p.resetTransformation
   } yield ()
 
-  def handleSetModel(setModel: SetModel): IO[Unit] = for {
-    vm <- viewModel.get
-    _ <- vm.graphElements.keys.map(deleteElementRef).toList.sequence
-    _ <- renderGraph(setModel.model.editorGraph)
-  } yield ()
-
   override lazy val eval: Eval = handleEvents
 
   def handleCreateNode: Eval = ctx => ctx.transformIO {
-    case create: CreateNode => for {
+    case create: AddNode => for {
       p <- page.get
       center = p.pageCenter
     } yield {

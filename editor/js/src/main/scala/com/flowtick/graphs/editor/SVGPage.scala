@@ -132,17 +132,17 @@ class SVGPage(val root: SVG,
     _ <- dragStartRef.set(dragStart)
   } yield dragStart).unsafeRunSync()
 
-  override def addEdge(edge: Edge[EditorGraphEdge], graph: EditorGraph): IO[Option[GraphElement[SVGElement]]] = for {
-    edgeElement <- IO(SVGGraphRenderer.renderEdge(edge, graph))
+  override def addEdge(edge: Edge[EditorGraphEdge], model: EditorModel): IO[Option[GraphElement[SVGElement]]] = for {
+    edgeElement <- IO(SVGGraphRenderer.renderEdge(edge, model))
     _ <- IO(edgeElement.foreach(edge => {
       edgeGroup.appendChild(edge.group)
       labelGroup.appendChild(edge.label)
     }))
   } yield edgeElement
 
-  override def addNode(node: Node[EditorGraphNode], graph: EditorGraph): IO[Option[GraphElement[SVGElement]]] = for {
+  override def addNode(node: Node[EditorGraphNode], model: EditorModel): IO[Option[GraphElement[SVGElement]]] = for {
     node <- IO {
-      val nodeElement = SVGGraphRenderer.renderNode(node, graph)
+      val nodeElement = SVGGraphRenderer.renderNode(node, model)
       nodeGroup.appendChild(nodeElement.group)
       selectGroup.appendChild(nodeElement.selectElem)
 

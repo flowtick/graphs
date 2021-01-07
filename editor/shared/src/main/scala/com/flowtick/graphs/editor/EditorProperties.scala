@@ -107,7 +107,7 @@ trait EditorProperties extends EditorComponent {
     case Selected(elements, _) =>
       elements
         .headOption
-        .flatMap(getElementProperties(_, ctx.model.editorGraph))
+        .flatMap(getElementProperties(_, ctx.model))
         .map(setElementAndReset)
         .getOrElse(IO.unit)
 
@@ -116,7 +116,7 @@ trait EditorProperties extends EditorComponent {
         current <- currentElement.get
         _ <- if (current.contains(updatedElement)) {
           current
-            .flatMap(getElementProperties(_, ctx.model.editorGraph))
+            .flatMap(getElementProperties(_, ctx.model))
             .map(updateValues)
             .getOrElse(IO.unit)
         } else IO.unit
@@ -217,19 +217,18 @@ trait EditorProperties extends EditorComponent {
   } yield ()
 
   def getElementProperties(elementRef: ElementRef,
-                           editorGraph: EditorGraph): Option[ElementProperties] = for {
+                           model: EditorModel): Option[ElementProperties] = for {
     element <- elementRef match {
-      case ElementRef(id, NodeType) => editorGraph.graph.findNode(id).map[EditorGraphElement](_.value)
-      case ElementRef(id, EdgeType) => editorGraph.graph.findEdge(id).map[EditorGraphElement](_.value)
+      case ElementRef(id, NodeType) => model.graph.findNode(id).map[EditorGraphElement](_.value)
+      case ElementRef(id, EdgeType) => model.graph.findEdge(id).map[EditorGraphElement](_.value)
     }
 
     color = elementRef match {
-      case ElementRef(id, NodeType) => editorGraph.styleSheet.getNodeStyle(Some(id), List.empty).fill.flatMap(_.color)
-      case ElementRef(id, EdgeType) => editorGraph.styleSheet.getEdgeStyle(Some(id), List.empty).edgeStyle.map(_.color)
+      case ElementRef(id, NodeType) => model.styleSheet.requireNodeStyle(Some(id), List.empty).fill.flatMap(_.color)
+      case ElementRef(id, EdgeType) => model.styleSheet.requireEdgeStyle(Some(id), List.empty).edgeStyle.map(_.color)
     }
 
-    definitions = editorGraph.schema.definitionsCompat getOrElse Map.empty
-    elementSchema <- element.schemaRef.flatMap(getElementSchema(_, definitions)).orElse(Some(Schema[EditorSchemaHints]()))
+    elementSchema <- element.schemaRef.flatMap(getElementSchema(_, model.schema.definitions)).orElse(Some(Schema[EditorSchemaHints]()))
   } yield ElementProperties(elementRef, element.label, color, elementSchema, element.data)
 
   def getElementSchema(schemaRef: String, definitions: Map[String, EditorModel.EditorSchema]): Option[EditorModel.EditorSchema] =

@@ -7,10 +7,24 @@ import io.circe.{Decoder, Encoder, HCursor, Json, _}
 import scala.collection.mutable.ListBuffer
 import io.circe.generic.auto._
 import com.flowtick.graphs.json.format.default._
+
 import com.flowtick.graphs.layout.{DefaultGeometry, Geometry}
 import com.flowtick.graphs.style.StyleSheet
 
 object EditorGraphJsonFormat {
+  implicit def decodeEitherStringA[A](implicit
+                                    decoderA: Decoder[A],
+                                    decoderB: Decoder[String]): Decoder[Either[String, A]] = decoderB.either(decoderA)
+
+  implicit def encodeEitherStringA[A](implicit
+                                    encoderA: Encoder[A],
+                                    encoderB: Encoder[String]): Encoder[Either[String, A]] = new Encoder[Either[String, A]] {
+    override def apply(a: Either[String, A]): Json = a match {
+      case Right(a) => encoderA(a)
+      case Left(b) => encoderB(b)
+    }
+  }
+
   implicit val geometryCode = new Codec[Geometry] {
     override def apply(a: Geometry): Json = Json.obj(
       "x" -> Json.fromDoubleOrNull(a.x),
@@ -38,9 +52,9 @@ object EditorGraphJsonFormat {
           "nodes" -> editorGraph.graph.nodes.asJson,
           "edges" -> editorGraph.graph.edges.asJson
         ),
-        "styleSheet" -> editorGraph.styleSheet.asJson,
-        "layout" -> editorGraph.layout.asJson,
-        "schema" -> editorGraph.schema.asJson
+        "styleSheets" -> editorGraph.styleSheets.asJson,
+        "layouts" -> editorGraph.layouts.asJson,
+        "schemas" -> editorGraph.schemas.asJson
       )
 
       Json.fromFields(fields)
@@ -60,9 +74,9 @@ object EditorGraphJsonFormat {
         .downField("edges")
         .as[Option[List[Edge[EditorGraphEdge]]]]
 
-      styleSheet <- json.downField("styleSheet").as[StyleSheet]
-      layout <- json.downField("layout").as[EditorGraphLayout]
-      schema <- json.downField("schema").as[EditorModel.EditorSchema]
-    } yield EditorGraph(Graph.fromNodes(nodes).withEdges(edges.getOrElse(List.empty)), styleSheet, layout, schema)
+      styleSheets <- json.downField("styleSheets").as[List[Either[String, StyleSheet]]]
+      layouts <- json.downField("layouts").as[List[Either[String, EditorGraphLayout]]]
+      schemas <- json.downField("schemas").as[List[Either[String, EditorModel.EditorSchema]]]
+    } yield EditorGraph(Graph.fromNodes(nodes).withEdges(edges.getOrElse(List.empty)), styleSheets, layouts, schemas)
   }
 }

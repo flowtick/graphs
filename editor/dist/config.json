@@ -1,146 +1,147 @@
 {
-  "palette": {
-    "connectors": [
-      {
-        "title": "default",
-        "items": [
-          {
-            "id": "default",
-            "title": "default",
-            "schemaRef": "#/$defs/textOnly",
-            "previewImageRef": "arrow_right"
-          },
-          {
-            "id": "no_arrows",
-            "title": "No Arrows",
-            "schemaRef": "#/$defs/textOnly",
-            "previewImageRef": "minus"
-          }
-        ]
-      }
-    ],
-    "stencils": [
-      {
-        "title": "Examples",
-        "items": [
-          {
-            "id": "white_rect",
-            "title": "White Rectangle",
-            "shape": {
-              "shapeType": "roundrectangle",
-              "label": {
-                "text": "White",
-                "textColor": "#343434",
-                "fontSize": "12",
-                "fontFamily": "Dialog"
+  "palettes": [
+    {
+      "schema": {
+        "$id": "https://example.net/root.json",
+        "$schema": "http://json-schema.org/draft/2019-09/schema#",
+        "$defs": {
+          "node": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "title": "Some Text",
+                "type": "string",
+                "extension": {
+                  "highlight": "markdown"
+                }
+              },
+              "someInt": {
+                "title": "Some Integer",
+                "type": "integer"
+              },
+              "someBool": {
+                "title": "Some Boolean",
+                "type": "boolean"
+              },
+              "someFloat": {
+                "title": "Some Float",
+                "type": "number"
               }
-            },
-            "previewImageRef": "whiteRectImage",
-            "schemaRef": "#/$defs/node"
-          },
-          {
-            "id": "smile",
-            "title": "A Smile",
-            "imageDataRef": "smile",
-            "previewImageRef": "smile",
-            "schemaRef": "#/$defs/textOnly"
-          },
-          {
-            "id": "sign",
-            "title": "A Japanese Sign",
-            "imageDataRef": "sign",
-            "previewImageRef": "sign"
-          }
-        ]
-      }
-    ]
-  },
-  "schema": {
-    "$id": "https://example.net/root.json",
-    "$schema": "http://json-schema.org/draft/2019-09/schema#",
-    "$defs": {
-      "node": {
-        "type": "object",
-        "properties": {
-          "text": {
-            "title": "Some Text",
-            "type": "string",
-            "extension": {
-              "highlight": "markdown"
             }
           },
-          "someInt": {
-            "title": "Some Integer",
-            "type": "integer"
-          },
-          "someBool": {
-            "title": "Some Boolean",
-            "type": "boolean"
-          },
-          "someFloat": {
-            "title": "Some Float",
-            "type": "number"
+          "textOnly": {
+            "title": "Text",
+            "type": "string"
           }
         }
       },
-      "textOnly": {
-        "title": "Text",
-        "type": "string"
-      }
-    }
-  },
-  "styleSheet": {
-    "images": {
-      "whiteRectImage": {
-        "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVsAAAD5CAYAAACJbJa8AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAA65JREFUeJzt2CFuwwAQRcFNVeibROa5P4hk7KuYp6hRc4C8SO4M+2zRA3uZmccA8FZfnz4A4D8QW4DA99+xLMus6/qpWwBOY9/3OY7juV9ie71e536/50cBnM3tdptt257bGwEgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIELjPz+B3Lssy6rh88B+Ac9n2f4zie+yW2ALyHNwJAQGwBAj93IRbHDiSbGgAAAABJRU5ErkJggg==",
-        "imageType": "dataUrl"
-      },
-      "sign": {
-        "data": "data:image/svg+xml;base64,PHN2ZyBpZD0iZW1vamkiIHZpZXdCb3g9IjAgMCA3MiA3MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZyBpZD0iY29sb3IiPgogICAgPHJlY3QgeD0iMTEuMjM0NCIgeT0iMTEuOTIxNiIgcng9IjEuNjk5MSIgd2lkdGg9IjQ4Ljk4NDEiIGhlaWdodD0iNDguOTg0MSIgZmlsbD0iI2QwY2ZjZSIvPgogIDwvZz4KICA8ZyBpZD0ibGluZSI+CiAgICA8Zz4KICAgICAgPGxpbmUgeDE9IjIyLjk3OTUiIHgyPSIzNS45NzE3IiB5MT0iMzEuNDI5MiIgeTI9IjMxLjQyOTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgICA8bGluZSB4MT0iMjIuOTc5NSIgeDI9IjM3LjA4NjkiIHkxPSIyNS40MTc5IiB5Mj0iMjUuNDE3OSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxsaW5lIHgxPSIyMi4yMjI2IiB4Mj0iMzYuMzI5OSIgeTE9IjI1LjQxNzkiIHkyPSIyNS40MTc5IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjIiLz4KICAgICAgPGxpbmUgeDE9IjIzLjM5NjUiIHgyPSIzNS41MzYzIiB5MT0iMzUuNTQ3NSIgeTI9IjM1LjU0NzUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgICA8bGluZSB4MT0iMjQuMTEwNSIgeDI9IjM1LjAyNDkiIHkxPSI1MC43MDY4IiB5Mj0iNTAuNzA2OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxsaW5lIHgxPSIyMS43Mjc4IiB4Mj0iMzcuMTkzMyIgeTE9IjQwLjExNTIiIHkyPSI0MC4xMTUyIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjIiLz4KICAgICAgPGxpbmUgeDE9IjI5LjQ3NTYiIHgyPSIyOS40NzU2IiB5MT0iMjguODg1MyIgeTI9IjQwLjExNTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgICA8bGluZSB4MT0iNDIuMjIxNiIgeDI9IjQyLjIyMTYiIHkxPSIyNS42MjA2IiB5Mj0iNDMuMDAzNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxsaW5lIHgxPSIyOS40NzU2IiB4Mj0iMjkuNDc1NiIgeTE9IjIxLjk1MTEiIHkyPSIyNS4xNTU5IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjIiLz4KICAgICAgPGxpbmUgeDE9IjM3LjA4NjkiIHgyPSIzNy4wODY5IiB5MT0iMjUuNDE3OSIgeTI9IjI4Ljg4NTMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgICA8bGluZSB4MT0iMjIuMjIyNiIgeDI9IjIyLjIyMjYiIHkxPSIyNS40MTc5IiB5Mj0iMjguODg1MyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxwb2x5bGluZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIyIiBwb2ludHM9IjI0LjExIDUyLjQ2IDI0LjExIDQ0LjM4OCAzNS4xNjggNDQuMzg4IDM1LjE2OCA1Mi40NiIvPgogICAgICA8cG9seWxpbmUgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgcG9pbnRzPSI0OS40MTYgMjEuOTUxIDQ5LjQxNiA1MS44NyA0My43NzQgNTEuODciLz4KICAgICAgPHJlY3QgeD0iMTEuMjM0NCIgeT0iMTEuOTIxNiIgcng9IjEuNjk5MSIgd2lkdGg9IjQ4Ljk4NDEiIGhlaWdodD0iNDguOTg0MSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+Cg==",
-        "imageType": "dataUrl"
-      },
-      "smile": {
-        "data": "https://openmoji.org/data/color/svg/1F600.svg",
-        "imageType": "url"
-      },
-      "arrow_right": {
-        "data": "https://openmoji.org/data/color/svg/27A1.svg",
-        "imageType": "url"
-      },
-      "minus": {
-        "data": "https://openmoji.org/data/color/svg/2796.svg",
-        "imageType": "url"
-      }
-    },
-    "nodes" : {
-      "classes" : {
-        "white_rect": {
-          "shapeType": "roundrectangle",
-          "fill": {
-            "color": "#FFF"
+      "styleSheet": {
+        "id": "example-sheet",
+        "images": {
+          "sign": {
+            "data": "data:image/svg+xml;base64,PHN2ZyBpZD0iZW1vamkiIHZpZXdCb3g9IjAgMCA3MiA3MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZyBpZD0iY29sb3IiPgogICAgPHJlY3QgeD0iMTEuMjM0NCIgeT0iMTEuOTIxNiIgcng9IjEuNjk5MSIgd2lkdGg9IjQ4Ljk4NDEiIGhlaWdodD0iNDguOTg0MSIgZmlsbD0iI2QwY2ZjZSIvPgogIDwvZz4KICA8ZyBpZD0ibGluZSI+CiAgICA8Zz4KICAgICAgPGxpbmUgeDE9IjIyLjk3OTUiIHgyPSIzNS45NzE3IiB5MT0iMzEuNDI5MiIgeTI9IjMxLjQyOTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgICA8bGluZSB4MT0iMjIuOTc5NSIgeDI9IjM3LjA4NjkiIHkxPSIyNS40MTc5IiB5Mj0iMjUuNDE3OSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxsaW5lIHgxPSIyMi4yMjI2IiB4Mj0iMzYuMzI5OSIgeTE9IjI1LjQxNzkiIHkyPSIyNS40MTc5IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjIiLz4KICAgICAgPGxpbmUgeDE9IjIzLjM5NjUiIHgyPSIzNS41MzYzIiB5MT0iMzUuNTQ3NSIgeTI9IjM1LjU0NzUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgICA8bGluZSB4MT0iMjQuMTEwNSIgeDI9IjM1LjAyNDkiIHkxPSI1MC43MDY4IiB5Mj0iNTAuNzA2OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxsaW5lIHgxPSIyMS43Mjc4IiB4Mj0iMzcuMTkzMyIgeTE9IjQwLjExNTIiIHkyPSI0MC4xMTUyIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjIiLz4KICAgICAgPGxpbmUgeDE9IjI5LjQ3NTYiIHgyPSIyOS40NzU2IiB5MT0iMjguODg1MyIgeTI9IjQwLjExNTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgICA8bGluZSB4MT0iNDIuMjIxNiIgeDI9IjQyLjIyMTYiIHkxPSIyNS42MjA2IiB5Mj0iNDMuMDAzNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxsaW5lIHgxPSIyOS40NzU2IiB4Mj0iMjkuNDc1NiIgeTE9IjIxLjk1MTEiIHkyPSIyNS4xNTU5IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjIiLz4KICAgICAgPGxpbmUgeDE9IjM3LjA4NjkiIHgyPSIzNy4wODY5IiB5MT0iMjUuNDE3OSIgeTI9IjI4Ljg4NTMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgICA8bGluZSB4MT0iMjIuMjIyNiIgeDI9IjIyLjIyMjYiIHkxPSIyNS40MTc5IiB5Mj0iMjguODg1MyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxwb2x5bGluZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIyIiBwb2ludHM9IjI0LjExIDUyLjQ2IDI0LjExIDQ0LjM4OCAzNS4xNjggNDQuMzg4IDM1LjE2OCA1Mi40NiIvPgogICAgICA8cG9seWxpbmUgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgcG9pbnRzPSI0OS40MTYgMjEuOTUxIDQ5LjQxNiA1MS44NyA0My43NzQgNTEuODciLz4KICAgICAgPHJlY3QgeD0iMTEuMjM0NCIgeT0iMTEuOTIxNiIgcng9IjEuNjk5MSIgd2lkdGg9IjQ4Ljk4NDEiIGhlaWdodD0iNDguOTg0MSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+Cg==",
+            "imageType": "dataUrl"
           },
-          "borderStyle": {
-            "color": "#AAA",
-            "width": 2.0
+          "smile": {
+            "data": "https://openmoji.org/data/color/svg/1F600.svg",
+            "imageType": "url",
+            "width": 100,
+            "height": 100
           }
         },
-        "sign": {
-          "image": "sign"
+        "nodes": {
+          "classes": {
+            "white_rect": {
+              "shapeType": "roundrectangle",
+              "fill": {
+                "color": "#FFF"
+              },
+              "borderStyle": {
+                "color": "#AAA",
+                "width": 2.0
+              }
+            },
+            "sign": {
+              "image": "sign"
+            },
+            "smile": {
+              "image": "smile"
+            }
+          }
         },
-        "smile": {
-          "image": "smile"
-        }
-      }
-    },
-    "edges": {
-      "classes":  {
-        "default": {
-          "arrows": {
-            "source": "circle",
-            "target": "standard"
+        "edges": {
+          "classes": {
+            "default": {
+              "arrows": {
+                "source": "circle",
+                "target": "standard"
+              }
+            }
           }
         }
-      }
+      },
+      "connectors": [
+        {
+          "title": "default",
+          "items": [
+            {
+              "id": "default",
+              "title": "default",
+              "schemaRef": "#/$defs/textOnly",
+              "image": {
+                "data": "https://openmoji.org/data/color/svg/27A1.svg",
+                "imageType": "url"
+              }
+            },
+            {
+              "id": "no_arrows",
+              "title": "No Arrows",
+              "schemaRef": "#/$defs/textOnly",
+              "image": {
+                "data": "https://openmoji.org/data/color/svg/2796.svg",
+                "imageType": "url"
+              }
+            }
+          ]
+        }
+      ],
+      "stencils": [
+        {
+          "title": "Examples",
+          "items": [
+            {
+              "id": "white_rect",
+              "title": "White Rectangle",
+              "image": {
+                "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVsAAAD5CAYAAACJbJa8AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAA65JREFUeJzt2CFuwwAQRcFNVeibROa5P4hk7KuYp6hRc4C8SO4M+2zRA3uZmccA8FZfnz4A4D8QW4DA99+xLMus6/qpWwBOY9/3OY7juV9ie71e536/50cBnM3tdptt257bGwEgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIExBYgILYAAbEFCIgtQEBsAQJiCxAQW4CA2AIELjPz+B3Lssy6rh88B+Ac9n2f4zie+yW2ALyHNwJAQGwBAj93IRbHDiSbGgAAAABJRU5ErkJggg==",
+                "imageType": "dataUrl",
+                "width": 32,
+                "height": 32
+              },
+              "schemaRef": "#/$defs/node"
+            },
+            {
+              "id": "smile",
+              "title": "A Smile",
+              "image": {
+                "data": "https://openmoji.org/data/color/svg/1F600.svg",
+                "imageType": "url",
+                "width": 32,
+                "height": 32
+              },
+              "schemaRef": "#/$defs/textOnly"
+            },
+            {
+              "id": "sign",
+              "title": "A Japanese Sign",
+              "image": {
+                "data": "data:image/svg+xml;base64,PHN2ZyBpZD0iZW1vamkiIHZpZXdCb3g9IjAgMCA3MiA3MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZyBpZD0iY29sb3IiPgogICAgPHJlY3QgeD0iMTEuMjM0NCIgeT0iMTEuOTIxNiIgcng9IjEuNjk5MSIgd2lkdGg9IjQ4Ljk4NDEiIGhlaWdodD0iNDguOTg0MSIgZmlsbD0iI2QwY2ZjZSIvPgogIDwvZz4KICA8ZyBpZD0ibGluZSI+CiAgICA8Zz4KICAgICAgPGxpbmUgeDE9IjIyLjk3OTUiIHgyPSIzNS45NzE3IiB5MT0iMzEuNDI5MiIgeTI9IjMxLjQyOTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgICA8bGluZSB4MT0iMjIuOTc5NSIgeDI9IjM3LjA4NjkiIHkxPSIyNS40MTc5IiB5Mj0iMjUuNDE3OSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxsaW5lIHgxPSIyMi4yMjI2IiB4Mj0iMzYuMzI5OSIgeTE9IjI1LjQxNzkiIHkyPSIyNS40MTc5IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjIiLz4KICAgICAgPGxpbmUgeDE9IjIzLjM5NjUiIHgyPSIzNS41MzYzIiB5MT0iMzUuNTQ3NSIgeTI9IjM1LjU0NzUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgICA8bGluZSB4MT0iMjQuMTEwNSIgeDI9IjM1LjAyNDkiIHkxPSI1MC43MDY4IiB5Mj0iNTAuNzA2OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxsaW5lIHgxPSIyMS43Mjc4IiB4Mj0iMzcuMTkzMyIgeTE9IjQwLjExNTIiIHkyPSI0MC4xMTUyIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjIiLz4KICAgICAgPGxpbmUgeDE9IjI5LjQ3NTYiIHgyPSIyOS40NzU2IiB5MT0iMjguODg1MyIgeTI9IjQwLjExNTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgICA8bGluZSB4MT0iNDIuMjIxNiIgeDI9IjQyLjIyMTYiIHkxPSIyNS42MjA2IiB5Mj0iNDMuMDAzNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxsaW5lIHgxPSIyOS40NzU2IiB4Mj0iMjkuNDc1NiIgeTE9IjIxLjk1MTEiIHkyPSIyNS4xNTU5IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjIiLz4KICAgICAgPGxpbmUgeDE9IjM3LjA4NjkiIHgyPSIzNy4wODY5IiB5MT0iMjUuNDE3OSIgeTI9IjI4Ljg4NTMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgICA8bGluZSB4MT0iMjIuMjIyNiIgeDI9IjIyLjIyMjYiIHkxPSIyNS40MTc5IiB5Mj0iMjguODg1MyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxwb2x5bGluZSBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIyIiBwb2ludHM9IjI0LjExIDUyLjQ2IDI0LjExIDQ0LjM4OCAzNS4xNjggNDQuMzg4IDM1LjE2OCA1Mi40NiIvPgogICAgICA8cG9seWxpbmUgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgcG9pbnRzPSI0OS40MTYgMjEuOTUxIDQ5LjQxNiA1MS44NyA0My43NzQgNTEuODciLz4KICAgICAgPHJlY3QgeD0iMTEuMjM0NCIgeT0iMTEuOTIxNiIgcng9IjEuNjk5MSIgd2lkdGg9IjQ4Ljk4NDEiIGhlaWdodD0iNDguOTg0MSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+Cg==",
+                "imageType": "dataUrl"
+              }
+            }
+          ]
+        }
+      ]
     }
-  }
+  ]
 }

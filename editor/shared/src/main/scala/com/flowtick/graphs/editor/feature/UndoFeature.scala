@@ -9,7 +9,7 @@ class UndoFeature extends EditorComponent {
   val modelHistory = ListBuffer.empty[EditorModel]
 
   override def eval: Eval = ctx => ctx.effect(this) {
-    case SetGraph(_) => IO {
+    case Reset => IO {
       modelHistory.prepend(ctx.model)
     }
 

@@ -11,10 +11,10 @@ class RoutingFeature extends EditorComponent {
 
   override def order: Double = 0.2
 
-  def edgePath(fromNode: Node[EditorGraphNode], toNode: Node[EditorGraphNode])(layout: EditorGraphLayout): Option[EdgePath] =
+  def edgePath(fromNode: Node[EditorGraphNode], toNode: Node[EditorGraphNode])(layout: EditorGraphLayoutLike): Option[EdgePath] =
     for {
-      from <- layout.nodes.get(fromNode.id)
-      to <- layout.nodes.get(toNode.id)
+      from <- layout.nodeGeometry(fromNode.id)
+      to <- layout.nodeGeometry(toNode.id)
     } yield {
       val fromCenterX = from.x + from.width / 2
       val fromCenterY = from.y + from.height / 2
@@ -43,27 +43,27 @@ class RoutingFeature extends EditorComponent {
     }
 
   private def updateRouting(ctx: EditorContext, edge: Edge[EditorGraphEdge]): EditorContext = {
-    val fromNode = ctx.model.editorGraph.graph.findNode(edge.from)
-    val toNode = ctx.model.editorGraph.graph.findNode(edge.to)
+    val fromNode = ctx.model.graph.findNode(edge.from)
+    val toNode = ctx.model.graph.findNode(edge.to)
 
-    val newLayout: Option[EditorGraphLayout] = for {
+    val newLayout = for {
       from <- fromNode
       to <- toNode
-      path <- edgePath(from, to)(ctx.model.editorGraph.layout)
-    } yield ctx.model.editorGraph.layout.setEdgePath(edge.id, path)
+      path <- edgePath(from, to)(ctx.model.layout)
+    } yield ctx.model.layout.setEdgePath(edge.id, path)
 
     ctx
-      .copy(model = ctx.model.copy(editorGraph = ctx.model.editorGraph.copy(layout = newLayout.getOrElse(ctx.model.editorGraph.layout))))
+      .updateModel(_.updateLayout(current => newLayout.getOrElse(current)))
       .addNotification(this, ElementUpdated(ElementRef(edge.id, EdgeType), Internal))
   }
 
   override def eval: Eval = ctx => IO(ctx.transform {
     case ElementUpdated(ElementRef(id, EdgeType), Created, _) =>
-      val newEdge = ctx.model.editorGraph.graph.findEdge(id)
+      val newEdge = ctx.model.graph.findEdge(id)
       newEdge.map(updateRouting(ctx, _)).getOrElse(ctx)
 
     case ElementUpdated(ElementRef(id, NodeType), _, _) =>
-      val edges = ctx.model.editorGraph.graph.incoming(id) ++ ctx.model.editorGraph.graph.outgoing(id)
+      val edges = ctx.model.graph.incoming(id) ++ ctx.model.graph.outgoing(id)
 
       edges.foldLeft(ctx) {
         case (current, edge) => updateRouting(current, edge)

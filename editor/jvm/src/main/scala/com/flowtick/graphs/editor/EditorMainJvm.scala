@@ -30,7 +30,7 @@ object EditorMainJvm extends JFXApp with EditorMain {
     scene = editorScene
   }
 
-  def initEditor: IO[(EditorMessageBus, List[EditorComponent])] = for {
+  def initEditor: IO[EditorInstance] = for {
     home <- sys.props.get("user.home").map { userHome =>
       IO(new File(userHome))
     }.getOrElse(IO.raiseError(new IllegalStateException("could not find user home")))
@@ -43,30 +43,33 @@ object EditorMainJvm extends JFXApp with EditorMain {
       }
     }
 
-    loadOptions <-
+    config <-
       if (configFile.exists()) {
         IO(scala.io.Source.fromFile(configFile)).bracket { configSource =>
           val configContent = configSource.getLines().mkString("\n")
-          IO(EditorOptions.decode(configContent))
+          IO.fromEither(EditorConfiguration.decode(configContent))
+            .attempt
+            .flatMap {
+              case Right(config) => IO.pure(config)
+              case Left(error) => IO(println(s"unable to load config: $configContent")) *> IO.raiseError(error)
+            }
         }(source => IO(source.close()))
-      } else IO.pure(Right(EditorOptions()))
+      } else IO(println(s"config not found: $configFile")) *> IO.pure(EditorConfiguration())
 
-    options <- IO.fromEither(loadOptions)
     editor <- createEditor(bus => List(
       new EditorMenuJavaFx(bus, editorLayout, stage),
       new EditorViewJavaFx(bus, editorLayout),
       new EditorPaletteJavaFx(bus, editorLayout),
       new EditorPropertiesJavaFx(bus, editorLayout),
       new EditorImageLoader[Image](ImageLoaderFx)
-    ))(options)
-    (bus, _) = editor
+    ))(config)
     _ <- parameters.raw.headOption match {
       case Some(firstArg) =>
         for {
           fileUrl <- IO(new URL(firstArg)).redeemWith(_ => IO(new URL(s"file://${new File(firstArg).getAbsolutePath}")), IO.pure)
           _ <- IO(scala.io.Source.fromURL(fileUrl)).bracket { source =>
             val format = if (fileUrl.getFile.endsWith(".json")) JsonFormat else GraphMLFormat
-            bus.publish(Load(source.getLines().mkString("\n"), format))
+            editor.bus.publish(Load(source.getLines().mkString("\n"), format))
           }(source => IO(source.close()))
         } yield ()
       case None => IO.unit

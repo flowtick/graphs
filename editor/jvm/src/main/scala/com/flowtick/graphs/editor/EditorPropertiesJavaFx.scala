@@ -1,6 +1,4 @@
 package com.flowtick.graphs.editor
-import java.awt.BorderLayout
-
 import cats.effect.IO
 import io.circe.Json
 import javafx.beans.value.{ChangeListener, ObservableValue}
@@ -8,7 +6,7 @@ import javafx.scene.paint.Color
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control._
 import scalafx.scene.layout._
-import scalafx.scene.text.{Font, FontWeight, TextAlignment}
+import scalafx.scene.text.{Font, FontWeight}
 
 case class PropertyFormGroupFx(property: PropertySpec,
                                init: () => Unit,
