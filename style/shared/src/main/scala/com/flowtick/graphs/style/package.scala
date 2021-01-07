@@ -1,7 +1,7 @@
 package com.flowtick.graphs
 
 package object style {
-  final case class ImageSpec(data: String, imageType: String)
+  final case class ImageSpec(data: String, imageType: String, width: Option[Double] = None, height: Option[Double] = None)
 
   final case class Fill(color: Option[String], transparent: Option[Boolean] = None) extends FillLike
 

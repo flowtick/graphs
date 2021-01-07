@@ -13,13 +13,13 @@ import scalatags.JsDom.{svgAttrs, svgTags => svg}
 
 import scala.util.Try
 
-case class SVGNodeElement(id: ElementRef,
+final case class SVGNodeElement(id: ElementRef,
                           shapeElement: SVGGraphElement,
                           label: Text,
                           selectElem: SVGElement,
                           group: G) extends GraphElement[SVGElement]
 
-case class SVGEdgeElement(id: ElementRef,
+final case class SVGEdgeElement(id: ElementRef,
                           group: G,
                           label: Text,
                           selectElem: SVGElement) extends GraphElement[SVGElement]
@@ -43,9 +43,9 @@ object SVGGraphRenderer {
     element.selectElem.classList.remove("draggable")
   }
 
-  def renderNode(node: GraphNode[EditorGraphNode], editorGraph: EditorGraph): SVGNodeElement = {
-    val geometry = editorGraph.layout.nodes.get(node.id)
-    val shape = editorGraph.styleSheet.getNodeStyle(Some(node.id), node.value.stencil.toList)
+  def renderNode(node: GraphNode[EditorGraphNode], model: EditorModel): SVGNodeElement = {
+    val geometry = model.layout.nodeGeometry(node.id)
+    val shape = model.styleSheet.requireNodeStyle(Some(node.id), node.value.stencil.toList)
 
     val x = geometry.map(_.x).getOrElse(0.0)
     val y = geometry.map(_.y).getOrElse(0.0)
@@ -53,14 +53,14 @@ object SVGGraphRenderer {
     val width = geometry.map(_.width).getOrElse(80.0)
     val height = geometry.map(_.height).getOrElse(50.0)
 
-    val shapeElement = shape.svgContent.flatMap(content => editorGraph.styleSheet.images.get(content.refId)) match {
+    val shapeElement = shape.svgContent.flatMap(content => model.styleSheet.images.get(content.refId)) match {
       case Some(image) if image.imageType == "svg" =>
         new DOMParser()
           .parseFromString(image.data, "application/xml")
           .firstChild
           .asInstanceOf[SVGElement]
 
-      case _ => shapeTag(shape, editorGraph.styleSheet, width, height)(
+      case _ => shapeTag(shape, model.styleSheet, width, height)(
         svgAttrs.style := nodeStyle(shape).mkString(";"),
       ).render
     }
@@ -88,7 +88,7 @@ object SVGGraphRenderer {
   }
 
   def shapeTag(shape: NodeShape,
-               styleSheet: com.flowtick.graphs.style.StyleSheet,
+               styleSheet: com.flowtick.graphs.style.StyleSheetLike,
                width: Double,
                height: Double): JsDom.TypedTag[SVGGraphElement] = {
     lazy val fallback = svg.rect(
@@ -213,14 +213,14 @@ object SVGGraphRenderer {
   }.render
 
   def renderEdge(edge: Edge[EditorGraphEdge],
-                 editorGraph: EditorGraph): Option[SVGEdgeElement] = {
+                 model: EditorModel): Option[SVGEdgeElement] = {
     for {
-      points <- DrawUtil.getLinePoints(edge, editorGraph).map(_.toList)
+      points <- DrawUtil.getLinePoints(edge, model.graph, model.layout).map(_.toList)
       start <- points.headOption
       end <- points.reverse.headOption
 
       pointsString = points.map(p => s"${p.x} ${p.y}").mkString(", ")
-      style <- Some(editorGraph.styleSheet.getEdgeStyle(Some(edge.id), edge.value.connector.toList))
+      style <- model.styleSheet.getEdgeStyle(Some(edge.id), edge.value.connector.toList)
 
       line = {
         svg.polyline(
@@ -237,7 +237,7 @@ object SVGGraphRenderer {
         val polyline = svg.polyline(
           cls := "selectable",
           svgAttrs.points := pointsString,
-          svgAttrs.style := s"stroke:#ffffff;stroke-width:15px;fill:none;cursor: pointer",
+          svgAttrs.style := s"stroke:#ffffff;stroke-width:15px;fill:none;cursor:pointer",
           svgAttrs.strokeOpacity := 0.0
         ).render
 

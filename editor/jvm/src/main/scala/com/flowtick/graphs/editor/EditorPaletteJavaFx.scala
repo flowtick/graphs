@@ -1,13 +1,14 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
+import com.flowtick.graphs.editor.feature.PaletteFeature
 import scalafx.geometry.Insets
 import scalafx.scene.control.{Accordion, TitledPane, Tooltip}
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout._
 import scalafx.scene.paint.Color
 
-class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane) extends EditorPalette {
+class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane) extends PaletteFeature {
   val pane = new BorderPane() {
     visible = false
     background = new Background(Array(new BackgroundFill(Color.LightGray, new CornerRadii(0), Insets.Empty)))
@@ -26,9 +27,9 @@ class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane) 
     _ <- IO {
       layout.left = pane
 
-      lazy val fallBackImage = new Image(getClass.getClassLoader.getResourceAsStream("2B1C_color.png"), 50, 50, true, true)
+      lazy val fallBackImage = IO(new Image(getClass.getClassLoader.getResourceAsStream("2B1C_color.png"), 50, 50, true, true))
 
-      model.palette.stencils.zipWithIndex.foreach {
+      model.palette.stencilGroups.zipWithIndex.foreach {
         case (group, index) =>
           val accordion = new Accordion()
           pane.center = accordion
@@ -49,12 +50,12 @@ class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane) 
 
           group.items.foreach { stencil =>
             val stencilImage = stencil
-              .previewImageRef
-              .flatMap(ImageLoaderFx.getImage)
+              .image
+              .map(imageSpec => ImageLoaderFx.registerImage(s"graphs:palette:${stencil.id}", imageSpec))
               .getOrElse(fallBackImage)
 
             val stencilView = new ImageView {
-              image = stencilImage
+              image = stencilImage.unsafeRunSync()
               fitWidth = 32
               fitHeight = 32
             }
@@ -75,7 +76,7 @@ class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane) 
                 selectPaletteItem(stencil)
 
                 if (e.getClickCount == 2) {
-                  createPaletteItem(stencil)
+                  createFromStencil(stencil)
                 }
               }
             }

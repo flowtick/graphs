@@ -1,7 +1,7 @@
 import ReleaseTransformations._
 
-val scala212V = "2.12.11"
-val scala213V = "2.13.2"
+val scala212V = "2.12.12"
+val scala213V = "2.13.4"
 val mainScalaVersion = scala213V
 val compatScalaVersion = scala212V
 

@@ -1,8 +1,7 @@
 package com.flowtick.graphs.editor
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, FileOutputStream, InputStream}
 import java.util.Base64
-
 import cats.effect.IO
 import cats.implicits._
 import com.flowtick.graphs.style.ImageSpec
@@ -17,31 +16,45 @@ object ImageLoaderFx extends ImageLoader[Image] {
 
   override def getImage(ref: String): Option[Image] = images.get(ref)
 
-  val defaultScale = 250
+  val defaultScale = 150.0
+  val smooth = true
+  val preserveRatio = true
 
-  override def registerImage(ref: String,
-                    imageSpec: ImageSpec,
-                    scaleWidth: Option[Double] = None,
-                    scaleHeight: Option[Double] = None): IO[Image] = {
+  override def registerImage(ref: String, imageSpec: ImageSpec): IO[Image] = {
     images.get(ref) match {
       case Some(existing) => IO.pure(existing)
       case None =>
+        val scaleWidth = imageSpec.width
+        val scaleHeight = imageSpec.height
+
         val loaded = imageSpec.imageType match {
           case "svg" =>
-            renderSvg(ref, new ByteArrayInputStream(ImageLoader.unescapeXml(imageSpec.data).getBytes("UTF-8")), scaleWidth, scaleHeight)
+            for {
+              svgXml <- IO(ImageLoader.unescapeXml(imageSpec.data).getBytes("UTF-8"))
+              rendered <- renderSvg(ref, new ByteArrayInputStream(svgXml), scaleWidth, scaleHeight)
+            } yield rendered
 
           case "dataUrl" =>
             imageSpec.data.split(",").toList match {
               case "data:image/png;base64" :: base64Data :: Nil =>
-                scaledImage(ref, inputStreamFromBase64(base64Data) , scaleWidth, scaleHeight)
+                scaledImage(inputStreamFromBase64(base64Data) , scaleWidth, scaleHeight)
 
               case "data:image/svg+xml;base64" :: base64Data :: Nil =>
                 renderSvg(ref, inputStreamFromBase64(base64Data), scaleWidth, scaleHeight)
 
               case other => IO.raiseError(new IllegalArgumentException(s"unsupported data url format: $other for $ref ($imageSpec)"))
             }
-          case "url" => IO(new Image(imageSpec.data, scaleWidth.getOrElse(defaultScale), scaleHeight.getOrElse(defaultScale), true, true, backgroundLoading = false))
-            .attempt.flatMap {
+          case "url" =>
+            val loadImage = IO(scala.io.Source.fromURL(imageSpec.data)).bracket { imageSource =>
+              for {
+                data <-  IO(new ByteArrayInputStream(imageSource.mkString.getBytes("UTF-8")))
+                image <- if (imageSpec.data.toLowerCase.endsWith(".svg")) {
+                  renderSvg(ref, data, scaleWidth, scaleHeight)
+                } else IO(new Image(data, scaleWidth.getOrElse(defaultScale), scaleHeight.getOrElse(defaultScale), preserveRatio, smooth))
+              } yield image
+            }(source => IO(source.close()))
+
+            loadImage.attempt.flatMap {
               case Right(image) if image.error.value => IO.raiseError(new RuntimeException(s"error in image loader for $imageSpec", image.exception.value))
               case Right(image) => IO.pure(image)
               case Left(error) => IO.raiseError(new RuntimeException(s"unable to load $imageSpec", error))
@@ -68,21 +81,29 @@ object ImageLoaderFx extends ImageLoader[Image] {
     val pngTranscoder = new PNGTranscoder()
     pngTranscoder.addTranscodingHint(SVGAbstractTranscoder.KEY_PIXEL_UNIT_TO_MILLIMETER, pixelUnitToMillimeter)
 
+    scaleWidth.foreach(width => pngTranscoder.addTranscodingHint(SVGAbstractTranscoder.KEY_WIDTH, width.toFloat))
+    scaleHeight.foreach(height => pngTranscoder.addTranscodingHint(SVGAbstractTranscoder.KEY_HEIGHT, height.toFloat))
+
     val input = new TranscoderInput(data)
     val outputStream = new ByteArrayOutputStream()
     val output = new TranscoderOutput(outputStream)
     pngTranscoder.transcode(input, output)
+    val outputBytes = outputStream.toByteArray
 
-    scaledImage(id, new ByteArrayInputStream(outputStream.toByteArray), scaleWidth, scaleHeight)
+    val fileOut = new FileOutputStream(s"target/$id.png")
+    fileOut.write(outputBytes)
+    fileOut.flush()
+    fileOut.close()
+
+    scaledImage(new ByteArrayInputStream(outputBytes), scaleWidth, scaleHeight)
   }(data => IO(data.close()))
 
-  private def scaledImage(id: String,
-                  inputStream: InputStream,
-                  scaleWidth: Option[Double],
-                  scaleHeight: Option[Double]): IO[Image] = IO {
-    val image = new Image(inputStream, scaleWidth.getOrElse(defaultScale.toDouble), scaleHeight.getOrElse(defaultScale.toDouble), true, false)
+  private def scaledImage(inputStream: InputStream,
+                          scaleWidth: Option[Double],
+                          scaleHeight: Option[Double]): IO[Image] = IO {
+    val image = new Image(inputStream, scaleWidth.getOrElse(defaultScale.toDouble), scaleHeight.getOrElse(defaultScale.toDouble), preserveRatio, smooth)
     if (image.isError) {
-      throw new RuntimeException(s"unable to load image $id", image.exception.value)
+      throw new RuntimeException(s"unable to load image", image.exception.value)
     } else image
   }
 }

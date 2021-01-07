@@ -73,7 +73,7 @@ trait EditorMenu extends EditorComponent {
   }
 
   def triggerFileNew: Any => Unit = _ => {
-    messageBus.publish(SetGraph(EditorGraph.empty)).unsafeRunSync()
+    messageBus.publish(Reset).unsafeRunSync()
   }
 
   def togglePalette: Any => Unit = _ => {
@@ -107,7 +107,7 @@ trait EditorMenu extends EditorComponent {
   def triggerAdd: Any => Unit = _ => {
     val id = UUID.randomUUID().toString
     messageBus
-      .publish(CreateNode(id, None))
+      .publish(AddNode(id, None))
       .unsafeRunSync()
   }
 

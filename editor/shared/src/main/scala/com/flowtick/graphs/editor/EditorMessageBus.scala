@@ -42,17 +42,13 @@ final case class EditorContext(event: EditorEvent,
     copy(commands = commands.:+(command))
 
   def updateModel(update: EditorModel => EditorModel): EditorContext =
-    copy(model = update(model).copy(version = model.version +1))
+    copy(model = update(model).copy(version = model.version + 1))
 }
 
 class EditorController(logRef: Ref[IO, List[EditorEvent]],
                        listenersRef: Ref[IO, List[EditorComponent]],
-                       initial: EditorGraph,
-                       palette: Option[Palette]) extends EditorMessageBus {
-  lazy val modelRef: Ref[IO, EditorModel] = Ref.unsafe[IO, EditorModel](EditorModel(
-    editorGraph = initial,
-    palette = palette.getOrElse(Palette.defaultPalette)
-  ))
+                       initial: EditorModel) extends EditorMessageBus {
+  lazy val modelRef: Ref[IO, EditorModel] = Ref.unsafe[IO, EditorModel](initial)
 
   override def subscribe(component: EditorComponent): IO[EditorComponent] =
     for {

@@ -2,9 +2,8 @@ package com.flowtick.graphs.json.schema
 
 import com.flowtick.graphs.json.schema.JsonSchema.SingleOrList
 import io.circe
-import io.circe.{Decoder, Encoder, Json}
-import io.circe.generic.auto._
 import io.circe.syntax._
+import io.circe.{Decoder, Encoder, Json}
 
 sealed trait JsonSchemaEnum
 
@@ -39,15 +38,13 @@ final case class Schema[E]($id: Option[String] = None,
 }
 
 object JsonSchema {
+  import io.circe.generic.semiauto._
+
   type SingleOrList[A] = Either[List[A], A]
 
   implicit def decodeSingleOrList[A](implicit
-                                        singleDecoder: Decoder[A],
-                                        listDecoder: Decoder[List[A]]): Decoder[SingleOrList[A]] = listDecoder.either(singleDecoder)
-
-  implicit def decodeEitherBA[B, A](implicit
-                                     decoderA: Decoder[A],
-                                     decoderB: Decoder[B]): Decoder[Either[B, A]] = decoderB.either(decoderA)
+                                     singleDecoder: Decoder[A],
+                                     listDecoder: Decoder[List[A]]): Decoder[SingleOrList[A]] = listDecoder.either(singleDecoder)
 
   implicit def encodeSingleOrList[A](implicit
                                      singleEncoder: Encoder[A],
@@ -56,7 +53,28 @@ object JsonSchema {
     case Left(list) => listEncoder(list)
   }
 
-  def parse[E](schemaJson: String)(implicit decoder: Decoder[E]): Either[circe.Error, Schema[E]] = io.circe.parser.decode[Schema[E]](schemaJson)
+
+  implicit def decodeEitherBA[B, A](implicit
+                                      decoderA: Decoder[A],
+                                      decoderB: Decoder[B]): Decoder[Either[B, A]] = decoderB.either(decoderA)
+
+  implicit def encodeEitherBA[B, A](implicit
+                                      encoderA: Encoder[A],
+                                      encoderB: Encoder[B]): Encoder[Either[B, A]] = new Encoder[Either[B, A]] {
+    override def apply(a: Either[B, A]): Json = a match {
+      case Right(a) => encoderA(a)
+      case Left(b) => encoderB(b)
+    }
+  }
+
+  implicit def jsonSchemaDecoder[E](implicit decoder: Decoder[E]): Decoder[Schema[E]] =
+    deriveDecoder[Schema[E]]
+
+  implicit def jsonSchemaEncoder[E](implicit encoder: Encoder[E]): Encoder[Schema[E]] =
+    deriveEncoder[Schema[E]]
+
+  def parse[E](schemaJson: String)(implicit decoder: Decoder[E]): Either[circe.Error, Schema[E]] =
+    io.circe.parser.decode[Schema[E]](schemaJson)
 
   def toJson[E](schema: Schema[E])(implicit encoder: Encoder[E]): Json = schema.asJson
 }

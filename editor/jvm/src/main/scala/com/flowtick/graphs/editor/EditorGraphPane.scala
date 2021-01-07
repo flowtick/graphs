@@ -4,7 +4,7 @@ import cats.effect.IO
 import com.flowtick.graphs
 import com.flowtick.graphs._
 import com.flowtick.graphs.style._
-import com.flowtick.graphs.layout.Geometry
+import com.flowtick.graphs.layout.{DefaultGeometry, Geometry}
 import javafx.event.EventHandler
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.scene.layout.{BorderPane, Pane, Priority}
@@ -123,9 +123,9 @@ class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean =>
     }
   }
 
-  override def addEdge(edge: Edge[EditorGraphEdge], graph: EditorGraph): IO[Option[GraphElement[Node]]] = IO {
+  override def addEdge(edge: Edge[EditorGraphEdge], editorModel: EditorModel): IO[Option[GraphElement[Node]]] = IO {
     for {
-      edgePoints <- DrawUtil.getLinePoints(edge, graph).map(_.toList.reverse)
+      edgePoints <- DrawUtil.getLinePoints(edge, editorModel.graph, editorModel.layout).map(_.toList.reverse)
       last <- edgePoints.headOption
       secondLast <- edgePoints.tail.headOption
 
@@ -203,17 +203,14 @@ class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean =>
     }
   }
 
-  override def addNode(node: graphs.Node[EditorGraphNode], graph: EditorGraph): IO[Option[GraphElement[Node]]] = IO {
-    for {
-      geometry: Geometry <- graph.layout.nodes.get(node.id)
-      shape = graph.styleSheet.getNodeStyle(Some(node.id), node.value.stencil.toList)
-    } yield {
-      val graphNode = new EditorGraphNodeFx(node.id, geometry, node.value.label, shape)(transformation, handleSelect, handleDrag, handleDoubleClick)
-      group.children.add(graphNode)
-      group.children.add(graphNode.selectRect)
+  override def addNode(node: graphs.Node[EditorGraphNode], editorModel: EditorModel): IO[Option[GraphElement[Node]]] = IO {
+    val geometry = editorModel.layout.nodeGeometry(node.id).getOrElse(DefaultGeometry(0.0, 0.0, 50, 50))
+    val shape = editorModel.styleSheet.requireNodeStyle(Some(node.id), node.value.stencil.toList)
+    val graphNode = new EditorGraphNodeFx(node.id, geometry, node.value.label, shape)(transformation, handleSelect, handleDrag, handleDoubleClick)
+    group.children.add(graphNode)
+    group.children.add(graphNode.selectRect)
 
-      JFXElement(ElementRef(node.id, NodeType), graphNode, graphNode.selectRect, graphNode.label)
-    }
+    Some(JFXElement(ElementRef(node.id, NodeType), graphNode, graphNode.selectRect, graphNode.label))
   }
 
   override def setSelection(element: GraphElement[Node]): IO[Unit] = element.id.elementType match {

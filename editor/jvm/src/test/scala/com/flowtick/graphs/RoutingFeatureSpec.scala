@@ -1,75 +1,36 @@
 package com.flowtick.graphs
 
-import java.io.FileOutputStream
-import java.util.UUID
-
-import cats.effect.IO
-import com.flowtick.graphs.editor.feature.RoutingFeature
 import com.flowtick.graphs.editor._
-import com.flowtick.graphs.graphml.GraphMLGraph
-import io.circe.Json
-import org.apache.logging.log4j.LogManager
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 
-class RoutingFeatureSpec extends AnyFlatSpec with Matchers {
-  val log = LogManager.getLogger(getClass)
-
-  def printView(bus: EditorMessageBus): EditorComponent = new EditorComponent {
-    override def init(model: EditorModel): IO[Unit] = IO.unit
-
-    override def eval: Eval = ctx => ctx.effect(this) {
-      case SetGraph(graphml) => IO {
-        graphml.graph.edges.foreach(log.debug)
-      }
-
-      case ExportedGraph(name, value, format) => IO {
-        val out = new FileOutputStream(s"target/last_test$name" + format.`extension`)
-        out.write(value.getBytes("UTF-8"))
-        out.flush()
-        out.close()
-      }
-
-      case event => IO(log.debug(event))
-    }
-  }
-
-  "Routing" should "update edges" in new EditorMain {
+class RoutingFeatureSpec extends EditorBaseSpec {
+  "Routing" should "update edges" in withEditor { editor =>
     val (firstNodeId, secondNodeId) = ("1", "2")
-    val edgeId = UUID.randomUUID().toString
-    val (added, moved) = (for {
-      editor <- createEditor(bus => List(
-        printView(bus),
-        new EditorModelUpdate,
-        new RoutingFeature()
-      ))(EditorOptions())
-      (messageBus, _) = editor
-      _ <- messageBus.publish(SetGraph(EditorGraph.empty))
+    val edgeId = "e1"
 
-      _ <- messageBus.publish(CreateNode(firstNodeId, None, Some(100.0), Some(100.0)))
-      _ <- messageBus.publish(CreateNode(secondNodeId, None, Some(200.0), Some(200.0)))
-      added <- messageBus.publish(AddEdge(edgeId, firstNodeId, secondNodeId, None))
-      moved <- messageBus.publish(MoveTo(ElementRef(firstNodeId, NodeType), 110.0, 110.0))
-      _ <- messageBus.publish(Export(JsonFormat))
+    val (added, moved) = (for {
+      _ <- editor.bus.publish(Reset)
+      _ <- editor.bus.publish(AddNode(firstNodeId, None, Some(100.0), Some(100.0)))
+      _ <- editor.bus.publish(AddNode(secondNodeId, None, Some(200.0), Some(200.0)))
+      added <- editor.bus.publish(AddEdge(edgeId, firstNodeId, secondNodeId, None))
+      moved <- editor.bus.publish(MoveTo(ElementRef(firstNodeId, NodeType), 110.0, 110.0))
+      _ <- editor.bus.publish(Export(JsonFormat))
     } yield (added, moved)).unsafeRunSync()
 
-    moved.model.editorGraph.graph.edgeIds should have size(1)
+    moved.model.graph.edgeIds should have size(1)
 
-    def nodeGeometry(graphml: GraphMLGraph[Json, Json]) = graphml
-    .graph
-    .findNode(firstNodeId)
-    .flatMap(_.value.geometry)
-    .get
+    added.model.layout.nodeGeometry(firstNodeId) match {
+      case Some(posAfterAdd) =>
+        posAfterAdd.x should be(100.0)
+        posAfterAdd.y should be(100.0)
+    }
 
-    val posAfterAdd = added.model.editorGraph.layout.nodes(firstNodeId)
-    posAfterAdd.x should be(100.0)
-    posAfterAdd.y should be(100.0)
+    moved.model.layout.nodeGeometry(firstNodeId) match {
+      case Some(posAfterMove) =>
+        posAfterMove.x should be(110.0)
+        posAfterMove.y should be(110.0)
+    }
 
-    val posAfterMove = moved.model.editorGraph.layout.nodes(firstNodeId)
-    posAfterMove.x should be(110.0)
-    posAfterMove.y should be(110.0)
-
-    val edgeAfterMove = moved.model.editorGraph.graph.findEdge(edgeId)
+    val edgeAfterMove = moved.model.graph.findEdge(edgeId)
     edgeAfterMove.isDefined should be(true)
   }
 }
