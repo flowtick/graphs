@@ -4,10 +4,15 @@ import com.flowtick.graphs.{Graph, Node}
 
 import scala.collection.mutable
 
-class TopologicalSort[E, N](graph: Graph[E, N]) extends DepthFirstSearch[E, N](graph.nodeIds, graph) {
+class TopologicalSort[E, N](graph: Graph[E, N]) {
   def sort: List[Node[N]] = {
-    val sortedNodes = mutable.ListBuffer.empty[Node[N]]
-    onComplete(sortedNodes.prepend(_)).run
-    sortedNodes.toList
+    val dfs = new DepthFirstTraversal[E, N](graph.nodeIds, graph).run
+
+    dfs.foreach(println)
+
+    dfs.foldLeft(List.empty[Node[N]]) {
+      case (acc, Completed(node)) => node :: acc
+      case (acc, _) => acc
+    }
   }
 }

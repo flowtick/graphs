@@ -67,7 +67,7 @@ object Edge {
 final case class Node[+N](id: String, value: N) {
   def map[B](f: N => B): Node[B] = copy(value = f(value))
 
-  override def toString: String = s"Node(id: $id, value: $value)"
+  override def toString: String = s"Node(id = $id, value = $value)"
 }
 
 object Node {

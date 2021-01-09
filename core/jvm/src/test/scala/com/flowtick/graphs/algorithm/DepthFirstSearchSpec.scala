@@ -1,12 +1,11 @@
 package com.flowtick.graphs.algorithm
 
-import com.flowtick.graphs.Graph
+import com.flowtick.graphs.{Graph, Node}
 import com.flowtick.graphs.defaults._
-import org.scalamock.scalatest.proxy.MockFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class DepthFirstSearchSpec extends AnyFlatSpec with Matchers with MockFactory {
+class DepthFirstSearchSpec extends AnyFlatSpec with Matchers {
   "Dfs" should "traverse in depth first manner" in {
 
     val graph = Graph.fromEdges(Seq(
@@ -19,34 +18,31 @@ class DepthFirstSearchSpec extends AnyFlatSpec with Matchers with MockFactory {
       "3" --> "6",
       "3" --> "7"))
 
-    val visitMock = mockFunction[String, Unit](functionName("visitCallback"))
-    val completeMock = mockFunction[String, Unit](functionName("completeCallback"))
+    val traversal = graph.dfs("1").run
 
-    inSequence {
-      visitMock.expects("1")
-      visitMock.expects("3")
-      visitMock.expects("7")
-      completeMock.expects("7")
-      visitMock.expects("6")
-      completeMock.expects("6")
-      completeMock.expects("3")
-
-      visitMock.expects("2")
-      visitMock.expects("5")
-      completeMock.expects("5")
-      visitMock.expects("4")
-      completeMock.expects("4")
-
-      completeMock.expects("2")
-      completeMock.expects("1")
+    val values: Iterable[String] = traversal.collect {
+      case Visited(node) => node.value
     }
 
-    val dfsNodes = graph.dfs("1").onVisit(node => {
-      visitMock(node.value)
-    }).onComplete(node => {
-      completeMock(node.value)
-    }).run
+    values should be(List("1", "3", "7", "6", "2", "5", "4"))
 
-    dfsNodes.map(_.value).toList should be(List("1", "3", "7", "6", "2", "5", "4"))
+    val expected = List(
+      Visited(Node.of("1")),
+      Visited(Node.of("3")),
+      Visited(Node.of("7")),
+      Completed(Node.of("7")),
+      Visited(Node.of("6")),
+      Completed(Node.of("6")),
+      Completed(Node.of("3")),
+      Visited(Node.of("2")),
+      Visited(Node.of("5")),
+      Completed(Node.of("5")),
+      Visited(Node.of("4")),
+      Completed(Node.of("4")),
+      Completed(Node.of("2")),
+      Completed(Node.of("1"))
+    )
+
+    traversal.toList should be(expected)
   }
 }
