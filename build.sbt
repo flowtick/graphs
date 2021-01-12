@@ -35,6 +35,7 @@ lazy val commonSettings = Seq(
   libraryDependencies ++=
     "org.scalatest" %%% "scalatest" % "3.2.2" % Test ::
     "org.scalacheck" %% "scalacheck" % "1.14.1" % Test ::
+    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.3.2" ::
     Nil,
   licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://flowtick.github.io/graphs")),

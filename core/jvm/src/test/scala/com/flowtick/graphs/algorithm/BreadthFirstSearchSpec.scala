@@ -1,6 +1,7 @@
 package com.flowtick.graphs.algorithm
 
-import com.flowtick.graphs.{Graph, Node}
+import com.flowtick.graphs.algorithm.Traversal.Step
+import com.flowtick.graphs.{Edge, Graph, Node}
 import com.flowtick.graphs.defaults._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -21,26 +22,26 @@ class BreadthFirstSearchSpec extends AnyFlatSpec with Matchers {
     val traversal = graph.bfs("1").run
 
     val values: Iterable[String] = traversal.collect {
-      case Completed(node) => node.value
+      case Completed(step, _) => step.node.value
     }
 
     values should be(List("1", "2", "3", "4", "5", "6", "7"))
 
     val expected = List(
-      Visited(Node.of("1")),
-      Completed(Node.of("1")),
-      Visited(Node.of("2")),
-      Visited(Node.of("3")),
-      Completed(Node.of("2")),
-      Visited(Node.of("4")),
-      Visited(Node.of("5")),
-      Completed(Node.of("3")),
-      Visited(Node.of("6")),
-      Visited(Node.of("7")),
-      Completed(Node.of("4")),
-      Completed(Node.of("5")),
-      Completed(Node.of("6")),
-      Completed(Node.of("7"))
+      Visited(Step(Node.of("1"), None)),
+      Completed(Step(Node.of("1"), None)),
+      Visited(Step(Node.of("2"), Some(Edge.unit("1", "2")))),
+      Visited(Step(Node.of("3"), Some(Edge.unit("1", "3")))),
+      Completed(Step(Node.of("2"), Some(Edge.unit("1", "2")))),
+      Visited(Step(Node.of("4"), Some(Edge.unit("2", "4")))),
+      Visited(Step(Node.of("5"), Some(Edge.unit("2", "5")))),
+      Completed(Step(Node.of("3"), Some(Edge.unit("1", "3")))),
+      Visited(Step(Node.of("6"), Some(Edge.unit("3", "6")))),
+      Visited(Step(Node.of("7"), Some(Edge.unit("3", "7")))),
+      Completed(Step(Node.of("4"), Some(Edge.unit("2", "4")))),
+      Completed(Step(Node.of("5"), Some(Edge.unit("2", "5")))),
+      Completed(Step(Node.of("6"), Some(Edge.unit("3", "6")))),
+      Completed(Step(Node.of("7"), Some(Edge.unit("3", "7"))))
     )
 
     traversal.toList should be(expected)

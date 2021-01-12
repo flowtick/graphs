@@ -1,86 +1,102 @@
 package com.flowtick.graphs.algorithm
 
-import com.flowtick.graphs.{Graph, Node}
+import com.flowtick.graphs.{Edge, Graph, Node}
 import com.flowtick.graphs.algorithm.Traversal.Marker
 
+import scala.collection.compat.immutable.LazyList
 import scala.collection.immutable.Queue
 
-sealed trait TraversalStep[T] {
+sealed trait TraversalEvent[T] {
   def state: T
 }
 
-final case class Visited[S](state: S) extends TraversalStep[S]
-final case class Completed[S](state: S) extends TraversalStep[S]
-final case class Backtrack[S](state: S) extends TraversalStep[S]
-final case class Skipped[S](state: S) extends TraversalStep[S]
+final case class Visited[S](state: S) extends TraversalEvent[S]
+final case class Completed[S](state: S, backtrack: Option[S] = None) extends TraversalEvent[S]
+final case class Backtrack[S](state: S) extends TraversalEvent[S]
+final case class Skipped[S](state: S) extends TraversalEvent[S]
 
 trait Traversal[E] {
   def run: Iterable[E]
 }
 
 object Traversal {
-  sealed trait Marker
+  sealed trait Marker[+T]
 
-  private case object MarkerVisited extends Marker
-  private case object MarkerComplete extends Marker
-  private case object MarkerBacktrack extends Marker
+  private case object MarkerVisited extends Marker[Nothing]
+  private case class MarkerComplete[S](backtrack: Option[S]) extends Marker[S]
 
-  def nodes[E, N](graph: Graph[E, N])(initial: TraversalState[Node[N]]): Iterable[TraversalStep[Node[N]]] =
-    Iterable.unfold[TraversalStep[Node[N]], TraversalState[Node[N]]](initial) { lastState =>
-      val (nodeOpt, currentState) = lastState.next
+  final case class Step[E, N](node: Node[N], edge: Option[Edge[E]] = None)
 
-      nodeOpt.map { node =>
-        currentState.getMarker(node) match {
+  def nodes[E, N](graph: Graph[E, N])(initial: TraversalState[Step[E, N], Node[N]]): Iterable[TraversalEvent[Step[E, N]]] =
+    LazyList.unfold[TraversalEvent[Step[E, N]], TraversalState[Step[E, N], Node[N]]](initial) { lastState =>
+      val (nodeStepOpt, currentState) = lastState.next
+
+      nodeStepOpt.map { nodeStep =>
+        currentState.getMarker(nodeStep.node) match {
           case None =>
-            val visited = currentState.mark(node, MarkerVisited).add(node) // re-add to trigger completion
-            val withNextNodes = graph.successors(node.id).foldLeft(visited) {
-              case (nextState, successor) => 
-                if (nextState.getMarker(successor).isDefined) {
-                  nextState.mark(successor, MarkerBacktrack) // backtracking
-                } else nextState.add(successor)
+            val visited = currentState.mark(nodeStep.node, MarkerVisited).add(nodeStep) // re-add to trigger completion
+            val withNextNodes = graph.outgoing(nodeStep.node.id).foldLeft(visited) {
+              case (nextState, edge) =>
+                val continue = for {
+                  nextNode <- graph.findNode(edge.to)
+                  nextStep = Step(nextNode, Some(edge))
+                } yield {
+                  if (nextState.getMarker(nextStep.node).isDefined) {
+                    nextState.mark(nextStep.node, MarkerComplete(Some(Step(nodeStep.node, Some(edge))))) // backtracking
+                  } else nextState.add(nextStep)
+                }
+
+                continue.getOrElse(nextState)
             }
-            ((Visited(node), withNextNodes))
-            
-          case Some(MarkerVisited) => ((Completed(node), currentState.mark(node, MarkerComplete)))
-          case Some(MarkerBacktrack) => ((Backtrack(node), currentState))
-          case Some(MarkerComplete) => ((Skipped(node)), currentState) // node appeared twice in state (was part of the inital state and the current traversal)
+            ((Visited(nodeStep), withNextNodes))
+
+          case Some(MarkerVisited) => ((Completed(nodeStep), currentState.mark(nodeStep.node, MarkerComplete(None))))
+          case Some(MarkerComplete(backtrack)) if backtrack.isDefined => ((Completed(nodeStep, backtrack), currentState))
+          case Some(MarkerComplete(None)) => ((Skipped(nodeStep)), currentState) // node appeared twice in state (was part of the inital state and the current traversal)
         }
       }      
     }
 }
 
-trait TraversalState[S] {
-  def next: (Option[S], TraversalState[S])
-  def add(state: S): TraversalState[S]
+trait TraversalState[S, Id] {
+  def next: (Option[S], TraversalState[S, Id])
+  def add(state: S): TraversalState[S, Id]
 
-  def mark(state: S, marker: Traversal.Marker): TraversalState[S]
-  def getMarker(state: S): Option[Marker]
+  def mark(state: Id, marker: Traversal.Marker[S]): TraversalState[S, Id]
+  def getMarker(state: Id): Option[Marker[S]]
 }
 
 object TraversalState {
-  def stack[N](nodes: Iterable[Node[N]]): TraversalState[Node[N]] =
-    StackBasedState[Node[N]](nodes.toList)
+  def stack[S, Id](nodes: Iterable[S]): TraversalState[S, Id] =
+    StackBasedState[S, Id](nodes.toList)
 
-  def queue[N](nodes: Iterable[Node[N]]): TraversalState[Node[N]] =
-    QueueBasedState[Node[N]](Queue.from(nodes))
+  def queue[S, Id](nodes: Iterable[S]): TraversalState[S, Id] =
+    QueueBasedState[S, Id](nodes.foldLeft(Queue.empty[S])((queue, node) => queue.enqueue(node)))
 }
 
-private final case class StackBasedState[S](stack: List[S], markers: Map[S, Traversal.Marker] = Map.empty[S, Traversal.Marker]) extends TraversalState[S] {
-  override def mark(state: S, marker: Traversal.Marker): TraversalState[S] = copy(markers = markers + (state -> marker))
-  override def getMarker(state: S): Option[Marker] = markers.get(state)
+private final case class StackBasedState[S, Id](stack: List[S], markers: Map[Id, Traversal.Marker[S]] = Map.empty[Id, Traversal.Marker[S]]) extends TraversalState[S, Id] {
+  override def mark(state: Id, marker: Traversal.Marker[S]): TraversalState[S, Id] =
+    copy(markers = markers + (state -> marker))
+  override def getMarker(state: Id): Option[Marker[S]] =
+    markers.get(state)
 
-  override def next: (Option[S], TraversalState[S]) = (stack.headOption, copy(stack = if (stack.isEmpty) List.empty else stack.tail))
-  override def add(nodeState: S): TraversalState[S] = copy(stack = nodeState +: stack)
+  override def next: (Option[S], TraversalState[S, Id]) =
+    (stack.headOption, copy(stack = if (stack.isEmpty) List.empty else stack.tail))
+  override def add(nodeState: S): TraversalState[S, Id] =
+    copy(stack = nodeState +: stack)
 }
 
-private final case class QueueBasedState[S](queue: Queue[S], markers: Map[S, Traversal.Marker] = Map.empty[S, Traversal.Marker]) extends TraversalState[S] {
-  override def mark(state: S, marker: Traversal.Marker): TraversalState[S] = copy(markers = markers + (state -> marker))
-  override def getMarker(state: S): Option[Marker] = markers.get(state)
+private final case class QueueBasedState[S, Id](queue: Queue[S], markers: Map[Id, Traversal.Marker[S]] = Map.empty[Id, Traversal.Marker[S]]) extends TraversalState[S, Id] {
+  override def mark(state: Id, marker: Traversal.Marker[S]): TraversalState[S, Id] =
+    copy(markers = markers + (state -> marker))
+  override def getMarker(state: Id): Option[Marker[S]] =
+    markers.get(state)
 
-  override def next: (Option[S], TraversalState[S]) =
+  override def next: (Option[S], TraversalState[S, Id]) =
     queue.dequeueOption.map {
       case (node, remaining) => (Some(node), copy(queue = remaining))
     }.getOrElse((None, this))
     
-  override def add(nodeState: S): TraversalState[S] = copy(queue = queue.enqueue(nodeState))
+  override def add(nodeState: S): TraversalState[S, Id] =
+    copy(queue = queue.enqueue(nodeState))
 }
