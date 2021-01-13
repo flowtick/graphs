@@ -28,20 +28,20 @@ class BreadthFirstSearchSpec extends AnyFlatSpec with Matchers {
     values should be(List("1", "2", "3", "4", "5", "6", "7"))
 
     val expected = List(
-      Visited(Step(Node.of("1"), None)),
-      Completed(Step(Node.of("1"), None)),
-      Visited(Step(Node.of("2"), Some(Edge.unit("1", "2")))),
-      Visited(Step(Node.of("3"), Some(Edge.unit("1", "3")))),
-      Completed(Step(Node.of("2"), Some(Edge.unit("1", "2")))),
-      Visited(Step(Node.of("4"), Some(Edge.unit("2", "4")))),
-      Visited(Step(Node.of("5"), Some(Edge.unit("2", "5")))),
-      Completed(Step(Node.of("3"), Some(Edge.unit("1", "3")))),
-      Visited(Step(Node.of("6"), Some(Edge.unit("3", "6")))),
-      Visited(Step(Node.of("7"), Some(Edge.unit("3", "7")))),
-      Completed(Step(Node.of("4"), Some(Edge.unit("2", "4")))),
-      Completed(Step(Node.of("5"), Some(Edge.unit("2", "5")))),
-      Completed(Step(Node.of("6"), Some(Edge.unit("3", "6")))),
-      Completed(Step(Node.of("7"), Some(Edge.unit("3", "7"))))
+      Visited(Step(Node.of("1"), None, Some(0))),
+      Visited(Step(Node.of("2"), Some(Edge.unit("1", "2")), Some(1))),
+      Visited(Step(Node.of("3"), Some(Edge.unit("1", "3")), Some(1))),
+      Completed(Step(Node.of("1"), None, Some(0))),
+      Visited(Step(Node.of("4"), Some(Edge.unit("2", "4")), Some(2))),
+      Visited(Step(Node.of("5"), Some(Edge.unit("2", "5")), Some(2))),
+      Completed(Step(Node.of("2"), Some(Edge.unit("1", "2")), Some(1))),
+      Visited(Step(Node.of("6"), Some(Edge.unit("3", "6")), Some(2))),
+      Visited(Step(Node.of("7"), Some(Edge.unit("3", "7")), Some(2))),
+      Completed(Step(Node.of("3"), Some(Edge.unit("1", "3")), Some(1))),
+      Completed(Step(Node.of("4"), Some(Edge.unit("2", "4")), Some(2))),
+      Completed(Step(Node.of("5"), Some(Edge.unit("2", "5")), Some(2))),
+      Completed(Step(Node.of("6"), Some(Edge.unit("3", "6")), Some(2))),
+      Completed(Step(Node.of("7"), Some(Edge.unit("3", "7")), Some(2)))
     )
 
     traversal.toList should be(expected)
