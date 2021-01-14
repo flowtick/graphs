@@ -31,9 +31,28 @@ package object defaults {
       node => Some(nodeLabel(node))
   }
 
-  implicit class DefaultEdgeBuilder[N](from: N) {
+  implicit class DefaultRelationBuilder[N](from: N) {
+    /**
+      * create a relation
+      *
+      * @param value value of the relation
+      * @param to target / co-domain / image of `from`
+      * @param nodeId identity to use
+      * @return new directed relation between `to` and `from`
+      */
     def -->[E](value: E, to: N)(implicit nodeId: Identifiable[N]): Relation[E, N] = Relation(value, Node(nodeId(from), from), Node(nodeId(to), to))
     def -->(to: N)(implicit nodeId: Identifiable[N]): Relation[Unit, N] = Relation((), Node(nodeId(from), from), Node(nodeId(to), to))
+
+    /**
+      * create a symmetric relation
+      *
+      * @param value value of the relation
+      * @param to related node
+      * @param nodeId identity to use
+      * @return new symmetric relation between `to` and `from`
+      */    
+    def ~~~[E](value: E, to: N)(implicit nodeId: Identifiable[N]): Relation[E, N] = Relation(value, Node(nodeId(from), from), Node(nodeId(to), to), symmetric = true)
+    def ~~~(to: N)(implicit nodeId: Identifiable[N]): Relation[Unit, N] = Relation((), Node(nodeId(from), from), Node(nodeId(to), to), symmetric = true)
   }
 
   implicit val stringLabel: Labeled[String, String] = (string: String) => string

@@ -16,7 +16,7 @@ class TopologicalSortSpec extends AnyFlatSpec with Matchers {
       "Hose" --> "Schuhe",
       "Socken" --> "Schuhe"))
 
-    val sorted = clothes.topologicalSort.map(_.id)
+    val sorted = clothes.topologicalSort.map(_.node.id)
 
     clothes.edges.forall { edge =>
       sorted.indexOf(edge.from) < sorted.indexOf(edge.to)

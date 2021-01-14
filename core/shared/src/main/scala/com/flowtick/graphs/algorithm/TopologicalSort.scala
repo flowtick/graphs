@@ -1,13 +1,15 @@
 package com.flowtick.graphs.algorithm
 
-import com.flowtick.graphs.{Graph, Node}
+import com.flowtick.graphs.Graph
+import com.flowtick.graphs.algorithm.Traversal.Step
 
-import scala.collection.mutable
+class TopologicalSort[E, N](graph: Graph[E, N]) {
+  def sort: List[Step[E, N]] = {
+    val dfs = new DepthFirstTraversal[E, N](graph.nodeIds, graph).run
 
-class TopologicalSort[E, N](graph: Graph[E, N]) extends DepthFirstSearch[E, N](graph.nodeIds, graph) {
-  def sort: List[Node[N]] = {
-    val sortedNodes = mutable.ListBuffer.empty[Node[N]]
-    onComplete(sortedNodes.prepend(_)).run
-    sortedNodes.toList
+    dfs.foldLeft(List.empty[Step[E, N]]) {
+      case (acc, Completed(step, _)) => step :: acc
+      case (acc, _) => acc
+    }
   }
 }

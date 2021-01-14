@@ -46,7 +46,7 @@ object Labeled {
 final case class Edge[+E](id: String, value: E, from: String, to: String) {
   def map[B](f: E => B): Edge[B] = copy(value = f(value))
 
-  override def toString: String = s"(${from}) --($value)--> (${to})"
+  override def toString: String = s"$id: (${from}) --($value)--> (${to})"
 }
 
 /**
@@ -55,8 +55,10 @@ final case class Edge[+E](id: String, value: E, from: String, to: String) {
  *
  * Mainly used for `Graph.fromEdges`
  */
-final case class Relation[+E, +N](value: E, from: Node[N], to: Node[N]) {
-  def toEdge: Edge[E] = Edge.of(value, from.id, to.id)
+final case class Relation[+E, +N](value: E, from: Node[N], to: Node[N], symmetric: Boolean = false) {
+  def toEdges: Iterable[Edge[E]] = 
+    if (symmetric) Iterable(Edge.of(value, from.id, to.id), Edge.of(value, to.id, from.id))
+    else Iterable(Edge.of(value, from.id, to.id))
 }
 
 object Edge {
@@ -67,7 +69,7 @@ object Edge {
 final case class Node[+N](id: String, value: N) {
   def map[B](f: N => B): Node[B] = copy(value = f(value))
 
-  override def toString: String = s"Node(id: $id, value: $value)"
+  override def toString: String = s"Node(id = $id, value = $value)"
 }
 
 object Node {
@@ -81,7 +83,7 @@ final case class GraphInstance[E, N](nodesById: scala.collection.Map[String, Nod
   def withEdge(edge: Edge[E]): Graph[E, N] = {
     copy(
       incomingById = incomingById + (edge.to -> (incomingById.getOrElse(edge.to, Set.empty) + edge.id)),
-      outgoingById = outgoingById + (edge.from.-> (outgoingById.getOrElse(edge.from, Set.empty) + edge.id)),
+      outgoingById = outgoingById + (edge.from -> (outgoingById.getOrElse(edge.from, Set.empty) + edge.id)),
       edgesById = edgesById + (edge.id -> edge)
     )
   }
@@ -184,7 +186,7 @@ trait Graph[E, N] {
   def removeNodeById(nodeId: String): Graph[E, N]
   def removeEdgeById(edgeId: String): Graph[E, N]
 
-  def removeNodeValue(node: N)(implicit nodeId: Identifiable[N]): Graph[E, N] = removeNodeById(nodeId(node))
+  def removeNode(node: Node[N]): Graph[E, N] = removeNodeById(node.id)
   def removeEdge(edge: Edge[E]): Graph[E, N] = removeEdgeById(edge.id)
 
   def incoming(nodeId: String): Iterable[Edge[E]]
@@ -221,9 +223,9 @@ object Graph {
   def empty[E, N]: Graph[E, N] = GraphInstance[E, N]()
 
   /**
-   * utility method to create a unit typed graph quickly from iterable edges
+   * utility method to create a unit typed graph quickly from iterable relations
    *
-   * @param relations the edges to create the graph from
+   * @param relations the relations to create the graph from
    * @tparam E the edge type
    * @tparam N the node type
    * @return a typed graph with the edges
@@ -232,7 +234,7 @@ object Graph {
     relations.foldLeft(empty[E, N]) {
       (acc, relation) => acc
         .withNode(relation.from)
-        .withNode(relation.to) withEdge relation.toEdge
+        .withNode(relation.to) withEdges relation.toEdges
     }
 
   def fromNodes[E, N](nodes: Map[String, Node[N]]): Graph[E, N] =

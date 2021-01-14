@@ -69,7 +69,7 @@ class GraphSpec extends AnyFlatSpec with Matchers {
       "D" --> "A",
       "A" --> "C",
       "B" --> "D"
-    ).map(_.toEdge))
+    ).flatMap(_.toEdges))
   }
 
   it should "return empty iterable for an empty graph" in {
@@ -86,12 +86,16 @@ class GraphSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "remove nodes" in {
+    val node1 = Node.of(1)
+    val node2 = Node.of(2)
+    val node3 = Node.of(3)
+
     val intGraph = Graph
       .empty[Unit, Int]
-      .addEdge((), Node.of(1), Node.of(2))
-      .addNode(Node.of(3))
+      .addEdge((), node1, node2)
+      .addNode(node3)
 
-    intGraph.removeNodeValue(3) should be(
+    intGraph.removeNode(node3) should be(
       Graph.empty[Unit, Int].addEdge((), Node.of(1), Node.of(2))
     )
 
@@ -100,7 +104,7 @@ class GraphSpec extends AnyFlatSpec with Matchers {
       .addNode(Node.of(2))
       .addNode(Node.of(3))
 
-    intGraph.removeNodeValue(1) should be(expected)
+    intGraph.removeNode(node1) should be(expected)
   }
 
   it should "remove edges" in {

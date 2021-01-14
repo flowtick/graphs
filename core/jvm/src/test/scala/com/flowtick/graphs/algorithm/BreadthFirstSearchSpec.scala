@@ -1,12 +1,12 @@
 package com.flowtick.graphs.algorithm
 
-import com.flowtick.graphs.Graph
+import com.flowtick.graphs.algorithm.Traversal.Step
+import com.flowtick.graphs.{Edge, Graph, Node}
 import com.flowtick.graphs.defaults._
-import org.scalamock.scalatest.proxy.MockFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class BreadthFirstSearchSpec extends AnyFlatSpec with Matchers with MockFactory {
+class BreadthFirstSearchSpec extends AnyFlatSpec with Matchers {
   "Bfs" should "traverse in breadth first manner" in {
 
     val graph: Graph[Unit, String] = Graph.fromEdges(Seq(
@@ -19,34 +19,31 @@ class BreadthFirstSearchSpec extends AnyFlatSpec with Matchers with MockFactory 
       "3" --> "6",
       "3" --> "7"))
 
-    val visitMock = mockFunction[String, Unit](functionName("visitCallback"))
-    val completeMock = mockFunction[String, Unit](functionName("completeCallback"))
+    val traversal = graph.bfs("1").run
 
-    inSequence {
-      visitMock.expects("1")
-      visitMock.expects("2")
-      visitMock.expects("3")
-      completeMock.expects("1")
-
-      visitMock.expects("4")
-      visitMock.expects("5")
-      completeMock.expects("2")
-
-      visitMock.expects("6")
-      visitMock.expects("7")
-      completeMock.expects("3")
-      completeMock.expects("4")
-      completeMock.expects("5")
-      completeMock.expects("6")
-      completeMock.expects("7")
+    val values: Iterable[String] = traversal.collect {
+      case Completed(step, _) => step.node.value
     }
 
-    val bfsResult = graph.bfs("1").onVisit(node => {
-      visitMock(node.id)
-    }).onComplete(node => {
-      completeMock(node.id)
-    }).run
+    values should be(List("1", "2", "3", "4", "5", "6", "7"))
 
-    bfsResult.map(_.value) should be(List("1", "2", "3", "4", "5", "6", "7"))
+    val expected = List(
+      Visited(Step(Node.of("1"), None, Some(0))),
+      Visited(Step(Node.of("2"), Some(Edge.unit("1", "2")), Some(1))),
+      Visited(Step(Node.of("3"), Some(Edge.unit("1", "3")), Some(1))),
+      Completed(Step(Node.of("1"), None, Some(0))),
+      Visited(Step(Node.of("4"), Some(Edge.unit("2", "4")), Some(2))),
+      Visited(Step(Node.of("5"), Some(Edge.unit("2", "5")), Some(2))),
+      Completed(Step(Node.of("2"), Some(Edge.unit("1", "2")), Some(1))),
+      Visited(Step(Node.of("6"), Some(Edge.unit("3", "6")), Some(2))),
+      Visited(Step(Node.of("7"), Some(Edge.unit("3", "7")), Some(2))),
+      Completed(Step(Node.of("3"), Some(Edge.unit("1", "3")), Some(1))),
+      Completed(Step(Node.of("4"), Some(Edge.unit("2", "4")), Some(2))),
+      Completed(Step(Node.of("5"), Some(Edge.unit("2", "5")), Some(2))),
+      Completed(Step(Node.of("6"), Some(Edge.unit("3", "6")), Some(2))),
+      Completed(Step(Node.of("7"), Some(Edge.unit("3", "7")), Some(2)))
+    )
+
+    traversal.toList should be(expected)
   }
 }

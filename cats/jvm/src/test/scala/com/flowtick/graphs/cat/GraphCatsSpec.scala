@@ -29,7 +29,7 @@ class GraphCatsSpec extends AnyFlatSpec with Matchers {
       2 --> 3,
       4 --> 3,
       4 --> 5,
-      5 --> 1).map(_.toEdge)
+      5 --> 1).flatMap(_.toEdges)
 
     combined.nodes.map(_.value) should contain theSameElementsAs Seq(
       1,
