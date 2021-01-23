@@ -1,6 +1,6 @@
 package com.flowtick.graphs.editor
 
-import com.flowtick.graphs.style.EdgePath
+import com.flowtick.graphs.layout.EdgePath
 import io.circe.Decoder.Result
 import io.circe.{Decoder, DecodingFailure, HCursor, Json}
 

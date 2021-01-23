@@ -79,7 +79,7 @@ lazy val layout = (crossProject(JVMPlatform, JSPlatform) in file(".") / "layout"
     name := "graphs-layout",
   ).jvmSettings(
   libraryDependencies ++= Seq(
-    "com.mxgraph" % "jgraphx" % "3.7.4"
+    "org.eclipse.elk" % "org.eclipse.elk.alg.layered" % "0.7.1"
   )
 ).dependsOn(core)
 
@@ -116,12 +116,11 @@ lazy val editor = (crossProject(JVMPlatform, JSPlatform) in file(".") / "editor"
       "io.circe" %%% "circe-parser"
     ).map(_ % circeVersion),
     libraryDependencies += "org.typelevel" %%% "cats-effect" % "2.1.3",
-    libraryDependencies += "org.apache.xmlgraphics" % "batik-rasterizer" % "1.13"
+    libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.2"
   ).dependsOn(core, graphml, json, cats)
 
 lazy val editorJS = editor.js.settings(
   scalaJSUseMainModuleInitializer := true,
-  libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.1",
   artifactPath in (Compile, fastOptJS) := baseDirectory.value / ".." / "dist" / "app.js",
   artifactPath in (Compile, fullOptJS) := (artifactPath in (Compile, fastOptJS)).value
 )
@@ -142,6 +141,7 @@ lazy val editorJVM = editor.jvm.settings(
   libraryDependencies += "org.fxmisc.richtext" % "richtextfx" % "0.10.5",
   libraryDependencies += "org.apache.logging.log4j" % "log4j-api" % "2.14.0",
   libraryDependencies += "org.apache.logging.log4j" % "log4j-core" % "2.14.0",
+  libraryDependencies += "org.apache.xmlgraphics" % "batik-rasterizer" % "1.13",
   libraryDependencies ++= javaFXModules.map( m =>
     "org.openjfx" % s"javafx-$m" % "14.0.1" classifier osName
   )
@@ -186,7 +186,7 @@ lazy val examples = (crossProject(JVMPlatform, JSPlatform) in file("examples"))
           "io.circe" %%% "circe-parser"
         ).map(_ % circeVersion)
       ).jsSettings(scalaJSUseMainModuleInitializer := false)
-      .dependsOn(core, graphml, cats, layout, json)
+      .dependsOn(core, graphml, cats, layout, json, editor)
 
 lazy val examplesJS = examples.js
 lazy val examplesJVM = examples.jvm

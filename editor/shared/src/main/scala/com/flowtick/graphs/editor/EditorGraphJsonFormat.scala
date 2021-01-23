@@ -7,8 +7,7 @@ import io.circe.{Decoder, Encoder, HCursor, Json, _}
 import scala.collection.mutable.ListBuffer
 import io.circe.generic.auto._
 import com.flowtick.graphs.json.format.default._
-
-import com.flowtick.graphs.layout.{DefaultGeometry, Geometry}
+import com.flowtick.graphs.layout.{DefaultGeometry, Geometry, GraphLayout}
 import com.flowtick.graphs.style.StyleSheet
 
 object EditorGraphJsonFormat {
@@ -75,7 +74,7 @@ object EditorGraphJsonFormat {
         .as[Option[List[Edge[EditorGraphEdge]]]]
 
       styleSheets <- json.downField("styleSheets").as[List[Either[String, StyleSheet]]]
-      layouts <- json.downField("layouts").as[List[Either[String, EditorGraphLayout]]]
+      layouts <- json.downField("layouts").as[List[Either[String, GraphLayout]]]
       schemas <- json.downField("schemas").as[List[Either[String, EditorModel.EditorSchema]]]
     } yield EditorGraph(Graph.fromNodes(nodes).withEdges(edges.getOrElse(List.empty)), styleSheets, layouts, schemas)
   }

@@ -4,8 +4,8 @@ import cats.effect.IO
 import com.flowtick.graphs.editor.ImageLoader.unescapeXml
 import com.flowtick.graphs.editor._
 import com.flowtick.graphs.graphml.{Datatype, FromGraphML, GraphMLGraph, GraphMLResource}
-import com.flowtick.graphs.json.schema.{JsonSchema, Schema}
-import com.flowtick.graphs.layout.DefaultGeometry
+import com.flowtick.graphs.json.schema.JsonSchema
+import com.flowtick.graphs.layout.{DefaultGeometry, GraphLayouts}
 import com.flowtick.graphs.style.{Fill, ImageSpec, NodeShape, StyleSheets}
 import com.flowtick.graphs.{Edge, Node}
 import io.circe.{Json, Printer}
@@ -140,7 +140,7 @@ class ModelUpdateFeature extends EditorComponent {
         case Right(editorGraph) =>
           ctx.updateModel(model => model.copy(
             graph = editorGraph.graph,
-            layout = EditorGraphLayouts(editorGraph.layouts.flatMap(_.toOption)),
+            layout = GraphLayouts(editorGraph.layouts.flatMap(_.toOption)),
             styleSheet = StyleSheets(editorGraph.styleSheets.flatMap(_.toOption)) merge model.config.styleSheets,
             schema = EditorSchemas(editorGraph.schemas.flatMap(_.toOption)) merge model.config.schemas)
           ).addNotification(this, Reset)
@@ -227,7 +227,7 @@ class ModelUpdateFeature extends EditorComponent {
 
   val handleExport: Transform = ctx => ctx.transform {
     case Export(GraphMLFormat) =>
-      // FIXME
+      // FIXME: re-add graphml export
       ctx.addError(this, new UnsupportedOperationException("graphml export not supported right now"))
     case Export(JsonFormat) =>
       val json = EditorGraphJsonFormat.defaultEditorGraphEncoder(EditorGraph(graph = ctx.model.graph, styleSheets = ctx.model.styleSheet.styleSheets.map(Right(_)), layouts = ctx.model.layout.layouts.map(Right(_)), schemas = ctx.model.schema.schemas.map(Right(_))))

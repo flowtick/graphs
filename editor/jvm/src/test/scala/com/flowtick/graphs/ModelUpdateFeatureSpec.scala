@@ -2,10 +2,11 @@ package com.flowtick.graphs
 
 import cats.effect.IO
 import com.flowtick.graphs.editor._
-import com.flowtick.graphs.layout.DefaultGeometry
-import com.flowtick.graphs.style.EdgePath
+import com.flowtick.graphs.layout.{DefaultGeometry, EdgePath}
 
 class ModelUpdateFeatureSpec extends EditorBaseSpec {
+  override def shouldRenderImage: Boolean = true
+
   "Editor Model Update" should "add nodes and edges" in withEditor { editor =>
     val (firstNodeId, secondNodeId) = ("1", "2")
     val edgeId = "e1"
@@ -14,6 +15,8 @@ class ModelUpdateFeatureSpec extends EditorBaseSpec {
       _ <- editor.bus.publish(Reset)
       _ <- editor.bus.publish(AddNode(firstNodeId, None, Some(100.0), Some(100.0)))
       _ <- editor.bus.publish(AddNode(secondNodeId, None, Some(200.0), Some(200.0)))
+      _ <- editor.bus.publish(SetLabel(ElementRef(firstNodeId, NodeType), "1"))
+      _ <- editor.bus.publish(SetLabel(ElementRef(secondNodeId, NodeType), "2"))
       _ <- editor.bus.publish(AddEdge(edgeId, firstNodeId, secondNodeId, None))
       _ <- editor.bus.publish(Export(JsonFormat))
       exported <- lastExported.get.flatMap(IO.fromOption(_)(new IllegalStateException("exported graph not set")))

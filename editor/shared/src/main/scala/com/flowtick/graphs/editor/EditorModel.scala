@@ -5,6 +5,7 @@ import cats.data.ValidatedNel
 import com.flowtick.graphs.Graph
 import com.flowtick.graphs.graphml.{Datatype, GraphMLKey}
 import com.flowtick.graphs.json.schema.Schema
+import com.flowtick.graphs.layout.{GraphLayout, GraphLayoutLike, GraphLayouts}
 import com.flowtick.graphs.style._
 import io.circe.Json
 
@@ -15,14 +16,14 @@ final case class EditorModel(graph: Graph[EditorGraphEdge, EditorGraphNode],
                              connectSelection: Boolean = false,
                              schema: EditorSchemaLike,
                              palette: EditorPaletteLike,
-                             layout: EditorGraphLayoutLike,
+                             layout: GraphLayoutLike,
                              styleSheet: StyleSheetLike,
                              version: Long = 0,
                              config: EditorConfiguration) {
   def updateGraph(updated: Graph[EditorGraphEdge, EditorGraphNode] => Graph[EditorGraphEdge, EditorGraphNode]): EditorModel =
     copy(graph = updated(graph))
 
-  def updateLayout(updated: EditorGraphLayoutLike => EditorGraphLayoutLike): EditorModel =
+  def updateLayout(updated: GraphLayoutLike => GraphLayoutLike): EditorModel =
     copy(layout = updated(layout))
 
   def updateStyleSheet(updated: StyleSheetLike => StyleSheetLike): EditorModel =
@@ -46,7 +47,7 @@ object EditorModel {
     EditorModel(
       graph = Graph.empty,
       schema = EditorSchemas(config.palettes.getOrElse(List.empty).map(_.schema)),
-      layout = EditorGraphLayout(),
+      layout = GraphLayouts(),
       styleSheet = StyleSheets(config.palettes.getOrElse(List.empty).map(_.styleSheet)),
       palette = EditorPalettes(config.palettes.getOrElse(List.empty)),
       config = config

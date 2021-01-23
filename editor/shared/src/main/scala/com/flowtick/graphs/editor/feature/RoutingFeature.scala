@@ -3,15 +3,15 @@ package com.flowtick.graphs.editor.feature
 import cats.effect.IO
 import com.flowtick.graphs.editor._
 import com.flowtick.graphs.editor.util.MathUtil
-import com.flowtick.graphs.style.EdgePath
 import com.flowtick.graphs.{Edge, Node}
 import com.flowtick.graphs.editor.util.MathUtil.{LineSegment, Rectangle, Vector2}
+import com.flowtick.graphs.layout.{EdgePath, GraphLayoutLike}
 
 class RoutingFeature extends EditorComponent {
 
   override def order: Double = 0.2
 
-  def edgePath(fromNode: Node[EditorGraphNode], toNode: Node[EditorGraphNode])(layout: EditorGraphLayoutLike): Option[EdgePath] =
+  def edgePath(fromNode: Node[EditorGraphNode], toNode: Node[EditorGraphNode])(layout: GraphLayoutLike): Option[EdgePath] =
     for {
       from <- layout.nodeGeometry(fromNode.id)
       to <- layout.nodeGeometry(toNode.id)
