@@ -34,7 +34,8 @@ class XmlDom(val svgDocument: SVGDocument) extends VirtualDom[Element, Node] {
     val newBuilder = new ElemBuilder(newElement)
     tag match {
       case "svg" if svgDocument.getRootElement.getChildNodes.getLength == 0 =>
-        svgDocument.getRootElement.appendChild(newElement)
+        svgDocument.removeChild(svgDocument.getRootElement)
+        svgDocument.appendChild(newElement)
         newBuilder
       case _ => newBuilder
     }
@@ -65,7 +66,7 @@ object XmlDom {
     }
 }
 
-class EditorRendererJvm(implicit appender: Element => generic.Frag[vdom.Builder[Element, Node], Node], matrixLike: SVGMatrixLike[Affine], xmlDom: XmlDom) extends SVGRenderer(xmlDom) {
+class EditorRendererJvm(showOrigin: Boolean)(implicit appender: Element => generic.Frag[vdom.Builder[Element, Node], Node], matrixLike: SVGMatrixLike[Affine], xmlDom: XmlDom) extends SVGRenderer(xmlDom) {
   override def parseSvg(svgXml: String): Element = XmlDom.parseSvg(svgXml).getRootElement
 
   override protected def getPageMatrix: Affine = new Affine()
@@ -91,6 +92,9 @@ class EditorRendererJvm(implicit appender: Element => generic.Frag[vdom.Builder[
 
   override protected def renderSelectRect(elementId: String, elementType: String, x: Double, y: Double, width: Double, height: Double): Option[Element] = None
   override protected def renderPanZoomRect: Option[Element] = None
+
+  override protected def renderOriginMarker: Option[Element] =
+    if (showOrigin) super.renderOriginMarker else None
 
   def toXmlString: Try[String] = XmlDom.toString(xmlDom.svgDocument)
 }
@@ -135,5 +139,5 @@ object EditorRendererJvm {
 
   private implicit def xmlDomInstance: XmlDom = new XmlDom(XmlDom.newSvgDocument)
 
-  def apply() = new EditorRendererJvm
+  def apply(showOrigin: Boolean = false) = new EditorRendererJvm(showOrigin)
 }

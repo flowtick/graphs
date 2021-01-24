@@ -19,7 +19,7 @@ object EditorDomEventLike extends EventLike[Event, dom.Element] {
   }
 }
 
-object EditorSVGPageJs {
+object EditorPageJs {
   def apply(handleSelect: ElementRef => Boolean => IO[Unit],
             handleDrag: Option[DragStart[dom.Element]] => IO[Unit],
             handleDoubleClick: Event => IO[Unit])(renderer: SVGRenderer[dom.Element, dom.Element, dom.Node, SVGMatrix], eventLike: EventLike[Event, dom.Element]): Page[dom.Element, Event] = {

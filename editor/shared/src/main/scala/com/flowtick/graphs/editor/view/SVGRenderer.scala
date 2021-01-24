@@ -331,17 +331,8 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
     svgAttrs.style := "pointer-events:all"
   ).render)
 
-  protected def renderRootSvg: GraphSVG[T] = {
-    import bundle.all._
-    import bundle.{svgAttrs, svgTags => svg}
 
-    val panZoomRect = renderPanZoomRect
-
-    val edges = svg.g(id := "edges").render
-    val nodes = svg.g(id := "nodes").render
-    val select = svg.g(id := "select").render
-    val label = svg.g(id := "label").render
-
+  protected def renderOriginMarker: Option[T] = {
     val originStroke = "#CCC"
     val originStrokeWidth = 2
     val originDim = 5
@@ -364,11 +355,23 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
         svgAttrs.stroke := originStroke
       ),
     )
+    Some(originMarker.render)
+  }
+  protected def renderRootSvg: GraphSVG[T] = {
+    import bundle.all._
+    import bundle.{svgAttrs, svgTags => svg}
+
+    val panZoomRect = renderPanZoomRect
+
+    val edges = svg.g(id := "edges").render
+    val nodes = svg.g(id := "nodes").render
+    val select = svg.g(id := "select").render
+    val label = svg.g(id := "label").render
 
     val viewPort = svg.g(
       id := "viewport",
       svgAttrs.transform := "matrix(1 0 0 1 0 0)",
-      originMarker,
+      renderOriginMarker,
       edges,
       nodes,
       select,

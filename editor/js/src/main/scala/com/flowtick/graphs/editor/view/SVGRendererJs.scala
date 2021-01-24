@@ -1,15 +1,15 @@
-package com.flowtick.graphs.editor
+package com.flowtick.graphs.editor.view
 
 import cats.effect.IO
 import com.flowtick.graphs.editor.vendor.SVGUtil
-import com.flowtick.graphs.editor.view._
+import com.flowtick.graphs.editor.{EdgeType, ElementRef, NodeType, PagePoint}
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import org.scalajs.dom.svg.{G, SVG}
 import scalatags.JsDom
 import scalatags.JsDom.all._
 
-object EditorRendererJs {
+object SVGRendererJs {
   private implicit val domSVGMatrix: SVGMatrixLike[SVGMatrix] = new SVGMatrixLike[SVGMatrix] {
     private val matrixSvg = JsDom.svgTags.svg.render // unattached svg for independent calculations
 

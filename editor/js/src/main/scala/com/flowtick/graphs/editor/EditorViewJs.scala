@@ -1,14 +1,15 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
+import com.flowtick.graphs.editor.view.SVGRendererJs
 import org.scalajs.dom.raw.{Element, Event}
 
 class EditorViewJs(containerElementId: String)(val messageBus: EditorMessageBus) extends EditorView[Element, Event] {
   lazy val container = org.scalajs.dom.window.document.getElementById(containerElementId)
 
   def createPage: IO[Page[Element, Event]] = for {
-    newPage <- IO.pure(EditorSVGPageJs(handleSelect, handleDrag, handleDoubleClick)(
-      EditorRendererJs.renderer,
+    newPage <- IO.pure(EditorPageJs(handleSelect, handleDrag, handleDoubleClick)(
+      SVGRendererJs.renderer,
       EditorDomEventLike
     ))
     currentPage <- pageRef.get
