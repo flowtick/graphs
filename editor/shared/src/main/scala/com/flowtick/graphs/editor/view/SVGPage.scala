@@ -23,6 +23,10 @@ trait EventLike[E, T] {
 }
 
 class SVGPage[Builder, T <: Frag, Frag, E, M](renderer: SVGRenderer[Builder, T, Frag, M], eventLike: EventLike[E, T]) extends Page[T, E] {
+  def clientWidth: Double = 500
+  def clientHeight: Double = 500
+  def scrollSpeed: Double = 1.0
+
   var panStart: Option[PanContext] = None
 
   def startPan(event: E): Boolean = eventLike.data(event) match {
@@ -45,7 +49,7 @@ class SVGPage[Builder, T <: Frag, Frag, E, M](renderer: SVGRenderer[Builder, T, 
   def pageCoordinates(x: Double, y: Double): Point = renderer.pageCoordinates(x, y)
 
   def pageCenter: PointSpec = {
-    val coordinates = pageCoordinates(renderer.clientWidth / 2.0, renderer.clientHeight / 2.0)
+    val coordinates = pageCoordinates(clientWidth / 2.0, clientHeight / 2.0)
     PointSpec(coordinates.x, coordinates.y)
   }
 
@@ -69,7 +73,7 @@ class SVGPage[Builder, T <: Frag, Frag, E, M](renderer: SVGRenderer[Builder, T, 
     case wheelEvent: EditorWheelEvent =>
       val cursor = pageCoordinates(wheelEvent.clientX, wheelEvent.clientY)
 
-      val scaleDelta = wheelEvent.deltaY * renderer.scrollSpeed
+      val scaleDelta = wheelEvent.deltaY * scrollSpeed
       val zoom = 1 + scaleDelta
 
       renderer.translateAndScaleView(-(cursor.x*(zoom-1)),-(cursor.y*(zoom-1)), zoom)

@@ -66,15 +66,13 @@ object XmlDom {
 }
 
 class EditorRendererJvm(implicit appender: Element => generic.Frag[vdom.Builder[Element, Node], Node], matrixLike: SVGMatrixLike[Affine], xmlDom: XmlDom) extends SVGRenderer(xmlDom) {
-  override def clientWidth: Double = 500
-  override def clientHeight: Double = 500
-  override def scrollSpeed: Double = 1.0
-
   override def parseSvg(svgXml: String): Element = XmlDom.parseSvg(svgXml).getRootElement
 
   override protected def getPageMatrix: Affine = new Affine()
   override protected def getScreenCTM: Affine = new Affine()
-  override protected def applyTransformation(transformation: Affine): Unit = ()
+  override protected def applyTransformation(transformation: Affine): Unit = {
+    graphSVG.viewPort.setAttribute("transform", s"matrix(${transformation.getMxx} 0 0 ${transformation.getMyy} ${transformation.getTx} ${transformation.getTy})")
+  }
 
   override def x(elem: Element): Double = 0.0
   override def y(elem: Element): Double = 0.0
@@ -91,7 +89,8 @@ class EditorRendererJvm(implicit appender: Element => generic.Frag[vdom.Builder[
   override def appendChild(elem: Element)(child: Element): Unit =
     elem.appendChild(child)
 
-  override def renderSelectRect(elementId: String, elementType: String, x: Double, y: Double, width: Double, height: Double): Option[Element] = None
+  override protected def renderSelectRect(elementId: String, elementType: String, x: Double, y: Double, width: Double, height: Double): Option[Element] = None
+  override protected def renderPanZoomRect: Option[Element] = None
 
   def toXmlString: Try[String] = XmlDom.toString(xmlDom.svgDocument)
 }

@@ -19,7 +19,7 @@ trait GraphElement[+T] {
 }
 
 final class GraphSVG[+T](val root: T,
-                         val panZoomRect: T,
+                         val panZoomRect: Option[T],
                          val viewPort: T,
                          val nodes: T,
                          val edges: T,
@@ -79,10 +79,6 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
   import bundle.all._
   import bundle.{svgAttrs, svgTags => svg}
 
-  def clientWidth: Double
-  def clientHeight: Double
-  def scrollSpeed: Double
-
   def x(elem: T): Double
   def y(elem: T): Double
 
@@ -103,7 +99,7 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
 
   def appendChild(elem: T)(child: T): Unit
 
-  val graphSVG: GraphSVG[T] = SVGRenderer.createGraphSVG(bundle)
+  val graphSVG: GraphSVG[T] = renderRootSvg
 
   def resetMatrix: IO[Unit] = IO {
     applyTransformation(matrixLike.identity)
@@ -159,8 +155,8 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
       val shapeElement: T = shape.svgContent.flatMap(content => styleSheet.images.get(content.refId)) match {
         case Some(image) if image.imageType == ImageType.svg => parseSvg(image.data)
 
-        case _ => SVGRenderer.shapeTag(bundle)(shape, styleSheet, width, height)(
-          svgAttrs.style := SVGRenderer.nodeStyle(shape).mkString(";")
+        case _ => shapeTag(shape, styleSheet, width, height)(
+          svgAttrs.style := nodeStyle(shape).mkString(";")
         ).render
       }
       val labelStyle = shape.labelStyle.getOrElse(NodeLabel())
@@ -198,7 +194,7 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
                   offset: Option[PointSpec] = None): T = {
     val lines = labelValue.split("\n")
     val textCenterX = width / 2
-    val textCenterY = (height / (1 + lines.size)) - Try(labelStyle.fontSize.getOrElse(SVGRenderer.defaultFontSize).toDouble * 0.6).getOrElse(10.0)
+    val textCenterY = (height / (1 + lines.size)) - Try(labelStyle.fontSize.getOrElse(defaultFontSize).toDouble * 0.6).getOrElse(10.0)
     val isFree = labelStyle.model.contains(Free)
 
     // TODO: instead of marking every tspan selectable, we could group the label
@@ -224,8 +220,8 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
     def text(fill: String) = svg.text(
       svgAttrs.transform := s"translate($finalX $finalY)",
       svgAttrs.textAnchor := "start",
-      svgAttrs.fontFamily := (if (labelStyle.fontFamily.contains("Dialog")) "Helvetica" else labelStyle.fontFamily.getOrElse(SVGRenderer.defaultFontFamily)), // Dialog does not exist in the most browser
-      svgAttrs.fontSize := labelStyle.fontSize.getOrElse(SVGRenderer.defaultFontSize),
+      svgAttrs.fontFamily := (if (labelStyle.fontFamily.contains("Dialog")) "Helvetica" else labelStyle.fontFamily.getOrElse(defaultFontFamily)), // Dialog does not exist in the most browser
+      svgAttrs.fontSize := labelStyle.fontSize.getOrElse(defaultFontSize),
       svgAttrs.fill := fill,
       svgAttrs.stroke := labelStyle.border.map(_.color).getOrElse("#FFFFFF"),
       svgAttrs.strokeWidth := labelStyle.border.flatMap(_.width).getOrElse(0.0)
@@ -234,7 +230,7 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
     text(labelStyle.textColor.getOrElse("#000000"))
   }.render
 
-  def renderSelectRect(elementId: String,
+  protected def renderSelectRect(elementId: String,
                        elementType: String,
                        x: Double,
                        y: Double,
@@ -327,20 +323,19 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
     }
   } yield edgeElementOpt
 
-}
+  protected def renderPanZoomRect: Option[T] = Some(svg.rect(
+    id := "pan-zoom-hit",
+    svgAttrs.width := "100%",
+    svgAttrs.height := "100%",
+    svgAttrs.fill := "none",
+    svgAttrs.style := "pointer-events:all"
+  ).render)
 
-object SVGRenderer {
-  def createGraphSVG[Builder, Output <: FragT, FragT](bundle: Bundle[Builder, Output, FragT])(implicit appender: Output => generic.Frag[Builder, FragT]): GraphSVG[Output] = {
+  protected def renderRootSvg: GraphSVG[T] = {
     import bundle.all._
     import bundle.{svgAttrs, svgTags => svg}
 
-    val panZoomRect = svg.rect(
-      id := "pan-zoom-hit",
-      svgAttrs.width := "100%",
-      svgAttrs.height := "100%",
-      svgAttrs.fill := "none",
-      svgAttrs.style := "pointer-events:all"
-    ).render
+    val panZoomRect = renderPanZoomRect
 
     val edges = svg.g(id := "edges").render
     val nodes = svg.g(id := "nodes").render
@@ -407,10 +402,7 @@ object SVGRenderer {
           )
         )
       ),
-      svgAttrs.width := "100%",
-      svgAttrs.height := "100%",
-      svgAttrs.style := "border: 1px solid #ccc",
-      svgAttrs.preserveAspectRatio := "none",
+      svgAttrs.preserveAspectRatio := "meet",
       panZoomRect,
       viewPort
     )
@@ -430,10 +422,10 @@ object SVGRenderer {
   val defaultFontSize = "12"
   val defaultFontFamily = "Helvetica"
 
-  def shapeTag[Builder, Output <: FragT, FragT](bundle: Bundle[Builder, Output, FragT])(shape: NodeShape,
-                                            styleSheet: com.flowtick.graphs.style.StyleSheetLike,
-                                            widthValue: Double,
-                                            heightValue: Double): generic.TypedTag[Builder, Output, FragT] = {
+  def shapeTag(shape: NodeShape,
+                                                                                        styleSheet: com.flowtick.graphs.style.StyleSheetLike,
+                                                                                        widthValue: Double,
+                                                                                        heightValue: Double): generic.TypedTag[Builder, T, FragT] = {
     import bundle.all._
     import bundle.{svgAttrs, svgTags => svg}
 
@@ -498,6 +490,5 @@ object SVGRenderer {
 
     fillProps.getOrElse(List.empty) ++ borderProps.getOrElse(List.empty)
   }
-
 
 }

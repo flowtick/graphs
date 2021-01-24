@@ -23,15 +23,20 @@ object EditorSVGPageJs {
   def apply(handleSelect: ElementRef => Boolean => IO[Unit],
             handleDrag: Option[DragStart[dom.Element]] => IO[Unit],
             handleDoubleClick: Event => IO[Unit])(renderer: SVGRenderer[dom.Element, dom.Element, dom.Node, SVGMatrix], eventLike: EventLike[Event, dom.Element]): Page[dom.Element, Event] = {
-    val page = new SVGPage[dom.Element, dom.Element, dom.Node, Event, SVGMatrix](renderer, eventLike)
-    renderer.graphSVG.panZoomRect.addEventListener("mousedown", (e: MouseEvent) => {
-      page.startPan(e)
-    })
+    val page = new SVGPage[dom.Element, dom.Element, dom.Node, Event, SVGMatrix](renderer, eventLike) {
+      override def clientWidth: Double = renderer.graphSVG.root.clientWidth
+      override def clientHeight: Double = renderer.graphSVG.root.clientHeight
+      override def scrollSpeed: Double = if(dom.window.navigator.userAgent.contains("Firefox")) 0.03 else 0.003
+    }
 
-    renderer.graphSVG.panZoomRect.addEventListener("mouseup", e => page.stopPan(e))
-    renderer.graphSVG.panZoomRect.addEventListener("mousemove", (e: MouseEvent) => {
+    renderer.graphSVG.panZoomRect.foreach(_.addEventListener("mousedown", (e: MouseEvent) => {
+      page.startPan(e)
+    }))
+
+    renderer.graphSVG.panZoomRect.foreach(_.addEventListener("mouseup", e => page.stopPan(e)))
+    renderer.graphSVG.panZoomRect.foreach(_.addEventListener("mousemove", (e: MouseEvent) => {
       page.pan(e)
-    })
+    }))
 
     renderer.graphSVG.root.addEventListener("wheel", page.zoom _)
 

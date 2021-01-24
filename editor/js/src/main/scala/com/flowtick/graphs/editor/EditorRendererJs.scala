@@ -57,14 +57,8 @@ object EditorRendererJs {
         .asInstanceOf[dom.Element]
     }
 
-    override def clientWidth: Double = svgElem.clientWidth
-    override def clientHeight: Double = svgElem.clientHeight
-
     override protected def getScreenCTM: SVGMatrix = svgElem.getScreenCTM()
-
     override protected def getPageMatrix: SVGMatrix = pageMatrix
-
-    override def scrollSpeed: Double = if(dom.window.navigator.userAgent.contains("Firefox")) 0.03 else 0.003
 
     override def applyTransformation(transformation: SVGMatrix): Unit = {
       pageMatrix = transformation
@@ -78,15 +72,15 @@ object EditorRendererJs {
       SVGUtil.setTransform(elem.asInstanceOf[SVGElement], s"translate($x $y)")
 
     override def selectElement(graphElement: GraphElement[Element]): IO[Unit] = IO {
-      graphElement.selectElem.setAttribute("stroke", "#555555")
-      graphElement.selectElem.setAttribute("stroke-dasharray", "3 5")
-      graphElement.selectElem.classList.add(draggableClass)
+      graphElement.selectElem.foreach(_.setAttribute("stroke", "#555555"))
+      graphElement.selectElem.foreach(_.setAttribute("stroke-dasharray", "3 5"))
+      graphElement.selectElem.foreach(_.classList.add(draggableClass))
     }
 
     override def unselectElement(graphElement: GraphElement[Element]): IO[Unit] = IO {
-      graphElement.selectElem.setAttribute("stroke", null)
-      graphElement.selectElem.setAttribute("stroke-dasharray", null)
-      graphElement.selectElem.classList.remove(draggableClass)
+      graphElement.selectElem.foreach(_.setAttribute("stroke", null))
+      graphElement.selectElem.foreach(_.setAttribute("stroke-dasharray", null))
+      graphElement.selectElem.foreach(_.classList.remove(draggableClass))
     }
 
     override def selectable(elem: Element): Option[ElementRef] = {
@@ -115,7 +109,7 @@ object EditorRendererJs {
 
     override def deleteElement(element: GraphElement[Element]): IO[Unit] = for {
       _ <- IO(element.group.parentNode.removeChild(element.group)).attempt.void
-      _ <- IO(element.selectElem.parentNode.removeChild(element.selectElem)).attempt.void
+      _ <- IO(element.selectElem.foreach(selectElem => selectElem.parentNode.removeChild(selectElem))).attempt.void
       _ <- IO(element.label.parentNode.removeChild(element.label)).attempt.void
     } yield ()
 

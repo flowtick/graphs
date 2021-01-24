@@ -30,7 +30,9 @@ object LayoutExample extends App {
     .withEdgeDefault(edgeShape)
     .withImage("city", ImageSpec("https://openmoji.org/data/color/svg/1F3D9.svg", imageType = ImageType.url))
 
-  renderer.renderGraph(graph, layout, styleSheet).unsafeRunSync()
+  renderer
+    .translateAndScaleView(0,0, 2.0)
+    .renderGraph(graph, layout, styleSheet).unsafeRunSync()
 
   val out = new FileOutputStream("target/layout_example.svg")
   out.write(renderer.toXmlString.get.getBytes("UTF-8"))
