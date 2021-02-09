@@ -2,10 +2,11 @@ package com.flowtick.graphs.editor
 import cats.effect.IO
 import com.flowtick.graphs.editor.vendor.{Ace, AceEditor}
 import io.circe.Json
+import org.scalajs.dom.Element
 import org.scalajs.dom.experimental.Fullscreen
 import org.scalajs.dom.html.{Div, Form, TextArea}
 import org.scalajs.dom.raw.{Event, HTMLElement}
-import scalatags.JsDom
+import scalatags.{JsDom, generic}
 
 import scala.scalajs.js
 
@@ -40,8 +41,10 @@ object EditorPropertiesHtml {
   def propertyContainers(property: PropertySpec, input: HTMLElement): (Div, JsDom.TypedTag[Div]) = {
     val propertyId = property.key.flatMap(_.name).getOrElse(property.title).replaceAll(" ", "_").toLowerCase
 
+    val optionalClass: Option[generic.AttrPair[Element, String]] = if(property.collapsable.contains(false)) Some(cls := "d-none") else None
+
     lazy val inputContainer: Div = div(
-      cls := (if(property.collapsable.contains(false)) "d-none" else ""),
+      optionalClass,
       id := s"property_container_$propertyId",
       input
     ).render

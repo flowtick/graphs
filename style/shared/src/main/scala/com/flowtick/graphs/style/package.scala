@@ -38,6 +38,8 @@ package object style {
       case "custom" => Custom
       case _ => Free
     }
+
+    def withTextColor(color: String): NodeLabel = copy(textColor = Some(color))
   }
 
   final case class BorderStyle(color: String, styleType: Option[String] = None, width: Option[Double] = None)
@@ -54,9 +56,22 @@ package object style {
                              shapeType: Option[String] = None,
                              borderStyle: Option[BorderStyle] = None,
                              image: Option[String] = None,
-                             svgContent: Option[SVGContent] = None)
+                             svgContent: Option[SVGContent] = None) {
+    def updateFill(update: Option[Fill] => Option[Fill]): NodeShape =
+      copy(fill = update(fill))
 
-  final case class Arrows(source: Option[String], target: Option[String])
+    def updateLabelStyle(update: Option[NodeLabel] => Option[NodeLabel]): NodeShape =
+      copy(labelStyle = update(labelStyle))
+
+    def updateBorderStyle(update: Option[BorderStyle] => Option[BorderStyle]): NodeShape =
+      copy(borderStyle = update(borderStyle))
+  }
+
+  final case class Arrows(source: Option[String], target: Option[String]) {
+    def withSource(source: String): Arrows = copy(source = Some(source))
+    def withTarget(target: String): Arrows = copy(target = Some(target))
+  }
+
   final case class EdgeStyle(color: String, width: Option[Double] = None)
   final case class EdgeLabel(textColor: Option[String] = None,
                              fontSize: Option[String] = None,

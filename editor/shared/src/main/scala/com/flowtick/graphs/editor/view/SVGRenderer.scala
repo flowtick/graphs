@@ -27,39 +27,47 @@ final class GraphSVG[+T](val root: T,
                          val label: T)
 
 final case class SVGNodeElement[+T](id: ElementRef,
-                                   shapeElement: T,
-                                   label: T,
-                                   selectElem: Option[T],
-                                   group: T) extends GraphElement[T]
+                                    shapeElement: T,
+                                    label: T,
+                                    selectElem: Option[T],
+                                    group: T) extends GraphElement[T]
 
 final case class SVGEdgeElement[+T](id: ElementRef,
-                                   group: T,
-                                   label: T,
-                                   selectElem: Option[T]) extends GraphElement[T]
+                                    group: T,
+                                    label: T,
+                                    selectElem: Option[T]) extends GraphElement[T]
 
 trait SVGRootLike
 
 trait SVGMatrixLike[M] {
   def identity: M
+
   def inverse(matrix: M): M
 
   def tx(matrix: M): Double
-  def tx_= (matrix: M)(value: Double): Unit
+
+  def tx_=(matrix: M)(value: Double): Unit
 
   def ty(matrix: M): Double
-  def ty_= (matrix: M)(value: Double): Unit
+
+  def ty_=(matrix: M)(value: Double): Unit
 
   def scalex(matrix: M): Double
-  def scalex_= (matrix: M)(value: Double): Unit
+
+  def scalex_=(matrix: M)(value: Double): Unit
 
   def scaley(matrix: M): Double
-  def scaley_= (matrix: M)(value: Double): Unit
+
+  def scaley_=(matrix: M)(value: Double): Unit
 
   def translate(matrix: M)(dx: Double, dy: Double): M
+
   def scale(matrix: M)(factor: Double): M
 
   def transformPoint(matrix: M)(x: Double, y: Double): PagePoint
 }
+
+final case class SVGRendererOptions(showOrigin: Boolean = false, padding: Option[Double] = None)
 
 /**
  * a renderer for svg like models
@@ -75,31 +83,43 @@ trait SVGMatrixLike[M] {
  * @tparam FragT
  * @tparam M
  */
-abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Builder, T, FragT])(implicit appender: T => generic.Frag[Builder, FragT], matrixLike: SVGMatrixLike[M]) {
+abstract class SVGRenderer[Builder, T <: FragT, FragT, M](protected val bundle: Bundle[Builder, T, FragT], protected val options: SVGRendererOptions)(implicit appender: T => generic.Frag[Builder, FragT], matrixLike: SVGMatrixLike[M]) {
   import bundle.all._
   import bundle.{svgAttrs, svgTags => svg}
 
+  val defaultTextColor = "#000000"
+  val defaultFontSize = "12"
+  val defaultFontFamily = "Helvetica"
+
   def x(elem: T): Double
+
   def y(elem: T): Double
 
   def setPosition(elem: T)(x: Double, y: Double): Unit
 
+  def setDimensions(width: Double, height: Double): Unit
+
   def parseSvg(svgXml: String): T
 
   protected def getPageMatrix: M
+
   protected def getScreenCTM: M
+
   protected def applyTransformation(transformation: M): Unit
 
   def selectElement(value: GraphElement[T]): IO[Unit]
+
   def unselectElement(value: GraphElement[T]): IO[Unit]
+
   def deleteElement(element: GraphElement[T]): IO[Unit]
 
   def selectable(elem: T): Option[ElementRef]
+
   def draggable(elem: T): Option[ElementRef]
 
   def appendChild(elem: T)(child: T): Unit
 
-  val graphSVG: GraphSVG[T] = renderRootSvg
+  def graphSVG: GraphSVG[T]
 
   def resetMatrix: IO[Unit] = IO {
     applyTransformation(matrixLike.identity)
@@ -132,13 +152,18 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
                                                     nodeLabel: Labeled[N, String],
                                                     nodeStyleRef: StyleRef[GraphNode[N]],
                                                     edgeLabel: Labeled[E, String],
-                                                    edgeStyleRef: StyleRef[Edge[E]]): IO[GraphSVG[T]] = {
+                                                    edgeStyleRef: StyleRef[Edge[E]]): IO[SVGRenderer[Builder, T, FragT, M]] = {
     import cats.implicits._
 
     for {
+      _ <- IO {
+        val width = layout.width.getOrElse(400.0)
+        val height = layout.height.getOrElse(400.0)
+        setDimensions(width, height)
+      }
       _ <- graph.nodes.map(renderNode(_, layout, styleSheet)).toList.sequence
       _ <- graph.edges.map(renderEdge(_, graph, layout, styleSheet)).toList.sequence
-    } yield graphSVG
+    } yield this
   }
 
   def renderNode[E, N](node: GraphNode[N], layout: GraphLayoutLike, styleSheet: StyleSheetLike)(implicit nodeLabel: Labeled[N, String], nodeStyleRef: StyleRef[GraphNode[N]]): IO[SVGNodeElement[T]] = for {
@@ -200,14 +225,14 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
     // TODO: instead of marking every tspan selectable, we could group the label
 
     val spans = lines.toList.map(line => svg.tspan(
-        cls := "selectable",
-        svgAttrs.x := 0,
-        svgAttrs.textAnchor := (if (isFree) "start" else "middle"),
-        svgAttrs.dominantBaseline := "alphabetic",
-        svgAttrs.dy := "1.0em",
-        data("id") := elementId,
-        data("type") := elementType,
-        line))
+      cls := "selectable",
+      svgAttrs.x := 0,
+      svgAttrs.textAnchor := (if (isFree) "start" else "middle"),
+      svgAttrs.dominantBaseline := "alphabetic",
+      svgAttrs.dy := "1.0em",
+      data("id") := elementId,
+      data("type") := elementType,
+      line))
 
     val (finalX: Double, finalY: Double) = if (isFree) {
       (for {
@@ -231,18 +256,18 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
   }.render
 
   protected def renderSelectRect(elementId: String,
-                       elementType: String,
-                       x: Double,
-                       y: Double,
-                       width: Double,
-                       height: Double): Option[T] = {
+                                 elementType: String,
+                                 x: Double,
+                                 y: Double,
+                                 width: Double,
+                                 height: Double): Option[T] = {
     val offset = 6
     Some(svg.rect(
       cls := "selectable",
-      svgAttrs.width :=  width + offset,
+      svgAttrs.width := width + offset,
       svgAttrs.height := height + offset,
-      svgAttrs.x := - offset / 2,
-      svgAttrs.y := - offset / 2,
+      svgAttrs.x := -offset / 2,
+      svgAttrs.y := -offset / 2,
       svgAttrs.fill := "white",
       svgAttrs.fillOpacity := 0,
       svgAttrs.style := "cursor: pointer",
@@ -272,7 +297,7 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
             svgAttrs.stroke := style.edgeStyle.map(_.color).getOrElse("#000000"),
             svgAttrs.strokeWidth := style.edgeStyle.flatMap(_.width).getOrElse(1.0),
             svgAttrs.markerStart := style.arrows.flatMap(_.source).map(source => s"url(#arrow_${source})").getOrElse(""),
-            svgAttrs.markerEnd :=  style.arrows.flatMap(_.target).map(target => s"url(#arrow_${target})").getOrElse("")
+            svgAttrs.markerEnd := style.arrows.flatMap(_.target).map(target => s"url(#arrow_${target})").getOrElse("")
           ).render
         }
 
@@ -289,7 +314,7 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
           polyline
         }
 
-        label =  {
+        label = {
           val width = Math.abs(start.x - end.x)
           val height = Math.abs(end.y - start.y)
           val edgeLabelStyle = style.labelStyle.getOrElse(EdgeLabel())
@@ -309,7 +334,7 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
           val finalStyle = edgeLabelStyle.copy(position = Some(StylePos(labelPos.x, labelPos.y)), model = finalModel)
           val labelString = edgeLabel(edge.value)
 
-          renderLabel(edge.id, "edge", finalStyle, labelString, width, height, if(bendPoints.isDefined) None else Some(start))
+          renderLabel(edge.id, "edge", finalStyle, labelString, width, height, if (bendPoints.isDefined) None else Some(start))
         }
 
         selectGroup = svg.g(id := edge.id, line, selectLine).render
@@ -332,7 +357,7 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
   ).render)
 
 
-  protected def renderOriginMarker: Option[T] = {
+  protected def renderOriginMarker: Option[T] = if (options.showOrigin) {
     val originStroke = "#CCC"
     val originStrokeWidth = 2
     val originDim = 5
@@ -356,8 +381,9 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
       ),
     )
     Some(originMarker.render)
-  }
-  protected def renderRootSvg: GraphSVG[T] = {
+  } else None
+
+  protected def renderRootSvg(rootAttributes: Modifier*): GraphSVG[T] = {
     import bundle.all._
     import bundle.{svgAttrs, svgTags => svg}
 
@@ -387,7 +413,7 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
           svgAttrs.refY := "5",
           svgAttrs.markerWidth := "10",
           svgAttrs.markerHeight := "10",
-          svgAttrs.orient := "auto-start-reverse",
+          svgAttrs.orient := "auto",
           svg.path(svgAttrs.d := "M 0 0 L 10 5 L 0 10 z")
         ),
         svg.marker(
@@ -405,9 +431,9 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
           )
         )
       ),
-      svgAttrs.preserveAspectRatio := "meet",
       panZoomRect,
-      viewPort
+      viewPort,
+      rootAttributes
     )
 
     new GraphSVG(
@@ -421,19 +447,15 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
     )
   }
 
-  val defaultTextColor = "#000000"
-  val defaultFontSize = "12"
-  val defaultFontFamily = "Helvetica"
-
   def shapeTag(shape: NodeShape,
-                                                                                        styleSheet: com.flowtick.graphs.style.StyleSheetLike,
-                                                                                        widthValue: Double,
-                                                                                        heightValue: Double): generic.TypedTag[Builder, T, FragT] = {
+               styleSheet: com.flowtick.graphs.style.StyleSheetLike,
+               widthValue: Double,
+               heightValue: Double): generic.TypedTag[Builder, T, FragT] = {
     import bundle.all._
     import bundle.{svgAttrs, svgTags => svg}
 
     lazy val fallback = svg.rect(
-      svgAttrs.width :=  widthValue,
+      svgAttrs.width := widthValue,
       svgAttrs.height := heightValue,
       svgAttrs.x := 0,
       svgAttrs.y := 0,
@@ -450,7 +472,7 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
       case Some(ShapeType.RoundRectangle) => svg.rect(
         svgAttrs.rx := 5,
         svgAttrs.ry := 5,
-        svgAttrs.width :=  widthValue,
+        svgAttrs.width := widthValue,
         svgAttrs.height := heightValue,
         svgAttrs.x := 0,
         svgAttrs.y := 0,
@@ -462,12 +484,12 @@ abstract class SVGRenderer[Builder, T <: FragT, FragT, M](val bundle: Bundle[Bui
     shape.image.flatMap(img => styleSheet.images.get(img)) match {
       case Some(imageResource) if imageResource.imageType == ImageType.svg =>
         svg.image(
-          svgAttrs.width :=  widthValue,
+          svgAttrs.width := widthValue,
           svgAttrs.height := heightValue,
           svgAttrs.xLinkHref := s"data:application/svg+xml,${imageResource.data.replaceAll("\n", "")}"
         )
-      case Some(imageUrl) if imageUrl.imageType == ImageType.dataUrl || imageUrl.imageType == ImageType.url  => svg.image(
-        svgAttrs.width :=  widthValue,
+      case Some(imageUrl) if imageUrl.imageType == ImageType.dataUrl || imageUrl.imageType == ImageType.url => svg.image(
+        svgAttrs.width := widthValue,
         svgAttrs.height := heightValue,
         svgAttrs.xLinkHref := imageUrl.data
       )

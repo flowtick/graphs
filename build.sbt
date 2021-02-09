@@ -79,7 +79,8 @@ lazy val layout = (crossProject(JVMPlatform, JSPlatform) in file(".") / "layout"
     name := "graphs-layout",
   ).jvmSettings(
   libraryDependencies ++= Seq(
-    "org.eclipse.elk" % "org.eclipse.elk.alg.layered" % "0.7.1"
+    "org.eclipse.elk" % "org.eclipse.elk.alg.layered" % "0.7.1",
+    "org.eclipse.elk" % "org.eclipse.elk.alg.mrtree" % "0.7.1"
   )
 ).dependsOn(core)
 

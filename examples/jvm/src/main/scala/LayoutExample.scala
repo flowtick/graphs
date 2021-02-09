@@ -1,6 +1,6 @@
-import com.flowtick.graphs.editor.view.EditorRendererJvm
-import com.flowtick.graphs.layout.{ELkLayout, GraphLayoutConfiguration, Up}
-import com.flowtick.graphs.style.{Arrows, BorderStyle, EdgeShape, Fill, ImageSpec, ImageType, NodeLabel, NodeShape, ShapeType, StyleSheet}
+import com.flowtick.graphs.editor.view.{EditorRendererJvm, SVGRendererOptions, SVGTranscoder}
+import com.flowtick.graphs.layout.{ELkLayout, GraphLayoutConfiguration, LayoutDirection, LayoutType}
+import com.flowtick.graphs.style._
 
 import java.io.FileOutputStream
 
@@ -12,8 +12,8 @@ object LayoutExample extends App {
 
   val graph: Graph[Int, String] = DijkstraGraph.cities
 
-  val layout = ELkLayout.layout(graph, GraphLayoutConfiguration(nodeWidth = 50, nodeHeight = 50, direction = Some(Up)))
-  val renderer = EditorRendererJvm()
+  val layout = ELkLayout.layout(graph, GraphLayoutConfiguration(nodeWidth = 50, nodeHeight = 50, direction = Some(LayoutDirection.Down), layoutType = Some(LayoutType.Layered)))
+  val renderer = EditorRendererJvm(options = SVGRendererOptions(padding = Some(100)))
   val nodeShape = NodeShape(
     fill = Some(Fill(color = Some("#aaa"))),
     shapeType = Some(ShapeType.RoundRectangle),
@@ -38,4 +38,10 @@ object LayoutExample extends App {
   out.write(renderer.toXmlString.get.getBytes("UTF-8"))
   out.flush()
   out.close()
+
+  val pngOut = new FileOutputStream("target/layout_example.png")
+  val pngBytes = SVGTranscoder.svgXmlToPng(renderer.toXmlString.get, None, None).unsafeRunSync()
+  pngOut.write(pngBytes)
+  pngOut.flush()
+  pngOut.close()
 }

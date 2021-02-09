@@ -43,10 +43,15 @@ trait GraphLayoutLike {
 
   def edgePath(id: String): Option[EdgePath]
   def setEdgePath(id: String, edgePath: EdgePath): GraphLayoutLike
+
+  def width: Option[Double]
+  def height: Option[Double]
 }
 
 final case class GraphLayout(nodes: Map[String, Geometry] = Map.empty,
-                             edges: Map[String, EdgePath] = Map.empty) extends GraphLayoutLike {
+                             edges: Map[String, EdgePath] = Map.empty,
+                             width: Option[Double] = None,
+                             height: Option[Double] = None) extends GraphLayoutLike {
   override def setNodeGeometry(id: String, geometry: Geometry): GraphLayout =
     copy(nodes = nodes + (id -> geometry))
 
@@ -91,19 +96,36 @@ final case class GraphLayouts(layouts: List[GraphLayout] = List.empty) extends G
 
   override def ++(other: List[GraphLayout]): GraphLayoutLike =
     copy(layouts = layouts ++ other)
+
+  override def width: Option[Double] =
+    layouts.maxBy(_.width.getOrElse(0.0)).width
+
+  override def height: Option[Double] =
+    layouts.maxBy(_.height.getOrElse(0.0)).height
 }
 
 sealed trait LayoutDirection
-case object Up extends LayoutDirection
-case object Down extends LayoutDirection
-case object Left extends LayoutDirection
-case object Right extends LayoutDirection
+
+object LayoutDirection {
+  case object Up extends LayoutDirection
+  case object Down extends LayoutDirection
+  case object Left extends LayoutDirection
+  case object Right extends LayoutDirection
+}
+
+sealed trait LayoutType
+
+object LayoutType {
+  case object Layered extends LayoutType
+  case object Tree extends LayoutType
+}
 
 final case class GraphLayoutConfiguration(nodeWidth: Double = 80,
                                           nodeHeight: Double = 40,
                                           spacing: Option[Double] = None,
                                           spacingNodeNode: Option[Double] = None,
-                                          direction: Option[LayoutDirection] = None)
+                                          direction: Option[LayoutDirection] = None,
+                                          layoutType: Option[LayoutType] = None)
 
 trait GraphLayoutOps {
   def layout[E, N](g: Graph[E, N], layoutConfiguration: GraphLayoutConfiguration = GraphLayoutConfiguration())(implicit edgeLabel: Labeled[Edge[E], String]): GraphLayoutLike

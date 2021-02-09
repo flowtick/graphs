@@ -48,8 +48,9 @@ object XmlDom {
   def newSvgDocument: SVGDocument =
     parseSvg(s"""<svg xmlns="${SVGConstants.SVG_NAMESPACE_URI}" />""")
 
-  def parseSvg(svgXml: String): SVGDocument =
+  def parseSvg(svgXml: String): SVGDocument = this.synchronized {
     factory.createSVGDocument(null, new ByteArrayInputStream(svgXml.getBytes("UTF-8")))
+  }
 
   import java.io.StringWriter
   import javax.xml.transform.TransformerFactory
@@ -66,13 +67,15 @@ object XmlDom {
     }
 }
 
-class EditorRendererJvm(showOrigin: Boolean)(implicit appender: Element => generic.Frag[vdom.Builder[Element, Node], Node], matrixLike: SVGMatrixLike[Affine], xmlDom: XmlDom) extends SVGRenderer(xmlDom) {
+class EditorRendererJvm(options: SVGRendererOptions)(implicit appender: Element => generic.Frag[vdom.Builder[Element, Node], Node], matrixLike: SVGMatrixLike[Affine], xmlDom: XmlDom) extends SVGRenderer(xmlDom, options) {
   override def parseSvg(svgXml: String): Element = XmlDom.parseSvg(svgXml).getRootElement
 
-  override protected def getPageMatrix: Affine = new Affine()
+  override protected val getPageMatrix: Affine = new Affine()
   override protected def getScreenCTM: Affine = new Affine()
   override protected def applyTransformation(transformation: Affine): Unit = {
+    getPageMatrix.setToTransform(transformation)
     graphSVG.viewPort.setAttribute("transform", s"matrix(${transformation.getMxx} 0 0 ${transformation.getMyy} ${transformation.getTx} ${transformation.getTy})")
+    Try(setDimensions(graphSVG.root.getAttribute("width").toInt, graphSVG.root.getAttribute("height").toInt))
   }
 
   override def x(elem: Element): Double = 0.0
@@ -93,10 +96,19 @@ class EditorRendererJvm(showOrigin: Boolean)(implicit appender: Element => gener
   override protected def renderSelectRect(elementId: String, elementType: String, x: Double, y: Double, width: Double, height: Double): Option[Element] = None
   override protected def renderPanZoomRect: Option[Element] = None
 
-  override protected def renderOriginMarker: Option[Element] =
-    if (showOrigin) super.renderOriginMarker else None
-
   def toXmlString: Try[String] = XmlDom.toString(xmlDom.svgDocument)
+
+  override def setDimensions(width: Double, height: Double): Unit = {
+    val padding = options.padding.getOrElse(0.0)
+    val newWidth = (matrixLike.scalex(getPageMatrix) * width)
+    val newHeight = (matrixLike.scaley(getPageMatrix) * height)
+
+    graphSVG.root.setAttribute("viewBox", s"${-padding / 2.0} ${-padding / 2.0} ${newWidth + padding} ${newHeight + padding}")
+    graphSVG.root.setAttribute("width", newWidth.toString)
+    graphSVG.root.setAttribute("height", newHeight.toString)
+  }
+
+  override lazy val graphSVG: GraphSVG[Element] = renderRootSvg()
 }
 
 object EditorRendererJvm {
@@ -139,5 +151,5 @@ object EditorRendererJvm {
 
   private implicit def xmlDomInstance: XmlDom = new XmlDom(XmlDom.newSvgDocument)
 
-  def apply(showOrigin: Boolean = false) = new EditorRendererJvm(showOrigin)
+  def apply(options: SVGRendererOptions = SVGRendererOptions()) = new EditorRendererJvm(options)
 }

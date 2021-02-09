@@ -1,7 +1,7 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import com.flowtick.graphs.editor.view.SVGRendererJs
+import com.flowtick.graphs.editor.view.{SVGRendererJs, SVGRendererOptions}
 import org.scalajs.dom.raw.{Element, Event}
 
 class EditorViewJs(containerElementId: String)(val messageBus: EditorMessageBus) extends EditorView[Element, Event] {
@@ -9,7 +9,7 @@ class EditorViewJs(containerElementId: String)(val messageBus: EditorMessageBus)
 
   def createPage: IO[Page[Element, Event]] = for {
     newPage <- IO.pure(EditorPageJs(handleSelect, handleDrag, handleDoubleClick)(
-      SVGRendererJs.renderer,
+      SVGRendererJs(SVGRendererOptions(showOrigin = true)),
       EditorDomEventLike
     ))
     currentPage <- pageRef.get
