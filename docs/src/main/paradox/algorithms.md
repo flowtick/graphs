@@ -11,7 +11,7 @@ be visited and the search will be continued there, before going to its siblings.
 
 Every node will be visited.
 
-@@snip [DfsExample.scala](../examples/shared/src/main/scala/DfsExample.scala)
+@@snip [DfsExample.scala](../../../../examples/shared/src/main/scala/examples/DfsExample.scala)
 
 ## Breadth-first traversal
 
@@ -20,7 +20,7 @@ will be visited before continuing with their children.
 
 Every node will be visited.
 
-@@snip [BfsExample.scala](../examples/shared/src/main/scala/BfsExample.scala)
+@@snip [BfsExample.scala](../../../../examples/shared/src/main/scala/examples/BfsExample.scala)
 
 ## Topological sorting using a depth-first approach
 
@@ -34,7 +34,7 @@ constraints that one task must be performed before another"
 </blockquote>
 
 
-@@snip [TopologicalSortingExample.scala](../examples/shared/src/main/scala/TopologicalSortingExample.scala)
+@@snip [TopologicalSortingExample.scala](../../../../examples/shared/src/main/scala/examples/TopologicalSortingExample.scala)
 
 ## Dijkstras algorithm for shortest paths
 
@@ -46,4 +46,4 @@ It can also be used for finding the shortest paths from a single node to a singl
 the algorithm once the shortest path to the destination node has been determined.
 </blockquote>
 
-@@snip [DijkstraExample.scala](../examples/shared/src/main/scala/DijkstraExample.scala)
+@@snip [DijkstraExample.scala](../../../../examples/shared/src/main/scala/examples/DijkstraExample.scala)

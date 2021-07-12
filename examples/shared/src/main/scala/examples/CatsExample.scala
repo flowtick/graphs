@@ -1,8 +1,9 @@
-import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.cat.instances._
-import cats.implicits._
+package examples
+
 import cats.kernel.Monoid
 import com.flowtick.graphs.Graph
+import com.flowtick.graphs.cat.instances._
+import com.flowtick.graphs.defaults._
 
 trait CatsExample {
   implicit val monoid = Monoid[Graph[Unit, String]]

@@ -6,7 +6,7 @@ relation between this objects.
 `graphs` has a default builder `-->` that you can use with arbitrary node types.
 By importing this builder, you can instantly start creating simple graphs:
 
-@@snip [SimpleGraphApp.scala](../examples/shared/src/main/scala/SimpleGraphExample.scala){ #simple_graph }
+@@snip [SimpleGraphApp.scala](../../../../examples/shared/src/main/scala/examples/SimpleGraphExample.scala){ #simple_graph }
 
 Edges can also have values associated with them, for example a 
 distance between nodes that represent locations. 
@@ -14,7 +14,7 @@ distance between nodes that represent locations.
 Numeric edge values can be used in algorithms like Dijkstras 
 algorithm to find the shortest path between two nodes.
 
-@@snip [DijkstraExample.scala](../examples/shared/src/main/scala/DijkstraExample.scala){ #cities }
+@@snip [DijkstraExample.scala](../../../../examples/shared/src/main/scala/examples/DijkstraExample.scala){ #cities }
 
 ## Core
 
@@ -34,14 +34,14 @@ A value of a graph instance of type `Graph[Double, String]` would be described a
 
 `Graph` has common methods to work with graph instances:
 
-@@snip [Graph.scala](../core/shared/src/main/scala/com/flowtick/graphs/Graph.scala){ #graph }
+@@snip [Graph.scala](../../../../core/shared/src/main/scala/com/flowtick/graphs/Graph.scala){ #graph }
 
 ## Identity
 
 Nodes and Edges have an `id` field of type `String`. Most of the graph API is built around this `id`.
 During graph creation, the `id` is derived from the node / edge value via the `Identifiable` type:
 
-@@snip [Graph.scala](../core/shared/src/main/scala/com/flowtick/graphs/Graph.scala){ #identifiable } 
+@@snip [Graph.scala](../../../../core/shared/src/main/scala/com/flowtick/graphs/Graph.scala){ #identifiable } 
 
 The defaults contain some default identities for common primitive types, for complex custom types you 
 need to provide a corresponding instance.
@@ -50,6 +50,6 @@ need to provide a corresponding instance.
 
 Since the graph type itself is parametrized, you can just plug in your types:
 
-@@snip [CustomGraphApp.scala](../examples/shared/src/main/scala/CustomGraphExample.scala){#custom_graph}
+@@snip [CustomGraphApp.scala](../../../../examples/shared/src/main/scala/examples/CustomGraphExample.scala){#custom_graph}
 
 

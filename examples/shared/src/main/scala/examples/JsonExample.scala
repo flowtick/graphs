@@ -1,3 +1,5 @@
+package examples
+
 trait JsonExample {
   {
     // #json_simple
@@ -7,7 +9,6 @@ trait JsonExample {
     import com.flowtick.graphs.json.format.default._
     import io.circe
     import io.circe.Json
-    import io.circe.generic.auto._
 
     val graph: Graph[Unit, String] = Graph.fromEdges(Set(
       "A" --> "D",

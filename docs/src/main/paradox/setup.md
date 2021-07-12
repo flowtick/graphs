@@ -16,4 +16,4 @@ import $ivy.`com.flowtick:graphs-core_2.13:$version$`
 ```
 @@@
 
-@@snip [SimpleGraphApp.scala](../examples/shared/src/main/scala/SimpleGraphExample.scala){ #simple_graph }
+@@snip [SimpleGraphApp.scala](../../../../examples/shared/src/main/scala/examples/SimpleGraphExample.scala){ #simple_graph }

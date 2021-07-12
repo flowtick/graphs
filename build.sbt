@@ -1,13 +1,13 @@
-import ReleaseTransformations._
+import scalajsbundler.BundlingMode.Application
 
-val scala212V = "2.12.12"
-val scala213V = "2.13.4"
+val scala212V = "2.12.14"
+val scala213V = "2.13.6"
 val mainScalaVersion = scala213V
 val compatScalaVersion = scala212V
 
-val catsV = "2.1.1"
+val catsV = "2.6.1"
 val xmlsV = "0.1.11"
-val circeVersion = "0.13.0"
+val circeVersion = "0.14.1"
 
 lazy val commonSettings = Seq(
   resolvers ++= Seq(
@@ -16,26 +16,10 @@ lazy val commonSettings = Seq(
   organization := "com.flowtick",
   scalaVersion := mainScalaVersion,
   crossScalaVersions := Seq(mainScalaVersion, compatScalaVersion),
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  releaseCrossBuild := true,
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    publishArtifacts,
-    setNextVersion,
-    commitNextVersion,
-    releaseStepCommand("sonatypeReleaseAll"),
-    pushChanges
-  ),
   libraryDependencies ++=
-    "org.scalatest" %%% "scalatest" % "3.2.2" % Test ::
-    "org.scalacheck" %% "scalacheck" % "1.14.1" % Test ::
-    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.3.2" ::
+    "org.scalatest" %%% "scalatest" % "3.2.9" % Test ::
+    "org.scalacheck" %% "scalacheck" % "1.15.4" % Test ::
+    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.5.0" ::
     Nil,
   licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://flowtick.github.io/graphs")),
@@ -60,7 +44,7 @@ lazy val core = (crossProject(JVMPlatform, JSPlatform) in file(".") / "core")
   )
 
 lazy val coreJS = core.js.settings(
-  libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.0.0"
+  libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.1.0"
 )
 lazy val coreJVM = core.jvm
 
@@ -116,8 +100,9 @@ lazy val editor = (crossProject(JVMPlatform, JSPlatform) in file(".") / "editor"
       "io.circe" %%% "circe-generic",
       "io.circe" %%% "circe-parser"
     ).map(_ % circeVersion),
-    libraryDependencies += "org.typelevel" %%% "cats-effect" % "2.1.3",
-    libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.2"
+    libraryDependencies += "org.typelevel" %%% "cats-effect" % "2.5.1",
+    libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.4",
+    libraryDependencies += "com.codecommit" %% "cats-effect-testing-scalatest" % "0.5.4" % Test
   ).dependsOn(core, graphml, json, cats)
 
 lazy val editorJS = editor.js.settings(
@@ -175,6 +160,7 @@ lazy val jsonJS = json.js
 lazy val jsonJVM = json.jvm
 
 lazy val examples = (crossProject(JVMPlatform, JSPlatform) in file("examples"))
+      .enablePlugins(ScalaJSBundlerPlugin)
       .settings(commonSettings)
       .settings(
         name := "graphs-examples",
@@ -186,8 +172,12 @@ lazy val examples = (crossProject(JVMPlatform, JSPlatform) in file("examples"))
           "io.circe" %%% "circe-generic",
           "io.circe" %%% "circe-parser"
         ).map(_ % circeVersion)
-      ).jsSettings(scalaJSUseMainModuleInitializer := false)
-      .dependsOn(core, graphml, cats, layout, json, editor)
+      ).jsSettings(
+        scalaJSUseMainModuleInitializer := false,
+        Compile / npmDevDependencies += "elkjs" -> "0.7.1",
+        Compile / npmDependencies += "elkjs" -> "0.7.1",
+        Compile / mainClass := Some("examples.LayoutExampleApp")
+).dependsOn(core, graphml, cats, layout, json, editor)
 
 lazy val examplesJS = examples.js
 lazy val examplesJVM = examples.jvm
@@ -217,4 +207,20 @@ lazy val graphs = (project in file("."))
     jsonJVM,
     styleJS,
     styleJVM
+  )
+
+lazy val docs = (project in file("docs"))
+  .enablePlugins(ParadoxSitePlugin, GhpagesPlugin, ScalaUnidocPlugin)
+  .settings(
+    paradoxProperties += ("version" -> version.value),
+
+    makeSite / mappings ++= Seq(
+      file("LICENSE") -> "LICENSE",
+      file("editor/dist/app.js") -> "editor/app.js",
+      file("editor/dist/editor.html") -> "editor/index.html",
+      file("editor/dist/config.json") -> "editor/config.json"
+    ),
+
+    git.remoteRepo := "git@github.com:flowtick/graphs.git",
+    addMappingsToSiteDir(graphs / ScalaUnidoc / packageDoc / mappings, graphs / ScalaUnidoc / siteSubdirName)
   )

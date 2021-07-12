@@ -2,6 +2,8 @@ package com.flowtick.graphs.layout
 
 import com.flowtick.graphs.{Edge, Graph, Labeled}
 
+import scala.concurrent.Future
+
 trait Geometry {
   def x: Double
   def y: Double
@@ -33,19 +35,22 @@ final case class EdgePath(sourceX: Double = 0.0,
 final case class PointSpec(x: Double, y: Double)
 
 trait GraphLayoutLike {
-  def layouts: List[GraphLayout]
-  def ++(other: List[GraphLayout]): GraphLayoutLike
-
   def nodeGeometry(id: String): Option[Geometry]
   def setNodeGeometry(id: String, geometry: Geometry): GraphLayoutLike
-
-  def updateNodePosition(id: String, fx: Double => Double, fy: Double => Double): GraphLayoutLike
 
   def edgePath(id: String): Option[EdgePath]
   def setEdgePath(id: String, edgePath: EdgePath): GraphLayoutLike
 
+  def updateNodePosition(id: String, fx: Double => Double, fy: Double => Double): GraphLayoutLike
+
   def width: Option[Double]
   def height: Option[Double]
+
+  /**
+   * convert this layout-like to a concrete value, mainly for serialization
+    * @return a list of GraphLayout
+   */
+  def toGraphLayouts: List[GraphLayout]
 }
 
 final case class GraphLayout(nodes: Map[String, Geometry] = Map.empty,
@@ -65,9 +70,7 @@ final case class GraphLayout(nodes: Map[String, Geometry] = Map.empty,
 
   override def edgePath(id: String): Option[EdgePath] = edges.get(id)
 
-  override def layouts: List[GraphLayout] = List(this)
-
-  override def ++(other: List[GraphLayout]): GraphLayoutLike = GraphLayouts(List(this) ++ other)
+  override def toGraphLayouts: List[GraphLayout] = List(this)
 }
 
 final case class GraphLayouts(layouts: List[GraphLayout] = List.empty) extends GraphLayoutLike {
@@ -94,14 +97,13 @@ final case class GraphLayouts(layouts: List[GraphLayout] = List.empty) extends G
   override def edgePath(id: String): Option[EdgePath] =
     layouts.view.find(_.edgePath(id).nonEmpty).flatMap(_.edgePath(id))
 
-  override def ++(other: List[GraphLayout]): GraphLayoutLike =
-    copy(layouts = layouts ++ other)
-
   override def width: Option[Double] =
     layouts.maxBy(_.width.getOrElse(0.0)).width
 
   override def height: Option[Double] =
     layouts.maxBy(_.height.getOrElse(0.0)).height
+
+  override def toGraphLayouts: List[GraphLayout] = layouts
 }
 
 sealed trait LayoutDirection
@@ -128,11 +130,11 @@ final case class GraphLayoutConfiguration(nodeWidth: Double = 80,
                                           layoutType: Option[LayoutType] = None)
 
 trait GraphLayoutOps {
-  def layout[E, N](g: Graph[E, N], layoutConfiguration: GraphLayoutConfiguration = GraphLayoutConfiguration())(implicit edgeLabel: Labeled[Edge[E], String]): GraphLayoutLike
+  def layout[E, N](g: Graph[E, N], layoutConfiguration: GraphLayoutConfiguration = GraphLayoutConfiguration())(implicit edgeLabel: Labeled[Edge[E], String]): Future[GraphLayoutLike]
 }
 
 object GraphLayoutOps {
   val none: GraphLayoutOps = new GraphLayoutOps {
-    def layout[E, N](g: Graph[E, N], layoutConfiguration: GraphLayoutConfiguration)(implicit edgeLabel: Labeled[Edge[E], String]): GraphLayout = GraphLayout()
+    def layout[E, N](g: Graph[E, N], layoutConfiguration: GraphLayoutConfiguration)(implicit edgeLabel: Labeled[Edge[E], String]): Future[GraphLayout] = Future.successful(GraphLayout())
   }
 }

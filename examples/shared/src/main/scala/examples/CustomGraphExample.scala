@@ -1,5 +1,7 @@
-import com.flowtick.graphs.{Graph, Identifiable}
+package examples
+
 import com.flowtick.graphs.defaults._
+import com.flowtick.graphs.{Graph, Identifiable}
 
 trait CustomGraphExample {
   // #custom_graph

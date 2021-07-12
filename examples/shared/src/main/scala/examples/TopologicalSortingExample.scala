@@ -1,6 +1,8 @@
+package examples
+
 import com.flowtick.graphs._
-import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.algorithm._
+import com.flowtick.graphs.defaults._
 
 trait TopologicalSortingExample {
   lazy val graph = Graph.fromEdges(Set(

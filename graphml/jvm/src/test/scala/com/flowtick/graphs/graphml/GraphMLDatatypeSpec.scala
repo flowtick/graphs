@@ -4,7 +4,7 @@ import cats.data.NonEmptyList
 import cats.data.Validated.Valid
 import com.flowtick.graphs.{Graph, Node}
 import com.flowtick.graphs.graphml.generic._
-import com.flowtick.graphs.style.{NodeLabel, NodeShape, PointSpec}
+import com.flowtick.graphs.style.{NodeLabel, NodeShape, StylePos}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -144,7 +144,7 @@ class GraphMLDatatypeSpec extends AnyFlatSpec with Matchers {
 
     val graphML = converter.asGraphML(Some({
       case (_, _) => NodeShape(labelStyle =
-        Some(NodeLabel(textColor = Some("#000000"), fontSize = Some("12"), fontFamily = Some("Dialog"), modelName = Some("custom"), position = Some(PointSpec(0.0, 0.0))))
+        Some(NodeLabel(textColor = Some("#000000"), fontSize = Some("12"), fontFamily = Some("Dialog"), modelName = Some("custom"), position = Some(StylePos(0.0, 0.0))))
       )
     }))
 

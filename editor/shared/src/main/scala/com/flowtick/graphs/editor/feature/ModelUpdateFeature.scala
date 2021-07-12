@@ -140,7 +140,7 @@ class ModelUpdateFeature extends EditorComponent {
         case Right(editorGraph) =>
           ctx.updateModel(model => model.copy(
             graph = editorGraph.graph,
-            layout = GraphLayouts(editorGraph.layouts.flatMap(_.toOption)),
+            layout = GraphLayouts(editorGraph.layouts.flatMap(_.toOption).flatMap(_.toGraphLayouts)),
             styleSheet = StyleSheets(editorGraph.styleSheets.flatMap(_.toOption)) merge model.config.styleSheets,
             schema = EditorSchemas(editorGraph.schemas.flatMap(_.toOption)) merge model.config.schemas)
           ).addNotification(this, Reset)
@@ -230,7 +230,7 @@ class ModelUpdateFeature extends EditorComponent {
       // FIXME: re-add graphml export
       ctx.addError(this, new UnsupportedOperationException("graphml export not supported right now"))
     case Export(JsonFormat) =>
-      val json = EditorGraphJsonFormat.defaultEditorGraphEncoder(EditorGraph(graph = ctx.model.graph, styleSheets = ctx.model.styleSheet.styleSheets.map(Right(_)), layouts = ctx.model.layout.layouts.map(Right(_)), schemas = ctx.model.schema.schemas.map(Right(_))))
+      val json = EditorGraphJsonFormat.defaultEditorGraphEncoder(EditorGraph(graph = ctx.model.graph, styleSheets = ctx.model.styleSheet.styleSheets.map(Right(_)), layouts = ctx.model.layout.toGraphLayouts.map(Right(_)), schemas = ctx.model.schema.schemas.map(Right(_))))
 
       ctx.addNotification(this, ExportedGraph(
         "graph",

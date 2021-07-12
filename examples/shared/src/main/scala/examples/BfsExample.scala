@@ -1,3 +1,5 @@
+package examples
+
 import com.flowtick.graphs._
 import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._

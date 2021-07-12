@@ -1,3 +1,7 @@
+package examples
+
+import com.flowtick.graphs.layout.{ELKImport, ELkLayoutOpsJS, GraphLayoutOps}
+
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 trait ExampleApp {
@@ -31,3 +35,8 @@ object TopologicalSortingExampleApp extends TopologicalSortingExample with Examp
 
 @JSExportTopLevel("json")
 object JsonExampleApp extends JsonExample with ExampleApp
+
+@JSExportTopLevel("layout")
+object LayoutExampleApp extends LayoutExample with ExampleApp{
+  override def layoutOps: GraphLayoutOps = new ELkLayoutOpsJS(new ELKImport)
+}

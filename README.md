@@ -7,7 +7,7 @@
 
 # Example
 
-@@snip [SimpleGraphApp.scala](examples/shared/src/main/scala/SimpleGraphExample.scala) { #simple_graph }
+@@snip [SimpleGraphApp.scala](examples/shared/src/main/scala/examples/SimpleGraphExample.scala) { #simple_graph }
 
 # Documentation
 

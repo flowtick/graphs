@@ -1,8 +1,8 @@
 package com.flowtick.graphs.editor
 
-import com.flowtick.graphs.{Edge, Graph, Labeled, Node}
-import com.flowtick.graphs.layout.GraphLayout
+import com.flowtick.graphs.layout.GraphLayoutLike
 import com.flowtick.graphs.style.{StyleRef, StyleSheet}
+import com.flowtick.graphs.{Edge, Graph, Labeled, Node}
 import io.circe.Json
 
 trait EditorGraphElement {
@@ -23,7 +23,7 @@ final case class EditorGraphEdge(data: Json,
 
 final case class EditorGraph(graph: Graph[EditorGraphEdge, EditorGraphNode],
                              styleSheets: List[Either[String, StyleSheet]],
-                             layouts: List[Either[String, GraphLayout]],
+                             layouts: List[Either[String, GraphLayoutLike]],
                              schemas: List[Either[String, EditorModel.EditorSchema]])
 
 object EditorGraphNode {

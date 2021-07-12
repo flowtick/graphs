@@ -1,3 +1,5 @@
+package examples
+
 trait GraphMLExample {
   {
     // #simple-graphml
@@ -19,7 +21,6 @@ trait GraphMLExample {
 
   {
     // #custom-node-graphml
-    import com.flowtick.graphs.Graph
     import com.flowtick.graphs.graphml._
     import com.flowtick.graphs.graphml.generic._
     import scala.xml.NodeSeq

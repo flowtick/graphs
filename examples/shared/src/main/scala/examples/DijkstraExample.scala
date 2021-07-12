@@ -1,6 +1,8 @@
+package examples
+
 import com.flowtick.graphs.Graph
-import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.algorithm._
+import com.flowtick.graphs.defaults._
 
 object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus

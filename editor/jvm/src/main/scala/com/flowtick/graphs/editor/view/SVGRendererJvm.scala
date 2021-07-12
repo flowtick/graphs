@@ -67,7 +67,7 @@ object XmlDom {
     }
 }
 
-class EditorRendererJvm(options: SVGRendererOptions)(implicit appender: Element => generic.Frag[vdom.Builder[Element, Node], Node], matrixLike: SVGMatrixLike[Affine], xmlDom: XmlDom) extends SVGRenderer(xmlDom, options) {
+class SVGRendererJvm(options: SVGRendererOptions)(implicit appender: Element => generic.Frag[vdom.Builder[Element, Node], Node], matrixLike: SVGMatrixLike[Affine], xmlDom: XmlDom) extends SVGRenderer(xmlDom, options) {
   override def parseSvg(svgXml: String): Element = XmlDom.parseSvg(svgXml).getRootElement
 
   override protected val getPageMatrix: Affine = new Affine()
@@ -111,7 +111,7 @@ class EditorRendererJvm(options: SVGRendererOptions)(implicit appender: Element 
   override lazy val graphSVG: GraphSVG[Element] = renderRootSvg()
 }
 
-object EditorRendererJvm {
+object SVGRendererJvm {
   private implicit val appender: Element => generic.Frag[vdom.Builder[Element, Node], Node] = elem => new generic.Frag[vdom.Builder[Element, Node], Node] {
     override def render: Node = elem
     override def applyTo(t: Builder[Element, Node]): Unit = t.appendChild(elem)
@@ -151,5 +151,5 @@ object EditorRendererJvm {
 
   private implicit def xmlDomInstance: XmlDom = new XmlDom(XmlDom.newSvgDocument)
 
-  def apply(options: SVGRendererOptions = SVGRendererOptions()) = new EditorRendererJvm(options)
+  def apply(options: SVGRendererOptions = SVGRendererOptions()): SVGRendererJvm = new SVGRendererJvm(options)
 }

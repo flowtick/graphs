@@ -3,7 +3,7 @@ package com.flowtick.graphs
 import cats.effect.IO
 import cats.effect.concurrent.Ref
 import com.flowtick.graphs.editor._
-import com.flowtick.graphs.editor.view.EditorRendererJvm
+import com.flowtick.graphs.editor.view.SVGRendererJvm
 import org.apache.logging.log4j.{LogManager, Logger}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -40,7 +40,7 @@ trait EditorBaseSpec extends AnyFlatSpec with Matchers with EditorMain { self =>
           out.close()
         } *> {
           if (shouldRenderImage) {
-            val renderer = EditorRendererJvm()
+            val renderer = SVGRendererJvm()
             renderer
               .renderGraph(ctx.model.graph, ctx.model.layout, ctx.model.styleSheet)
               .flatMap(_ => IO.fromTry(renderer.toXmlString))

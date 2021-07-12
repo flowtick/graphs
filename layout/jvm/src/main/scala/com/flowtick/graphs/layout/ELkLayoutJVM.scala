@@ -12,9 +12,10 @@ import org.eclipse.elk.core.util.{IElkProgressMonitor, NullElkProgressMonitor}
 import org.eclipse.elk.graph.util.ElkReflect
 
 import java.util
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
-object ELkLayout extends GraphLayoutOps {
+object ELkLayoutJVM extends GraphLayoutOps {
   trait ElkLayout[E, N] {
     def doLayout(graph: Graph[E, N],
                  layoutConfiguration: GraphLayoutConfiguration,
@@ -169,6 +170,6 @@ object ELkLayout extends GraphLayoutOps {
     }
   }
 
-  override def layout[E, N](g: Graph[E, N], layoutConfiguration: GraphLayoutConfiguration)(implicit edgeLabel: Labeled[Edge[E], String]): GraphLayoutLike =
-    getElkLayoutFromType(layoutConfiguration.layoutType).doLayout(g, layoutConfiguration, None)
+  override def layout[E, N](g: Graph[E, N], layoutConfiguration: GraphLayoutConfiguration)(implicit edgeLabel: Labeled[Edge[E], String]): Future[GraphLayoutLike] =
+    Future.successful(getElkLayoutFromType(layoutConfiguration.layoutType).doLayout(g, layoutConfiguration, None))
 }

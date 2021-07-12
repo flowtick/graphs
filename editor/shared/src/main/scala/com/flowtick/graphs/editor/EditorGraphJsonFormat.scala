@@ -7,7 +7,7 @@ import io.circe.{Decoder, Encoder, HCursor, Json, _}
 import scala.collection.mutable.ListBuffer
 import io.circe.generic.auto._
 import com.flowtick.graphs.json.format.default._
-import com.flowtick.graphs.layout.{DefaultGeometry, Geometry, GraphLayout}
+import com.flowtick.graphs.layout.{DefaultGeometry, Geometry, GraphLayout, GraphLayoutLike}
 import com.flowtick.graphs.style.StyleSheet
 
 object EditorGraphJsonFormat {
@@ -40,7 +40,6 @@ object EditorGraphJsonFormat {
     } yield DefaultGeometry(x, y, width, height)
   }
 
-
   implicit val defaultEditorGraphEncoder: Encoder[EditorGraph] = new Encoder[EditorGraph] {
     import io.circe.syntax._
 
@@ -52,7 +51,7 @@ object EditorGraphJsonFormat {
           "edges" -> editorGraph.graph.edges.asJson
         ),
         "styleSheets" -> editorGraph.styleSheets.asJson,
-        "layouts" -> editorGraph.layouts.asJson,
+        "layouts" -> editorGraph.layouts.flatMap(_.toOption).flatMap(_.toGraphLayouts).asJson,
         "schemas" -> editorGraph.schemas.asJson
       )
 

@@ -1,3 +1,5 @@
+package examples
+
 trait SimpleGraphExample {
   // #simple_graph
   import com.flowtick.graphs._
