@@ -15,6 +15,6 @@ trait LayoutExample {
   lazy val graph: Graph[Int, String] = DijkstraGraph.cities
   lazy val layout: Future[GraphLayoutLike] = layoutOps.layout(graph)
 
-  layout.foreach(println)
+  layout.onComplete(println)
   // #layout_simple
 }

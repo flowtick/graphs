@@ -37,6 +37,6 @@ object TopologicalSortingExampleApp extends TopologicalSortingExample with Examp
 object JsonExampleApp extends JsonExample with ExampleApp
 
 @JSExportTopLevel("layout")
-object LayoutExampleApp extends LayoutExample with ExampleApp{
+object LayoutExampleApp extends LayoutExample with ExampleApp {
   override def layoutOps: GraphLayoutOps = new ELkLayoutOpsJS(new ELKImport)
 }

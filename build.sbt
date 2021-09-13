@@ -1,5 +1,3 @@
-import scalajsbundler.BundlingMode.Application
-
 val scala212V = "2.12.14"
 val scala213V = "2.13.6"
 val mainScalaVersion = scala213V
@@ -173,9 +171,13 @@ lazy val examples = (crossProject(JVMPlatform, JSPlatform) in file("examples"))
           "io.circe" %%% "circe-parser"
         ).map(_ % circeVersion)
       ).jsSettings(
+        // command to create bundle: "examplesJS/fastOptJS::webpack"
+        webpackBundlingMode := BundlingMode.LibraryAndApplication(),
         scalaJSUseMainModuleInitializer := false,
         Compile / npmDevDependencies += "elkjs" -> "0.7.1",
+        Compile / npmDevDependencies += "web-worker" -> "^1.0.0",
         Compile / npmDependencies += "elkjs" -> "0.7.1",
+
         Compile / mainClass := Some("examples.LayoutExampleApp")
 ).dependsOn(core, graphml, cats, layout, json, editor)
 
