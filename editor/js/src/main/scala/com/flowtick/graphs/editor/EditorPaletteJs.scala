@@ -7,65 +7,82 @@ import org.scalajs.dom.html.{Button, Div, UList}
 import org.scalajs.dom.raw.{Event, HTMLElement}
 import scalatags.JsDom.all._
 
-class EditorPaletteJs(paletteElementId: String)(val messageBus: EditorMessageBus) extends PaletteFeature {
+class EditorPaletteJs(paletteElementId: String)(
+    val messageBus: EditorMessageBus
+) extends PaletteFeature {
   lazy val paletteContainer: HTMLElement = org.scalajs.dom.window.document
     .getElementById(paletteElementId)
     .asInstanceOf[HTMLElement]
 
   def stencilNavList(palette: Palette): UList = ul(
-    cls := "nav",
-  ).apply(palette.stencils.toArray.map(group =>
-    div(
-      cls := "btn-toolbar",
-      role := "toolbar",
-      aria.label := group.title,
+    cls := "nav"
+  ).apply(
+    palette.stencils.toArray.map(group =>
       div(
-        cls := "btn-group mr-2",
-        role := "group",
-      ).apply(group.items.toArray.map(item =>
-        button(
-          `type` := "button",
-          cls := "btn btn-secondary",
-          data("toggle") := "tooltip",
-          data("placement") := "top",
-          title := item.title,
-          onclick :=  ((_: Event) => selectPaletteItem(item)),
-          ondblclick := ((_: Event) => createFromStencil(item)),
-          imageOrTitle(item.image, item.title)
+        cls := "btn-toolbar",
+        role := "toolbar",
+        aria.label := group.title,
+        div(
+          cls := "btn-group mr-2",
+          role := "group"
+        ).apply(
+          group.items.toArray.map(item =>
+            button(
+              `type` := "button",
+              cls := "btn btn-secondary",
+              data("toggle") := "tooltip",
+              data("placement") := "top",
+              title := item.title,
+              onclick := ((_: Event) => selectPaletteItem(item)),
+              ondblclick := ((_: Event) => createFromStencil(item)),
+              imageOrTitle(item.image, item.title)
+            )
+          )
         )
-      ))
-    ))).render
+      )
+    )
+  ).render
 
   def connectorNavList(palette: Palette): UList = ul(
-    cls := "nav",
-  ).apply(palette.connectors.toArray.map(group =>
-    div(
-      cls := "btn-toolbar",
-      role := "toolbar",
-      aria.label := group.title,
+    cls := "nav"
+  ).apply(
+    palette.connectors.toArray.map(group =>
       div(
-        cls := "btn-group mr-2",
-        role := "group",
-      ).apply(group.items.toArray.map(item => {
-        button(
-          `type` := "button",
-          cls := "btn btn-secondary",
-          data("toggle") := "tooltip",
-          data("placement") := "top",
-          title := item.title,
-          onclick := ((_: Event) => selectConnectorItem(item)),
-          imageOrTitle(item.image, item.title)
-        )
-      }
-      ))
-    ))).render
+        cls := "btn-toolbar",
+        role := "toolbar",
+        aria.label := group.title,
+        div(
+          cls := "btn-group mr-2",
+          role := "group"
+        ).apply(group.items.toArray.map(item => {
+          button(
+            `type` := "button",
+            cls := "btn btn-secondary",
+            data("toggle") := "tooltip",
+            data("placement") := "top",
+            title := item.title,
+            onclick := ((_: Event) => selectConnectorItem(item)),
+            imageOrTitle(item.image, item.title)
+          )
+        }))
+      )
+    )
+  ).render
 
-  private def imageOrTitle(imageSpec: Option[ImageSpec], title: String): Modifier =
-    imageSpec.map {
-      case ImageSpec(data, "dataUrl", _, heightOpt) => img(src := data, height := heightOpt.getOrElse(32.0).toInt)
-      case ImageSpec(url, "url",  _, heightOpt) => img(src := url, height := heightOpt.getOrElse(32.0).toInt)
-      case ImageSpec(url, _, _, heightOpt) => img(src := url, height := heightOpt.getOrElse(32.0).toInt)
-    }.getOrElse(title)
+  private def imageOrTitle(
+      imageSpec: Option[ImageSpec],
+      title: String
+  ): Modifier =
+    imageSpec
+      .map {
+        case ImageSpec(data, "dataUrl", _, heightOpt) =>
+          img(src := data, height := heightOpt.getOrElse(32.0).toInt)
+        case ImageSpec(url, "url", _, heightOpt) =>
+          img(src := url, height := heightOpt.getOrElse(32.0).toInt)
+        case ImageSpec(url, _, _, heightOpt) =>
+          img(src := url, height := heightOpt.getOrElse(32.0).toInt)
+      }
+      .getOrElse(title)
 
   def stencilsElement(palette: Palette): Div = {
     div(
@@ -99,12 +116,20 @@ class EditorPaletteJs(paletteElementId: String)(val messageBus: EditorMessageBus
       data("dismiss") := "modal",
       aria.label := "Close",
       span(aria.hidden := "true", "×"),
-      onclick := ((_: Event) => messageBus.publish(EditorToggle(EditorToggle.paletteKey, Some(false))).unsafeRunSync())
+      onclick := ((_: Event) =>
+        messageBus
+          .publish(EditorToggle(EditorToggle.paletteKey, Some(false)))
+          .unsafeRunSync()
+      )
     ).render
 
   override def initPalette(model: EditorModel): IO[Unit] = for {
-    newPaletteElements <- IO.pure(model.palette.palettes.map(palette => stencilNavList(palette)))
-    newConnectorsElements <- IO.pure(model.palette.palettes.map(palette => connectorNavList(palette)))
+    newPaletteElements <- IO.pure(
+      model.palette.palettes.map(palette => stencilNavList(palette))
+    )
+    newConnectorsElements <- IO.pure(
+      model.palette.palettes.map(palette => connectorNavList(palette))
+    )
     _ <- IO {
       newPaletteElements.foreach(paletteContainer.appendChild)
       newConnectorsElements.foreach(paletteContainer.appendChild)

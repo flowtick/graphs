@@ -16,11 +16,19 @@ import scalafx.scene.text.{Text, TextAlignment}
 import scalafx.scene.transform.Affine
 import scalafx.scene.{Group, Node}
 
-final case class JFXElement(id: ElementRef, group: Node, selectElem: Option[Node], label : Node) extends GraphElement[Node]
+final case class JFXElement(
+    id: ElementRef,
+    group: Node,
+    selectElem: Option[Node],
+    label: Node
+) extends GraphElement[Node]
 
-class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean => IO[Unit],
-                      handleDrag: Option[DragStart[Node]] => IO[Unit],
-                      handleDoubleClick: Any => IO[Unit]) extends BorderPane with Page[Node, MouseEvent]{
+class EditorGraphPane(layout: BorderPane)(
+    handleSelect: ElementRef => Boolean => IO[Unit],
+    handleDrag: Option[DragStart[Node]] => IO[Unit],
+    handleDoubleClick: Any => IO[Unit]
+) extends BorderPane
+    with Page[Node, MouseEvent] {
   var panContext = PanContext(0.0, 0.0, 0.0, 0.0)
 
   val transformation = new Affine()
@@ -43,10 +51,19 @@ class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean =>
       event.consume()
 
       if (event.getDeltaY != 0) {
-        val scaleFactor = if (event.getDeltaY > 0) scaleDelta else 1 / scaleDelta
+        val scaleFactor =
+          if (event.getDeltaY > 0) scaleDelta else 1 / scaleDelta
 
-        val pivot = transformation.inverseTransform(event.getX - layoutX.value, event.getY - layoutY.value)
-        transformation.appendScale(scaleFactor, scaleFactor, pivot.getX, pivot.getY)
+        val pivot = transformation.inverseTransform(
+          event.getX - layoutX.value,
+          event.getY - layoutY.value
+        )
+        transformation.appendScale(
+          scaleFactor,
+          scaleFactor,
+          pivot.getX,
+          pivot.getY
+        )
       }
     }
   }
@@ -74,8 +91,10 @@ class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean =>
       event.consume()
 
       if (!event.isPrimaryButtonDown) {
-        val newX = panContext.translateAnchorX + ((event.getX - panContext.mouseAnchorX))
-        val newY = panContext.translateAnchorY + ((event.getY - panContext.mouseAnchorY))
+        val newX =
+          panContext.translateAnchorX + ((event.getX - panContext.mouseAnchorX))
+        val newY =
+          panContext.translateAnchorY + ((event.getY - panContext.mouseAnchorY))
 
         transformation.setTx(newX)
         transformation.setTy(newY)
@@ -107,25 +126,42 @@ class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean =>
   override def root: Node = this
 
   override def pageCenter: PointSpec = {
-    val center = transformation.inverseTransform(group.getWidth / 2, group.getHeight / 2)
+    val center =
+      transformation.inverseTransform(group.getWidth / 2, group.getHeight / 2)
     PointSpec(center.getX, center.getY)
   }
 
-  def createArrowHead(fromx: Double, fromy: Double, tox: Double, toy: Double): Polygon = {
+  def createArrowHead(
+      fromx: Double,
+      fromy: Double,
+      tox: Double,
+      toy: Double
+  ): Polygon = {
     val headlen = 10
     val dx = tox - fromx
     val dy = toy - fromy
     val angle = Math.atan2(dy, dx)
     new Polygon {
-      points.addAll(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6))
+      points.addAll(
+        tox - headlen * Math.cos(angle - Math.PI / 6),
+        toy - headlen * Math.sin(angle - Math.PI / 6)
+      )
       points.addAll(tox, toy)
-      points.addAll(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6))
+      points.addAll(
+        tox - headlen * Math.cos(angle + Math.PI / 6),
+        toy - headlen * Math.sin(angle + Math.PI / 6)
+      )
     }
   }
 
-  override def addEdge(edge: Edge[EditorGraphEdge], editorModel: EditorModel): IO[Option[GraphElement[Node]]] = IO {
+  override def addEdge(
+      edge: Edge[EditorGraphEdge],
+      editorModel: EditorModel
+  ): IO[Option[GraphElement[Node]]] = IO {
     for {
-      edgePoints <- DrawUtil.getLinePoints(edge, editorModel.graph, editorModel.layout).map(_.toList.reverse)
+      edgePoints <- DrawUtil
+        .getLinePoints(edge, editorModel.graph, editorModel.layout)
+        .map(_.toList.reverse)
       last <- edgePoints.headOption
       secondLast <- edgePoints.tail.headOption
 
@@ -192,36 +228,64 @@ class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean =>
 
       selectLine.onMousePressed = new EventHandler[MouseEvent] {
         override def handle(t: MouseEvent): Unit = {
-          handleSelect(ElementRef(edge.id, EdgeType))(t.isControlDown).unsafeRunSync()
+          handleSelect(ElementRef(edge.id, EdgeType))(t.isControlDown)
+            .unsafeRunSync()
           selectGroup.visible = true
         }
       }
 
       group.children.add(edgeGroup)
 
-      JFXElement(ElementRef(edge.id, EdgeType), edgeGroup, Some(selectGroup), label)
+      JFXElement(
+        ElementRef(edge.id, EdgeType),
+        edgeGroup,
+        Some(selectGroup),
+        label
+      )
     }
   }
 
-  override def addNode(node: graphs.Node[EditorGraphNode], editorModel: EditorModel): IO[Option[GraphElement[Node]]] = IO {
-    val geometry = editorModel.layout.nodeGeometry(node.id).getOrElse(DefaultGeometry(0.0, 0.0, 50, 50))
-    val shape = editorModel.styleSheet.requireNodeStyle(Some(node.id), node.value.stencil.toList)
-    val graphNode = new EditorGraphNodeFx(node.id, geometry, node.value.label, shape)(transformation, handleSelect, handleDrag, handleDoubleClick)
+  override def addNode(
+      node: graphs.Node[EditorGraphNode],
+      editorModel: EditorModel
+  ): IO[Option[GraphElement[Node]]] = IO {
+    val geometry = editorModel.layout
+      .nodeGeometry(node.id)
+      .getOrElse(DefaultGeometry(0.0, 0.0, 50, 50))
+    val shape = editorModel.styleSheet.requireNodeStyle(
+      Some(node.id),
+      node.value.stencil.toList
+    )
+    val graphNode = new EditorGraphNodeFx(
+      node.id,
+      geometry,
+      node.value.label,
+      shape
+    )(transformation, handleSelect, handleDrag, handleDoubleClick)
     group.children.add(graphNode)
     group.children.add(graphNode.selectRect)
 
-    Some(JFXElement(ElementRef(node.id, NodeType), graphNode, Some(graphNode.selectRect), graphNode.label))
+    Some(
+      JFXElement(
+        ElementRef(node.id, NodeType),
+        graphNode,
+        Some(graphNode.selectRect),
+        graphNode.label
+      )
+    )
   }
 
-  override def setSelection(element: GraphElement[Node]): IO[Unit] = element.id.elementType match {
-    case NodeType => IO(element.selectElem.foreach(_.setVisible(true)))
-    case EdgeType => IO(element.selectElem.foreach(_.visible = true))
-  }
+  override def setSelection(element: GraphElement[Node]): IO[Unit] =
+    element.id.elementType match {
+      case NodeType => IO(element.selectElem.foreach(_.setVisible(true)))
+      case EdgeType => IO(element.selectElem.foreach(_.visible = true))
+    }
 
-  override def unsetSelection(element: GraphElement[Node]): IO[Unit] = element.id.elementType match {
-    case NodeType => IO(element.selectElem.foreach(_.setVisible(false)))
-    case EdgeType => IO(element.selectElem.foreach(_.visible = false))
-  }
+  override def unsetSelection(element: GraphElement[Node]): IO[Unit] =
+    element.id.elementType match {
+      case NodeType => IO(element.selectElem.foreach(_.setVisible(false)))
+      case EdgeType => IO(element.selectElem.foreach(_.visible = false))
+    }
 
   override def deleteElement(element: GraphElement[Node]): IO[Unit] = IO {
     group.children.remove(element.group)
@@ -232,13 +296,18 @@ class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean =>
     transformation.setToIdentity()
   }
 
-  override def screenCoordinates(x: Double, y: Double): Point = throw new UnsupportedOperationException("not implemented yet")
+  override def screenCoordinates(x: Double, y: Double): Point =
+    throw new UnsupportedOperationException("not implemented yet")
 
-  override def pageCoordinates(x: Double, y: Double): Point = throw new UnsupportedOperationException("not implemented yet")
+  override def pageCoordinates(x: Double, y: Double): Point =
+    throw new UnsupportedOperationException("not implemented yet")
 
-  override def beforeDrag: MouseEvent => Unit = throw new UnsupportedOperationException("not implemented yet")
+  override def beforeDrag: MouseEvent => Unit =
+    throw new UnsupportedOperationException("not implemented yet")
 
-  override def eventCoordinates(event: MouseEvent): Point = throw new UnsupportedOperationException("not implemented yet")
+  override def eventCoordinates(event: MouseEvent): Point =
+    throw new UnsupportedOperationException("not implemented yet")
 
-  override def applyDrag: DragStart[Node] => Unit = throw new UnsupportedOperationException("not implemented yet")
+  override def applyDrag: DragStart[Node] => Unit =
+    throw new UnsupportedOperationException("not implemented yet")
 }

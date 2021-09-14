@@ -5,18 +5,20 @@ import com.flowtick.graphs._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class DijkstraShortestPath[M, E, N](graph: Graph[E, N])
-                                           (implicit label: Labeled[Edge[E], E],
-                                                     numeric: Numeric[E]) {
+class DijkstraShortestPath[M, E, N](graph: Graph[E, N])(implicit
+    label: Labeled[Edge[E], E],
+    numeric: Numeric[E]
+) {
 
-  /**
-   * determine the shortest path from start to end,
-   * works only for positive weight values
-   *
-   * @param start the start node
-   * @param end the end node
-   * @return Some list of node ids with the shortest path, None if there is no path from start to end
-   */
+  /** determine the shortest path from start to end, works only for positive weight values
+    *
+    * @param start
+    *   the start node
+    * @param end
+    *   the end node
+    * @return
+    *   Some list of node ids with the shortest path, None if there is no path from start to end
+    */
   def shortestPath(start: String, end: String): Iterable[Edge[E]] = {
     val distanceMap = mutable.Map.empty[String, Double]
     val predecessorMap = mutable.Map.empty[String, (Node[N], Edge[E])]
@@ -43,21 +45,20 @@ class DijkstraShortestPath[M, E, N](graph: Graph[E, N])
       val current = queue.dequeue()
       val currentDistance: Double = distanceMap(current.id)
       if (currentDistance != Double.NaN) {
-          graph.outgoing(current.id).foreach { edge =>
-            val weight = numeric.toDouble(label(edge))
-            val newDist = currentDistance + weight
+        graph.outgoing(current.id).foreach { edge =>
+          val weight = numeric.toDouble(label(edge))
+          val newDist = currentDistance + weight
 
-            if(newDist < distanceMap(edge.to)) {
-              distanceMap.put(edge.to, newDist)
-              predecessorMap.put(edge.to, (current, edge))
-              graph.findNode(edge.to).foreach(queue.enqueue(_))
-            }
-
-            /**
-             * since we can not update the distance in queue, we mark the current one as done
-             */
-            distanceMap.put(current.id, Double.NaN)
+          if (newDist < distanceMap(edge.to)) {
+            distanceMap.put(edge.to, newDist)
+            predecessorMap.put(edge.to, (current, edge))
+            graph.findNode(edge.to).foreach(queue.enqueue(_))
           }
+
+          /** since we can not update the distance in queue, we mark the current one as done
+            */
+          distanceMap.put(current.id, Double.NaN)
+        }
 
       }
     }

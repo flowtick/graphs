@@ -12,8 +12,13 @@ trait MouseEventLike extends EventData {
   def clientY: Double
 }
 
-final case class EditorMouseEvent(clientX: Double, clientY: Double, button: Int) extends MouseEventLike
-final case class EditorWheelEvent(clientX: Double, clientY: Double, deltaY: Double) extends MouseEventLike
+final case class EditorMouseEvent(clientX: Double, clientY: Double, button: Int)
+    extends MouseEventLike
+final case class EditorWheelEvent(
+    clientX: Double,
+    clientY: Double,
+    deltaY: Double
+) extends MouseEventLike
 case object EditorAnyEvent extends EventData
 
 trait EventLike[E, T] {
@@ -22,7 +27,10 @@ trait EventLike[E, T] {
   def data(event: E): EventData
 }
 
-class SVGPage[Builder, T <: Frag, Frag, E, M](renderer: SVGRenderer[Builder, T, Frag, M], eventLike: EventLike[E, T]) extends Page[T, E] {
+class SVGPage[Builder, T <: Frag, Frag, E, M](
+    renderer: SVGRenderer[Builder, T, Frag, M],
+    eventLike: EventLike[E, T]
+) extends Page[T, E] {
   def clientWidth: Double = 500
   def clientHeight: Double = 500
   def scrollSpeed: Double = 1.0
@@ -44,9 +52,11 @@ class SVGPage[Builder, T <: Frag, Frag, E, M](renderer: SVGRenderer[Builder, T, 
     panStart = None
   }
 
-  def screenCoordinates(x: Double, y: Double): Point = renderer.screenCoordinates(x, y)
+  def screenCoordinates(x: Double, y: Double): Point =
+    renderer.screenCoordinates(x, y)
 
-  def pageCoordinates(x: Double, y: Double): Point = renderer.pageCoordinates(x, y)
+  def pageCoordinates(x: Double, y: Double): Point =
+    renderer.pageCoordinates(x, y)
 
   def pageCenter: PointSpec = {
     val coordinates = pageCoordinates(clientWidth / 2.0, clientHeight / 2.0)
@@ -58,12 +68,16 @@ class SVGPage[Builder, T <: Frag, Frag, E, M](renderer: SVGRenderer[Builder, T, 
       case Some(start) =>
         eventLike.data(evt) match {
           case mouseEvent: EditorMouseEvent =>
-            val cursor = screenCoordinates(mouseEvent.clientX, mouseEvent.clientY)
+            val cursor =
+              screenCoordinates(mouseEvent.clientX, mouseEvent.clientY)
 
             val dx = cursor.x - start.mouseAnchorX
             val dy = cursor.y - start.mouseAnchorY
 
-            renderer.setViewPortOffset(start.translateAnchorX + dx, start.translateAnchorY + dy)
+            renderer.setViewPortOffset(
+              start.translateAnchorX + dx,
+              start.translateAnchorY + dy
+            )
           case _ =>
         }
       case None =>
@@ -76,7 +90,11 @@ class SVGPage[Builder, T <: Frag, Frag, E, M](renderer: SVGRenderer[Builder, T, 
       val scaleDelta = wheelEvent.deltaY * scrollSpeed
       val zoom = 1 + scaleDelta
 
-      renderer.translateAndScaleView(-(cursor.x*(zoom-1)),-(cursor.y*(zoom-1)), zoom)
+      renderer.translateAndScaleView(
+        -(cursor.x * (zoom - 1)),
+        -(cursor.y * (zoom - 1)),
+        zoom
+      )
     case _ =>
   }
 
@@ -86,28 +104,51 @@ class SVGPage[Builder, T <: Frag, Frag, E, M](renderer: SVGRenderer[Builder, T, 
       renderer.selectable(elem)
     }.unsafeRunSync()
 
-  def startDrag: E => Option[DragStart[T]] = evt => (for {
-    dragStart <- IO {
-      val elem = eventLike.target(evt)
+  def startDrag: E => Option[DragStart[T]] = evt =>
+    (for {
+      dragStart <- IO {
+        val elem = eventLike.target(evt)
 
-      eventLike.data(evt) match {
-        case mouse: EditorMouseEvent =>
-          renderer.draggable(elem).map { elementRef =>
-            val startCursor = pageCoordinates(mouse.clientX, mouse.clientY)
-            val pageTransform = pageCoordinates(renderer.x(elem), renderer.y(elem))
-            DragStart[T](startCursor.x, startCursor.y, pageTransform.x, pageTransform.y, elem, elementRef, None, 0.0, 0.0)
-          }
-        case _ => None
+        eventLike.data(evt) match {
+          case mouse: EditorMouseEvent =>
+            renderer.draggable(elem).map { elementRef =>
+              val startCursor = pageCoordinates(mouse.clientX, mouse.clientY)
+              val pageTransform =
+                pageCoordinates(renderer.x(elem), renderer.y(elem))
+              DragStart[T](
+                startCursor.x,
+                startCursor.y,
+                pageTransform.x,
+                pageTransform.y,
+                elem,
+                elementRef,
+                None,
+                0.0,
+                0.0
+              )
+            }
+          case _ => None
+        }
       }
-    }
-    _ <- dragStartRef.set(dragStart)
-  } yield dragStart).unsafeRunSync()
+      _ <- dragStartRef.set(dragStart)
+    } yield dragStart).unsafeRunSync()
 
-  override def addEdge(edge: Edge[EditorGraphEdge], model: EditorModel): IO[Option[GraphElement[T]]] = for {
-    edgeElement <- renderer.renderEdge(edge, model.graph, model.layout, model.styleSheet)
+  override def addEdge(
+      edge: Edge[EditorGraphEdge],
+      model: EditorModel
+  ): IO[Option[GraphElement[T]]] = for {
+    edgeElement <- renderer.renderEdge(
+      edge,
+      model.graph,
+      model.layout,
+      model.styleSheet
+    )
   } yield edgeElement
 
-  override def addNode(node: Node[EditorGraphNode], model: EditorModel): IO[Option[GraphElement[T]]] = for {
+  override def addNode(
+      node: Node[EditorGraphNode],
+      model: EditorModel
+  ): IO[Option[GraphElement[T]]] = for {
     node <- renderer.renderNode(node, model.layout, model.styleSheet)
   } yield Some(node)
 
@@ -127,13 +168,14 @@ class SVGPage[Builder, T <: Frag, Frag, E, M](renderer: SVGRenderer[Builder, T, 
 
   override def eventCoordinates(event: E): Point = eventLike.data(event) match {
     case e: EditorMouseEvent => PagePoint(e.clientX, e.clientY)
-    case _ => PagePoint(0, 0)
+    case _                   => PagePoint(0, 0)
   }
 
-  override def applyDrag: DragStart[T] => Unit = dragStart => dragStart.lastPos match {
-    case Some(pos) => renderer.setPosition(dragStart.dragElem)(pos.x, pos.y)
-    case _ =>
-  }
+  override def applyDrag: DragStart[T] => Unit = dragStart =>
+    dragStart.lastPos match {
+      case Some(pos) => renderer.setPosition(dragStart.dragElem)(pos.x, pos.y)
+      case _         =>
+    }
 
   override def root: T = renderer.graphSVG.root
 }

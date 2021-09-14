@@ -8,11 +8,21 @@ import com.flowtick.graphs.style._
 
 import scala.xml.{Elem, Node, NodeSeq}
 
-case class GraphMLShape(nodeShape: Option[NodeShape], geometry: Option[Geometry], labelValue: Option[String])
+case class GraphMLShape(
+    nodeShape: Option[NodeShape],
+    geometry: Option[Geometry],
+    labelValue: Option[String]
+)
 
 class GraphMLNodeDatatype[T](nodeValueDatatype: Datatype[T]) extends Datatype[GraphMLNode[T]] {
   override def keys(targetHint: Option[String]): Seq[GraphMLKey] =
-    nodeValueDatatype.keys(targetHint) ++ Seq(GraphMLKey(id = "node_graphics", targetHint = targetHint, yfilesType = Some("nodegraphics")))
+    nodeValueDatatype.keys(targetHint) ++ Seq(
+      GraphMLKey(
+        id = "node_graphics",
+        targetHint = targetHint,
+        yfilesType = Some("nodegraphics")
+      )
+    )
 
   def serialize(node: GraphMLNode[T], targetHint: Option[String]): NodeSeq = {
     // format: OFF
@@ -27,91 +37,150 @@ class GraphMLNodeDatatype[T](nodeValueDatatype: Datatype[T]) extends Datatype[Gr
     // format: ON
   }
 
-  override def deserialize(from: NodeSeq,
-                           graphKeys: scala.collection.Map[String, GraphMLKey],
-                           targetHint: Option[String]): ValidatedNel[Throwable, GraphMLNode[T]] = from.headOption.map { node =>
-    val id = GraphMLDatatype.singleAttributeValue("id", node).getOrElse(node.label)
-    var mlShape: Option[GraphMLShape] = None
-    val valuesXml = scala.collection.mutable.ListBuffer[Node]()
+  override def deserialize(
+      from: NodeSeq,
+      graphKeys: scala.collection.Map[String, GraphMLKey],
+      targetHint: Option[String]
+  ): ValidatedNel[Throwable, GraphMLNode[T]] = from.headOption
+    .map { node =>
+      val id =
+        GraphMLDatatype.singleAttributeValue("id", node).getOrElse(node.label)
+      var mlShape: Option[GraphMLShape] = None
+      val valuesXml = scala.collection.mutable.ListBuffer[Node]()
 
-    GraphMLDatatype
-      .parseProperties(node)
-      .foreach {
-        case property if graphKeys.get(property.key).exists(_.yfilesType.exists(_ == "nodegraphics")) =>
-          mlShape = extractNodeShape(property)
-        case property if isValueProperty(property, graphKeys, nodeValueDatatype.keys(targetHint).map(_.id)) =>
-          valuesXml += property.xml
-        case _ =>
-      }
+      GraphMLDatatype
+        .parseProperties(node)
+        .foreach {
+          case property
+              if graphKeys
+                .get(property.key)
+                .exists(_.yfilesType.exists(_ == "nodegraphics")) =>
+            mlShape = extractNodeShape(property)
+          case property
+              if isValueProperty(
+                property,
+                graphKeys,
+                nodeValueDatatype.keys(targetHint).map(_.id)
+              ) =>
+            valuesXml += property.xml
+          case _ =>
+        }
 
-    nodeValueDatatype
-      .deserialize(valuesXml, graphKeys, targetHint)
-      .map(value => GraphMLNode[T](id, value, mlShape.flatMap(_.nodeShape), mlShape.flatMap(_.geometry), mlShape.flatMap(_.labelValue)))
-  }.getOrElse(invalidNel(new IllegalArgumentException("no xml given")))
-
-  protected def extractNodeShape(property: GraphMLProperty): Option[GraphMLShape] = property.xml.child
-    .headOption
-    .map { dataNode =>
-    dataNode.nonEmptyChildren.foldLeft(GraphMLShape(Some(NodeShape()), None, None)) {
-      case (shape, elem) if elem.label == "Geometry" =>
-        val geo = for {
-          x <- GraphMLDatatype.singleAttributeValue("x", elem)
-          y <- GraphMLDatatype.singleAttributeValue("y", elem)
-          width <- GraphMLDatatype.singleAttributeValue("width", elem)
-          height <- GraphMLDatatype.singleAttributeValue("height", elem)
-        } yield DefaultGeometry(x.toDouble, y.toDouble, width.toDouble, height.toDouble)
-        shape.copy(geometry = geo)
-
-      case (shape, elem) if elem.label == "NodeLabel" =>
-        val label = NodeLabel(
-          GraphMLDatatype.singleAttributeValue("textColor", elem),
-          GraphMLDatatype.singleAttributeValue("fontSize", elem),
-          GraphMLDatatype.singleAttributeValue("fontFamily", elem),
-          GraphMLDatatype.singleAttributeValue("modelName", elem),
-          for {
-            x <- GraphMLDatatype.singleAttributeValue("x", elem).map(_.toDouble).orElse(Some(0.0))
-            y <- GraphMLDatatype.singleAttributeValue("y", elem).map(_.toDouble).orElse(Some(0.0))
-          } yield StylePos(x, y)
+      nodeValueDatatype
+        .deserialize(valuesXml, graphKeys, targetHint)
+        .map(value =>
+          GraphMLNode[T](
+            id,
+            value,
+            mlShape.flatMap(_.nodeShape),
+            mlShape.flatMap(_.geometry),
+            mlShape.flatMap(_.labelValue)
+          )
         )
-        shape.copy(nodeShape = shape.nodeShape.map(_.copy(labelStyle = Some(label))), labelValue = Option(elem.text.trim))
-
-      case (shape, elem) if elem.label == "Fill" =>
-        val fill = for {
-          color <- GraphMLDatatype.singleAttributeValue("color", elem).orElse(Some("#FFFFFF"))
-          hasColor <- GraphMLDatatype.singleAttributeValue("hasColor", elem).orElse(Some("true"))
-          transparent = GraphMLDatatype.singleAttributeValue("transparent", elem)
-        } yield Fill(if (hasColor.toBoolean) Some(color) else None, transparent.map(_.toBoolean))
-        shape.copy(nodeShape = shape.nodeShape.map(_.copy(fill = fill)))
-
-      case (shape, elem) if elem.label == "Shape" =>
-        shape.copy(nodeShape = shape.nodeShape.map(_.copy(shapeType = GraphMLDatatype.singleAttributeValue("type", elem))))
-
-      case (shape, elem) if elem.label == "BorderStyle" =>
-        val borderStyle = for {
-          color <- GraphMLDatatype.singleAttributeValue("color", elem)
-          styleType = GraphMLDatatype.singleAttributeValue("type", elem)
-          width = GraphMLDatatype.singleAttributeValue("width", elem)
-        } yield BorderStyle(color, styleType, width.map(_.toDouble))
-        shape.copy(nodeShape = shape.nodeShape.map(_.copy(borderStyle = borderStyle)))
-
-      case (shape, elem) if elem.label == "SVGModel" =>
-        val svgContent = for {
-          contentChild <- elem.nonEmptyChildren.headOption.filter(_.label == "SVGContent")
-          refId <- GraphMLDatatype.singleAttributeValue("refid", contentChild)
-        } yield SVGContent(refId)
-        shape.copy(nodeShape = shape.nodeShape.map(_.copy(svgContent = svgContent)))
-
-      case (shape, elem) if elem.label == "Image" =>
-        shape.copy(nodeShape = shape.nodeShape.map(_.copy(image = GraphMLDatatype.singleAttributeValue("refid", elem))))
-
-      case (shape, _) => shape
     }
-  }
+    .getOrElse(invalidNel(new IllegalArgumentException("no xml given")))
+
+  protected def extractNodeShape(
+      property: GraphMLProperty
+  ): Option[GraphMLShape] = property.xml.child.headOption
+    .map { dataNode =>
+      dataNode.nonEmptyChildren.foldLeft(
+        GraphMLShape(Some(NodeShape()), None, None)
+      ) {
+        case (shape, elem) if elem.label == "Geometry" =>
+          val geo = for {
+            x <- GraphMLDatatype.singleAttributeValue("x", elem)
+            y <- GraphMLDatatype.singleAttributeValue("y", elem)
+            width <- GraphMLDatatype.singleAttributeValue("width", elem)
+            height <- GraphMLDatatype.singleAttributeValue("height", elem)
+          } yield DefaultGeometry(
+            x.toDouble,
+            y.toDouble,
+            width.toDouble,
+            height.toDouble
+          )
+          shape.copy(geometry = geo)
+
+        case (shape, elem) if elem.label == "NodeLabel" =>
+          val label = NodeLabel(
+            GraphMLDatatype.singleAttributeValue("textColor", elem),
+            GraphMLDatatype.singleAttributeValue("fontSize", elem),
+            GraphMLDatatype.singleAttributeValue("fontFamily", elem),
+            GraphMLDatatype.singleAttributeValue("modelName", elem),
+            for {
+              x <- GraphMLDatatype
+                .singleAttributeValue("x", elem)
+                .map(_.toDouble)
+                .orElse(Some(0.0))
+              y <- GraphMLDatatype
+                .singleAttributeValue("y", elem)
+                .map(_.toDouble)
+                .orElse(Some(0.0))
+            } yield StylePos(x, y)
+          )
+          shape.copy(
+            nodeShape = shape.nodeShape.map(_.copy(labelStyle = Some(label))),
+            labelValue = Option(elem.text.trim)
+          )
+
+        case (shape, elem) if elem.label == "Fill" =>
+          val fill = for {
+            color <- GraphMLDatatype
+              .singleAttributeValue("color", elem)
+              .orElse(Some("#FFFFFF"))
+            hasColor <- GraphMLDatatype
+              .singleAttributeValue("hasColor", elem)
+              .orElse(Some("true"))
+            transparent = GraphMLDatatype.singleAttributeValue(
+              "transparent",
+              elem
+            )
+          } yield Fill(
+            if (hasColor.toBoolean) Some(color) else None,
+            transparent.map(_.toBoolean)
+          )
+          shape.copy(nodeShape = shape.nodeShape.map(_.copy(fill = fill)))
+
+        case (shape, elem) if elem.label == "Shape" =>
+          shape.copy(nodeShape =
+            shape.nodeShape.map(
+              _.copy(shapeType = GraphMLDatatype.singleAttributeValue("type", elem))
+            )
+          )
+
+        case (shape, elem) if elem.label == "BorderStyle" =>
+          val borderStyle = for {
+            color <- GraphMLDatatype.singleAttributeValue("color", elem)
+            styleType = GraphMLDatatype.singleAttributeValue("type", elem)
+            width = GraphMLDatatype.singleAttributeValue("width", elem)
+          } yield BorderStyle(color, styleType, width.map(_.toDouble))
+          shape.copy(nodeShape = shape.nodeShape.map(_.copy(borderStyle = borderStyle)))
+
+        case (shape, elem) if elem.label == "SVGModel" =>
+          val svgContent = for {
+            contentChild <- elem.nonEmptyChildren.headOption.filter(
+              _.label == "SVGContent"
+            )
+            refId <- GraphMLDatatype.singleAttributeValue("refid", contentChild)
+          } yield SVGContent(refId)
+          shape.copy(nodeShape = shape.nodeShape.map(_.copy(svgContent = svgContent)))
+
+        case (shape, elem) if elem.label == "Image" =>
+          shape.copy(nodeShape =
+            shape.nodeShape.map(
+              _.copy(image = GraphMLDatatype.singleAttributeValue("refid", elem))
+            )
+          )
+
+        case (shape, _) => shape
+      }
+    }
 
 }
 
 object GraphMLNodeDatatype {
-  def apply[T](implicit nodeDataType: Datatype[T]) = new GraphMLNodeDatatype[T](nodeDataType)
+  def apply[T](implicit nodeDataType: Datatype[T]) =
+    new GraphMLNodeDatatype[T](nodeDataType)
 
   def shapeXml(node: GraphMLNode[_]): Elem = {
     // format: OFF

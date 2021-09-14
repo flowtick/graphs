@@ -7,8 +7,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class JsGraphMLSerializationSpec extends AnyFlatSpec with Matchers {
-  val testGraph: GraphMLGraph[Unit, Unit] = GraphML.fromEdges(
-    Set(ml((), Some("A")) --> ml((), Some("B"))))
+  val testGraph: GraphMLGraph[Unit, Unit] =
+    GraphML.fromEdges(Set(ml((), Some("A")) --> ml((), Some("B"))))
 
   val testDataType = GraphMLDatatype[Unit, Unit]
 
@@ -20,8 +20,14 @@ class JsGraphMLSerializationSpec extends AnyFlatSpec with Matchers {
         xml.descendant.count(_.label == "node") should be(2)
         xml.descendant.count(_.label == "edge") should be(1)
 
-        xml.descendant.filter(_.label == "node").flatMap(_.attribute("id").map(_.text)) should contain theSameElementsAs List("B", "A")
-        xml.descendant.filter(_.label == "edge").flatMap(_.attribute("id").map(_.text)) should be(List("A-B"))
+        xml.descendant
+          .filter(_.label == "node")
+          .flatMap(
+            _.attribute("id").map(_.text)
+          ) should contain theSameElementsAs List("B", "A")
+        xml.descendant
+          .filter(_.label == "edge")
+          .flatMap(_.attribute("id").map(_.text)) should be(List("A-B"))
       case None => fail
     }
   }

@@ -4,10 +4,12 @@ import com.flowtick.graphs.layout.EdgePath
 import io.circe.Decoder.Result
 import io.circe.{Decoder, DecodingFailure, HCursor, Json}
 
-case class AddNode(id: String,
-                   stencilRef: Option[String] = None,
-                   x: Option[Double] = None,
-                   y: Option[Double] = None) extends EditorCommand
+case class AddNode(
+    id: String,
+    stencilRef: Option[String] = None,
+    x: Option[Double] = None,
+    y: Option[Double] = None
+) extends EditorCommand
 
 case class SetLabel(elementRef: ElementRef, label: String) extends EditorCommand
 case class SetColor(elementRef: ElementRef, color: String) extends EditorCommand
@@ -35,14 +37,20 @@ case class ExportedGraph(name: String, value: String, format: FileFormat) extend
 case class MoveTo(ref: ElementRef, x: Double, y: Double) extends EditorCommand
 case class MoveBy(deltaX: Double, deltaY: Double) extends EditorCommand
 
-case class AddEdge(id: String,
-                   from: String,
-                   to: String,
-                   connectorRef: Option[String] = None,
-                   path: Option[EdgePath] = None) extends EditorCommand
+case class AddEdge(
+    id: String,
+    from: String,
+    to: String,
+    connectorRef: Option[String] = None,
+    path: Option[EdgePath] = None
+) extends EditorCommand
 
 case class ElementRef(id: String, elementType: ElementType)
-case class ElementUpdated(element: ElementRef, update: UpdateType = Changed, causedBy: Option[EditorEvent] = None) extends EditorEvent
+case class ElementUpdated(
+    element: ElementRef,
+    update: UpdateType = Changed,
+    causedBy: Option[EditorEvent] = None
+) extends EditorEvent
 
 case object ResetTransformation extends EditorCommand
 case class Select(selection: Set[ElementRef], append: Boolean = false) extends EditorCommand
@@ -89,7 +97,7 @@ object EditorCommand {
       .downField("name")
       .as[String] match {
       case Right("add-node") => convert[AddNode](c)
-      case _ => Left(DecodingFailure("unknown command name", List.empty))
+      case _                 => Left(DecodingFailure("unknown command name", List.empty))
     }
   }
 }

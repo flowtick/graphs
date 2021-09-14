@@ -13,7 +13,8 @@ import generic._
 case class SomeNodeValue(one: String, two: String)
 
 class GraphMLNodeDatatypeSpec extends AnyFlatSpec with Matchers {
-  def prettyXml(xml: scala.xml.Node) = new scala.xml.PrettyPrinter(80, 4).format(xml)
+  def prettyXml(xml: scala.xml.Node) =
+    new scala.xml.PrettyPrinter(80, 4).format(xml)
 
   it should "serialize a generic GraphML node" in {
     val fooDataType = GraphMLNodeDatatype[SomeNodeValue]
@@ -26,12 +27,14 @@ class GraphMLNodeDatatypeSpec extends AnyFlatSpec with Matchers {
       shapeType = Some("rectangle")
     )
 
-    val serialized: NodeSeq = fooDataType.serialize(GraphMLNode(
-      id = "test",
-      value = SomeNodeValue("foo", "bar"),
-      shape = Some(nodeShape),
-      geometry = Some(DefaultGeometry(0.0, 0.0, 30.0, 30.0)),
-      labelValue = Some("test")),
+    val serialized: NodeSeq = fooDataType.serialize(
+      GraphMLNode(
+        id = "test",
+        value = SomeNodeValue("foo", "bar"),
+        shape = Some(nodeShape),
+        geometry = Some(DefaultGeometry(0.0, 0.0, 30.0, 30.0)),
+        labelValue = Some("test")
+      ),
       targetHint
     )
 
@@ -56,10 +59,15 @@ class GraphMLNodeDatatypeSpec extends AnyFlatSpec with Matchers {
 
     serialized.headOption match {
       case Some(node) => prettyXml(node) should be(prettyXml(expectedXml))
-      case _ => fail()
+      case _          => fail()
     }
 
-    val deserialized: ValidatedNel[Throwable, GraphMLNode[SomeNodeValue]] = fooDataType.deserialize(serialized, fooDataType.keys(targetHint).map(key => (key.id, key)).toMap, targetHint)
+    val deserialized: ValidatedNel[Throwable, GraphMLNode[SomeNodeValue]] =
+      fooDataType.deserialize(
+        serialized,
+        fooDataType.keys(targetHint).map(key => (key.id, key)).toMap,
+        targetHint
+      )
     deserialized.map(_.value) should be(Valid(SomeNodeValue("foo", "bar")))
   }
 }

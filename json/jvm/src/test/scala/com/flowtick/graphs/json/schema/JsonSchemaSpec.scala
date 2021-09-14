@@ -41,7 +41,7 @@ class JsonSchemaSpec extends AnyFlatSpec with Matchers {
 
     JsonSchema.parse[String](schemaString) match {
       case Right(schemaJson) => succeed
-      case Left(error) => fail(error)
+      case Left(error)       => fail(error)
     }
   }
 }

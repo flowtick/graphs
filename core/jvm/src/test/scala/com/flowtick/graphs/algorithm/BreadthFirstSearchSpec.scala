@@ -9,20 +9,21 @@ import org.scalatest.matchers.should.Matchers
 class BreadthFirstSearchSpec extends AnyFlatSpec with Matchers {
   "Bfs" should "traverse in breadth first manner" in {
 
-    val graph: Graph[Unit, String] = Graph.fromEdges(Seq(
-      "1" --> "2",
-      "1" --> "3",
-
-      "2" --> "4",
-      "2" --> "5",
-
-      "3" --> "6",
-      "3" --> "7"))
+    val graph: Graph[Unit, String] = Graph.fromEdges(
+      Seq(
+        "1" --> "2",
+        "1" --> "3",
+        "2" --> "4",
+        "2" --> "5",
+        "3" --> "6",
+        "3" --> "7"
+      )
+    )
 
     val traversal = graph.bfs("1").run
 
-    val values: Iterable[String] = traversal.collect {
-      case Completed(step, _) => step.node.value
+    val values: Iterable[String] = traversal.collect { case Completed(step, _) =>
+      step.node.value
     }
 
     values should be(List("1", "2", "3", "4", "5", "6", "7"))

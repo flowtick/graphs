@@ -4,9 +4,11 @@ import com.flowtick.graphs.layout.{EdgePath, GraphLayoutLike, PointSpec}
 import com.flowtick.graphs.{Edge, Graph}
 
 object DrawUtil {
-  def getLinePoints[E, N](edge: Edge[E],
-                    graph: Graph[E, N],
-                    layout: GraphLayoutLike): Option[Iterator[PointSpec]] = for {
+  def getLinePoints[E, N](
+      edge: Edge[E],
+      graph: Graph[E, N],
+      layout: GraphLayoutLike
+  ): Option[Iterator[PointSpec]] = for {
     fromNode <- graph.findNode(edge.from)
     toNode <- graph.findNode(edge.to)
     from <- layout.nodeGeometry(fromNode.id)

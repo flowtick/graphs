@@ -8,10 +8,15 @@ import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout._
 import scalafx.scene.paint.Color
 
-class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane) extends PaletteFeature {
+class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane)
+    extends PaletteFeature {
   val pane = new BorderPane() {
     visible = false
-    background = new Background(Array(new BackgroundFill(Color.LightGray, new CornerRadii(0), Insets.Empty)))
+    background = new Background(
+      Array(
+        new BackgroundFill(Color.LightGray, new CornerRadii(0), Insets.Empty)
+      )
+    )
 
     viewOrder_(-10)
 
@@ -27,62 +32,71 @@ class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane) 
     _ <- IO {
       layout.left = pane
 
-      lazy val fallBackImage = IO(new Image(getClass.getClassLoader.getResourceAsStream("2B1C_color.png"), 50, 50, true, true))
+      lazy val fallBackImage = IO(
+        new Image(
+          getClass.getClassLoader.getResourceAsStream("2B1C_color.png"),
+          50,
+          50,
+          true,
+          true
+        )
+      )
 
-      model.palette.stencilGroups.zipWithIndex.foreach {
-        case (group, index) =>
-          val accordion = new Accordion()
-          pane.center = accordion
+      model.palette.stencilGroups.zipWithIndex.foreach { case (group, index) =>
+        val accordion = new Accordion()
+        pane.center = accordion
 
-          val groupPane = new TitledPane()
-          groupPane.setText(group.title)
-          accordion.panes.add(groupPane)
+        val groupPane = new TitledPane()
+        groupPane.setText(group.title)
+        accordion.panes.add(groupPane)
 
-          if (index == 0) {
-            accordion.expandedPane = groupPane
+        if (index == 0) {
+          accordion.expandedPane = groupPane
+        }
+
+        val groupContent = new FlowPane() {
+          padding = Insets.apply(10, 10, 10, 10)
+          hgap = 10
+        }
+        groupPane.content = groupContent
+
+        group.items.foreach { stencil =>
+          val stencilImage = stencil.image
+            .map(imageSpec =>
+              ImageLoaderFx
+                .registerImage(s"graphs:palette:${stencil.id}", imageSpec)
+            )
+            .getOrElse(fallBackImage)
+
+          val stencilView = new ImageView {
+            image = stencilImage.unsafeRunSync()
+            fitWidth = 32
+            fitHeight = 32
           }
 
-          val groupContent = new FlowPane() {
-            padding = Insets.apply(10, 10, 10, 10)
-            hgap = 10
+          val tooltip = new Tooltip {
+            text = stencil.title
           }
-          groupPane.content = groupContent
 
-          group.items.foreach { stencil =>
-            val stencilImage = stencil
-              .image
-              .map(imageSpec => ImageLoaderFx.registerImage(s"graphs:palette:${stencil.id}", imageSpec))
-              .getOrElse(fallBackImage)
+          Tooltip.install(stencilView, tooltip)
 
-            val stencilView = new ImageView {
-              image = stencilImage.unsafeRunSync()
-              fitWidth = 32
-              fitHeight = 32
-            }
+          val stencilGroup = new VBox {
+            maxWidth = 50
+            maxHeight = 50
 
-            val tooltip = new Tooltip {
-              text = stencil.title
-            }
+            children.add(stencilView)
 
-            Tooltip.install(stencilView, tooltip)
+            onMouseClicked = e => {
+              selectPaletteItem(stencil)
 
-            val stencilGroup = new VBox {
-              maxWidth = 50
-              maxHeight = 50
-
-              children.add(stencilView)
-
-              onMouseClicked = e => {
-                selectPaletteItem(stencil)
-
-                if (e.getClickCount == 2) {
-                  createFromStencil(stencil)
-                }
+              if (e.getClickCount == 2) {
+                createFromStencil(stencil)
               }
             }
-
-            groupContent.children.add(stencilGroup)
           }
+
+          groupContent.children.add(stencilGroup)
+        }
       }
 
     }

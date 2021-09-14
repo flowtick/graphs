@@ -11,39 +11,57 @@ trait EditorGraphElement {
   def schemaRef: Option[String]
 }
 
-final case class EditorGraphNode(data: Json,
-                                 stencil: Option[String],
-                                 schemaRef: Option[String],
-                                 label: Option[String] = None) extends EditorGraphElement
+final case class EditorGraphNode(
+    data: Json,
+    stencil: Option[String],
+    schemaRef: Option[String],
+    label: Option[String] = None
+) extends EditorGraphElement
 
-final case class EditorGraphEdge(data: Json,
-                                 connector: Option[String],
-                                 schemaRef: Option[String],
-                                 label: Option[String] = None) extends EditorGraphElement
+final case class EditorGraphEdge(
+    data: Json,
+    connector: Option[String],
+    schemaRef: Option[String],
+    label: Option[String] = None
+) extends EditorGraphElement
 
-final case class EditorGraph(graph: Graph[EditorGraphEdge, EditorGraphNode],
-                             styleSheets: List[Either[String, StyleSheet]],
-                             layouts: List[Either[String, GraphLayoutLike]],
-                             schemas: List[Either[String, EditorModel.EditorSchema]])
+final case class EditorGraph(
+    graph: Graph[EditorGraphEdge, EditorGraphNode],
+    styleSheets: List[Either[String, StyleSheet]],
+    layouts: List[Either[String, GraphLayoutLike]],
+    schemas: List[Either[String, EditorModel.EditorSchema]]
+)
 
 object EditorGraphNode {
-  implicit val editorNodeStyleRef: StyleRef[Node[EditorGraphNode]] = new StyleRef[Node[EditorGraphNode]] {
-    override def id(element: Node[EditorGraphNode]): Option[String] = Some(element.id)
-    override def classList(element: Node[EditorGraphNode]): List[String] = element.value.stencil.toList
-  }
+  implicit val editorNodeStyleRef: StyleRef[Node[EditorGraphNode]] =
+    new StyleRef[Node[EditorGraphNode]] {
+      override def id(element: Node[EditorGraphNode]): Option[String] = Some(
+        element.id
+      )
+      override def classList(element: Node[EditorGraphNode]): List[String] =
+        element.value.stencil.toList
+    }
 
-  implicit val editorNodeLabel: Labeled[EditorGraphNode, String] = new Labeled[EditorGraphNode, String] {
-    override def apply(node: EditorGraphNode): String = node.label.getOrElse("")
-  }
+  implicit val editorNodeLabel: Labeled[EditorGraphNode, String] =
+    new Labeled[EditorGraphNode, String] {
+      override def apply(node: EditorGraphNode): String =
+        node.label.getOrElse("")
+    }
 }
 
 object EditorGraphEdge {
-  implicit val editorEdgeStyleRef: StyleRef[Edge[EditorGraphEdge]] = new StyleRef[Edge[EditorGraphEdge]] {
-    override def id(element: Edge[EditorGraphEdge]): Option[String] = Some(element.id)
-    override def classList(element: Edge[EditorGraphEdge]): List[String] = element.value.connector.toList
-  }
+  implicit val editorEdgeStyleRef: StyleRef[Edge[EditorGraphEdge]] =
+    new StyleRef[Edge[EditorGraphEdge]] {
+      override def id(element: Edge[EditorGraphEdge]): Option[String] = Some(
+        element.id
+      )
+      override def classList(element: Edge[EditorGraphEdge]): List[String] =
+        element.value.connector.toList
+    }
 
-  implicit val editorEdgeLabel: Labeled[EditorGraphEdge, String] = new Labeled[EditorGraphEdge, String] {
-    override def apply(edge: EditorGraphEdge): String = edge.label.getOrElse("")
-  }
+  implicit val editorEdgeLabel: Labeled[EditorGraphEdge, String] =
+    new Labeled[EditorGraphEdge, String] {
+      override def apply(edge: EditorGraphEdge): String =
+        edge.label.getOrElse("")
+    }
 }

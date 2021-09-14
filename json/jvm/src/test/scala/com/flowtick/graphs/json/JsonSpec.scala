@@ -7,13 +7,15 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class JsonSpec extends AnyFlatSpec with Matchers {
-  val numberGraph: Graph[Unit, Int] = Graph.fromEdges(Set(1 --> 2)).withNode(Node.of(3))
+  val numberGraph: Graph[Unit, Int] =
+    Graph.fromEdges(Set(1 --> 2)).withNode(Node.of(3))
 
   "JSON support" should "encode and decode int graph" in {
     import com.flowtick.graphs.json.format.default._
 
     val graphJson: Json = ToJson[Unit, Unit, Int](numberGraph, None)
-    val parsed: Either[Error, JsonGraph[Unit, Unit, Int]] = FromJson[Unit, Unit, Int](graphJson.noSpaces)
+    val parsed: Either[Error, JsonGraph[Unit, Unit, Int]] =
+      FromJson[Unit, Unit, Int](graphJson.noSpaces)
 
     parsed.map(_.graph) should be(Right(numberGraph))
   }
@@ -71,7 +73,9 @@ class JsonSpec extends AnyFlatSpec with Matchers {
   it should "treat unit as null if option is imported" in {
     import com.flowtick.graphs.json.format.default._
 
-    val parsed = ToJson[Unit, Unit, Int](Graph.empty.addEdge((), Node("1", 1), Node("2", 2)))
+    val parsed = ToJson[Unit, Unit, Int](
+      Graph.empty.addEdge((), Node("1", 1), Node("2", 2))
+    )
 
     val edgesJson = parsed.hcursor
       .downField("edges")
@@ -79,7 +83,9 @@ class JsonSpec extends AnyFlatSpec with Matchers {
 
     edgesJson
       .getOrElse(fail("edges cant be parsed"))
-      .headOption.flatMap(_.asObject).flatMap(_("value")) should be(Some(Json.Null))
+      .headOption
+      .flatMap(_.asObject)
+      .flatMap(_("value")) should be(Some(Json.Null))
   }
 
   it should "parse json with meta" in {
@@ -96,7 +102,6 @@ class JsonSpec extends AnyFlatSpec with Matchers {
     parsed should be(Right(JsonGraph(Graph.empty, Some(Map("id" -> "test")))))
   }
 
-
   it should "parse embedded graph" in {
     val emptyGraph = s"""
                         |{
@@ -107,7 +112,9 @@ class JsonSpec extends AnyFlatSpec with Matchers {
     import com.flowtick.graphs.json.format.embedded._
 
     val parsed = FromJson[Unit, Option[Unit], Int](emptyGraph)
-    parsed should be(Right(JsonGraph(Graph.empty.addEdge(None, Node.of(1), Node.of(2)))))
+    parsed should be(
+      Right(JsonGraph(Graph.empty.addEdge(None, Node.of(1), Node.of(2))))
+    )
   }
 
   it should "create embedded graph json" in {
@@ -120,11 +127,13 @@ class JsonSpec extends AnyFlatSpec with Matchers {
                         |""".stripMargin
     import com.flowtick.graphs.json.format.embedded._
 
-    val json = ToJson[Unit, Option[Unit], Int](Graph.empty.addEdge(None, Node.of(1), Node.of(2)))
+    val json = ToJson[Unit, Option[Unit], Int](
+      Graph.empty.addEdge(None, Node.of(1), Node.of(2))
+    )
 
     io.circe.parser.decode[Json](expectedGraph) match {
       case Right(expectedJson) => expectedJson.spaces2 should be(json.spaces2)
-      case Left(error) => fail(error)
+      case Left(error)         => fail(error)
     }
   }
 

@@ -17,32 +17,34 @@ trait PaletteFeature extends EditorComponent {
   val currentConnectorItemRef: Ref[IO, Option[Connector]] = Ref.unsafe(None)
   val visibleRef: Ref[IO, Option[Boolean]] = Ref.unsafe(None)
 
-  override def eval: Eval = ctx => ctx.effect(this) {
-    case EditorToggle(EditorToggle.paletteKey, enabled) =>
-      val show = if (enabled.isEmpty) {
-        visibleRef
-          .get
-          .flatMap(visible => toggleView(visible.forall(state => !state)))
-      } else toggleView(enabled.getOrElse(true))
+  override def eval: Eval = ctx =>
+    ctx
+      .effect(this) { case EditorToggle(EditorToggle.paletteKey, enabled) =>
+        val show = if (enabled.isEmpty) {
+          visibleRef.get
+            .flatMap(visible => toggleView(visible.forall(state => !state)))
+        } else toggleView(enabled.getOrElse(true))
 
-      show.flatMap(visible => visibleRef.set(Some(visible)))
-  }.flatMap(_.transformIO {
-    case addNode: AddNode =>
-      for {
-        current <- currentStencilItemRef.get
-      } yield current match {
-        case Some(item) => ctx.copy(event = addNode.copy(stencilRef = Some(item.id)))
-        case None => ctx
+        show.flatMap(visible => visibleRef.set(Some(visible)))
       }
-    case addEdge: AddEdge =>
-      for {
-        current <- currentConnectorItemRef.get
-      } yield current match {
-        case Some(item) =>
-          ctx.copy(event = addEdge.copy(connectorRef = Some(item.id)))
-        case None => ctx
-      }
-  })
+      .flatMap(_.transformIO {
+        case addNode: AddNode =>
+          for {
+            current <- currentStencilItemRef.get
+          } yield current match {
+            case Some(item) =>
+              ctx.copy(event = addNode.copy(stencilRef = Some(item.id)))
+            case None => ctx
+          }
+        case addEdge: AddEdge =>
+          for {
+            current <- currentConnectorItemRef.get
+          } yield current match {
+            case Some(item) =>
+              ctx.copy(event = addEdge.copy(connectorRef = Some(item.id)))
+            case None => ctx
+          }
+      })
 
   override def init(model: EditorModel): IO[Unit] = for {
     _ <- IO(toggleView(false))

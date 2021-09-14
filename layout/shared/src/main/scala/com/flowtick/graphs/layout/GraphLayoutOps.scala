@@ -16,21 +16,19 @@ trait PointLike {
   def y: Double
 }
 
-case class DefaultGeometry(
-  x: Double,
-  y: Double,
-  width: Double,
-  height: Double) extends Geometry
+case class DefaultGeometry(x: Double, y: Double, width: Double, height: Double) extends Geometry
 
 trait Cell {
   def geometry: Option[Geometry]
 }
 
-final case class EdgePath(sourceX: Double = 0.0,
-                          sourceY: Double = 0.0,
-                          targetX: Double = 0.0,
-                          targetY: Double = 0.0,
-                          points: List[PointSpec] = List.empty)
+final case class EdgePath(
+    sourceX: Double = 0.0,
+    sourceY: Double = 0.0,
+    targetX: Double = 0.0,
+    targetY: Double = 0.0,
+    points: List[PointSpec] = List.empty
+)
 
 final case class PointSpec(x: Double, y: Double)
 
@@ -41,27 +39,49 @@ trait GraphLayoutLike {
   def edgePath(id: String): Option[EdgePath]
   def setEdgePath(id: String, edgePath: EdgePath): GraphLayoutLike
 
-  def updateNodePosition(id: String, fx: Double => Double, fy: Double => Double): GraphLayoutLike
+  def updateNodePosition(
+      id: String,
+      fx: Double => Double,
+      fy: Double => Double
+  ): GraphLayoutLike
 
   def width: Option[Double]
   def height: Option[Double]
 
-  /**
-   * convert this layout-like to a concrete value, mainly for serialization
-    * @return a list of GraphLayout
-   */
+  /** convert this layout-like to a concrete value, mainly for serialization
+    * @return
+    *   a list of GraphLayout
+    */
   def toGraphLayouts: List[GraphLayout]
 }
 
-final case class GraphLayout(nodes: Map[String, Geometry] = Map.empty,
-                             edges: Map[String, EdgePath] = Map.empty,
-                             width: Option[Double] = None,
-                             height: Option[Double] = None) extends GraphLayoutLike {
+final case class GraphLayout(
+    nodes: Map[String, Geometry] = Map.empty,
+    edges: Map[String, EdgePath] = Map.empty,
+    width: Option[Double] = None,
+    height: Option[Double] = None
+) extends GraphLayoutLike {
   override def setNodeGeometry(id: String, geometry: Geometry): GraphLayout =
     copy(nodes = nodes + (id -> geometry))
 
-  override def updateNodePosition(id: String, fx: Double => Double, fy: Double => Double): GraphLayout =
-    copy(nodes = nodes.get(id).map(geo => nodes + (id -> DefaultGeometry(x = fx(geo.x), y = fy(geo.y), geo.width, geo.height))).getOrElse(nodes))
+  override def updateNodePosition(
+      id: String,
+      fx: Double => Double,
+      fy: Double => Double
+  ): GraphLayout =
+    copy(nodes =
+      nodes
+        .get(id)
+        .map(geo =>
+          nodes + (id -> DefaultGeometry(
+            x = fx(geo.x),
+            y = fy(geo.y),
+            geo.width,
+            geo.height
+          ))
+        )
+        .getOrElse(nodes)
+    )
 
   override def setEdgePath(id: String, edgePath: EdgePath): GraphLayout =
     copy(edges = edges + (id -> edgePath))
@@ -76,16 +96,23 @@ final case class GraphLayout(nodes: Map[String, Geometry] = Map.empty,
 final case class GraphLayouts(layouts: List[GraphLayout] = List.empty) extends GraphLayoutLike {
   private def updateFirst(update: GraphLayout => GraphLayout): GraphLayouts = {
     val updatedLayouts = layouts match {
-      case Nil => List(update(GraphLayout()))
+      case Nil        => List(update(GraphLayout()))
       case head :: xs => update(head) :: xs
     }
     copy(layouts = updatedLayouts)
   }
 
-  override def setNodeGeometry(id: String, geometry: Geometry): GraphLayoutLike =
+  override def setNodeGeometry(
+      id: String,
+      geometry: Geometry
+  ): GraphLayoutLike =
     updateFirst(_.setNodeGeometry(id, geometry))
 
-  override def updateNodePosition(id: String, fx: Double => Double, fy: Double => Double): GraphLayoutLike =
+  override def updateNodePosition(
+      id: String,
+      fx: Double => Double,
+      fy: Double => Double
+  ): GraphLayoutLike =
     updateFirst(_.updateNodePosition(id, fx, fy))
 
   override def setEdgePath(id: String, edgePath: EdgePath): GraphLayoutLike =
@@ -122,19 +149,28 @@ object LayoutType {
   case object Tree extends LayoutType
 }
 
-final case class GraphLayoutConfiguration(nodeWidth: Double = 80,
-                                          nodeHeight: Double = 40,
-                                          spacing: Option[Double] = None,
-                                          spacingNodeNode: Option[Double] = None,
-                                          direction: Option[LayoutDirection] = None,
-                                          layoutType: Option[LayoutType] = None)
+final case class GraphLayoutConfiguration(
+    nodeWidth: Double = 80,
+    nodeHeight: Double = 40,
+    spacing: Option[Double] = None,
+    spacingNodeNode: Option[Double] = None,
+    direction: Option[LayoutDirection] = None,
+    layoutType: Option[LayoutType] = None
+)
 
 trait GraphLayoutOps {
-  def layout[E, N](g: Graph[E, N], layoutConfiguration: GraphLayoutConfiguration = GraphLayoutConfiguration())(implicit edgeLabel: Labeled[Edge[E], String]): Future[GraphLayoutLike]
+  def layout[E, N](
+      g: Graph[E, N],
+      layoutConfiguration: GraphLayoutConfiguration = GraphLayoutConfiguration()
+  )(implicit edgeLabel: Labeled[Edge[E], String]): Future[GraphLayoutLike]
 }
 
 object GraphLayoutOps {
   val none: GraphLayoutOps = new GraphLayoutOps {
-    def layout[E, N](g: Graph[E, N], layoutConfiguration: GraphLayoutConfiguration)(implicit edgeLabel: Labeled[Edge[E], String]): Future[GraphLayout] = Future.successful(GraphLayout())
+    def layout[E, N](
+        g: Graph[E, N],
+        layoutConfiguration: GraphLayoutConfiguration
+    )(implicit edgeLabel: Labeled[Edge[E], String]): Future[GraphLayout] =
+      Future.successful(GraphLayout())
   }
 }

@@ -17,30 +17,47 @@ trait Reference[E] {
 }
 
 object JsonExporter {
-  def exportNode[E, N, S](node: Node[N], graph: Graph[E, N])(implicit nodeJson: JsonWithSchema[N, S], reference: Reference[E]): Validated[IllegalArgumentException, Json] = {
+  def exportNode[E, N, S](node: Node[N], graph: Graph[E, N])(implicit
+      nodeJson: JsonWithSchema[N, S],
+      reference: Reference[E]
+  ): Validated[IllegalArgumentException, Json] = {
     val json = nodeJson.json(node.value)
 
-    graph.outgoing(node.id).foldLeft[Validated[IllegalArgumentException, Json]](Valid(json)) {
-      case (json, edge) => reference.name(edge.value) match {
-        case Some(field) =>
-          // FIXME: not stack-safe
-          graph
-            .findNode(edge.to)
-            .map(exportNode(_, graph))
-            .getOrElse(json)
-            .andThen { referencedJson =>
-              json.map(_.mapObject(obj => obj.add(field, reference.transform(referencedJson))))
-            }
+    graph
+      .outgoing(node.id)
+      .foldLeft[Validated[IllegalArgumentException, Json]](Valid(json)) { case (json, edge) =>
+        reference.name(edge.value) match {
+          case Some(field) =>
+            // FIXME: not stack-safe
+            graph
+              .findNode(edge.to)
+              .map(exportNode(_, graph))
+              .getOrElse(json)
+              .andThen { referencedJson =>
+                json.map(
+                  _.mapObject(obj => obj.add(field, reference.transform(referencedJson)))
+                )
+              }
 
-        case None => json
+          case None => json
+        }
       }
-    }
   }
 
-  def exportJson[E: Reference, N, S](graph: Graph[E, N], schema: Schema[S])(implicit nodeJson: JsonWithSchema[N, S]): Validated[IllegalArgumentException, Json] = {
+  def exportJson[E: Reference, N, S](graph: Graph[E, N], schema: Schema[S])(implicit
+      nodeJson: JsonWithSchema[N, S]
+  ): Validated[IllegalArgumentException, Json] = {
     val exported = for {
-      rootNode <- schema.$id.flatMap(rootSchemaId => graph.nodes.find(node => nodeJson.schema(node.value).$id.contains(rootSchemaId)))
+      rootNode <- schema.$id.flatMap(rootSchemaId =>
+        graph.nodes.find(node => nodeJson.schema(node.value).$id.contains(rootSchemaId))
+      )
     } yield exportNode(rootNode, graph)
-    exported.getOrElse(Invalid(new IllegalArgumentException(s"could not find root node matching the schema id: ${schema.$id}")))
+    exported.getOrElse(
+      Invalid(
+        new IllegalArgumentException(
+          s"could not find root node matching the schema id: ${schema.$id}"
+        )
+      )
+    )
   }
 }

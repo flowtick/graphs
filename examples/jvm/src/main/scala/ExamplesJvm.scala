@@ -2,7 +2,18 @@ import cats.effect.IO
 import com.flowtick.graphs.editor.view.{SVGRendererJvm, SVGRendererOptions, SVGTranscoder}
 import com.flowtick.graphs.layout.{ELkLayoutJVM, GraphLayoutOps}
 import com.flowtick.graphs.style._
-import examples.{BfsExample, CatsExample, CustomGraphExample, DfsExample, DijkstraExample, GraphMLExample, JsonExample, LayoutExample, SimpleGraphExample, TopologicalSortingExample}
+import examples.{
+  BfsExample,
+  CatsExample,
+  CustomGraphExample,
+  DfsExample,
+  DijkstraExample,
+  GraphMLExample,
+  JsonExample,
+  LayoutExample,
+  SimpleGraphExample,
+  TopologicalSortingExample
+}
 
 import java.io.FileOutputStream
 
@@ -21,7 +32,8 @@ object LayoutExampleApp extends LayoutExample with App {
   import com.flowtick.graphs.defaults.label._
   import com.flowtick.graphs.style.defaults._
 
-  implicit val contextShift = IO.contextShift(scala.concurrent.ExecutionContext.Implicits.global)
+  implicit val contextShift =
+    IO.contextShift(scala.concurrent.ExecutionContext.Implicits.global)
   override def layoutOps: GraphLayoutOps = ELkLayoutJVM
 
   def writeToFile(path: String, content: Array[Byte]): IO[Unit] = IO {
@@ -31,12 +43,19 @@ object LayoutExampleApp extends LayoutExample with App {
     out.close()
   }
 
-  val renderer = SVGRendererJvm(options = SVGRendererOptions(padding = Some(100)))
+  val renderer =
+    SVGRendererJvm(options = SVGRendererOptions(padding = Some(100)))
   val nodeShape = NodeShape(
     fill = Some(Fill(color = Some("#aaa"))),
     shapeType = Some(ShapeType.RoundRectangle),
     image = Some("city"),
-    labelStyle = Some(NodeLabel(textColor = Some("#ccc"), fontSize = Some("16"), border = Some(BorderStyle(color = "#222", width = Some(0.6)))))
+    labelStyle = Some(
+      NodeLabel(
+        textColor = Some("#ccc"),
+        fontSize = Some("16"),
+        border = Some(BorderStyle(color = "#222", width = Some(0.6)))
+      )
+    )
   )
 
   val edgeShape = EdgeShape(
@@ -46,15 +65,29 @@ object LayoutExampleApp extends LayoutExample with App {
   val styleSheet = StyleSheet()
     .withNodeDefault(nodeShape)
     .withEdgeDefault(edgeShape)
-    .withImage("city", ImageSpec("https://openmoji.org/data/color/svg/1F3D9.svg", imageType = ImageType.url))
+    .withImage(
+      "city",
+      ImageSpec(
+        "https://openmoji.org/data/color/svg/1F3D9.svg",
+        imageType = ImageType.url
+      )
+    )
 
   val renderImages = for {
     layoutResult <- IO.fromFuture(IO(layout))
     _ <- renderer
-      .translateAndScaleView(0,0, 2.0)
+      .translateAndScaleView(0, 0, 2.0)
       .renderGraph(graph, layoutResult, styleSheet)
-    _ <- writeToFile("target/layout_example.svg", renderer.toXmlString.get.getBytes("UTF-8"))
-    _ <- writeToFile("target/layout_example.png", SVGTranscoder.svgXmlToPng(renderer.toXmlString.get, None, None).unsafeRunSync())
+    _ <- writeToFile(
+      "target/layout_example.svg",
+      renderer.toXmlString.get.getBytes("UTF-8")
+    )
+    _ <- writeToFile(
+      "target/layout_example.png",
+      SVGTranscoder
+        .svgXmlToPng(renderer.toXmlString.get, None, None)
+        .unsafeRunSync()
+    )
   } yield ()
 
   renderImages.unsafeRunSync()

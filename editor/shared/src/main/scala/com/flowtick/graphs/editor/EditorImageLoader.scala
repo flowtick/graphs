@@ -11,12 +11,18 @@ class EditorImageLoader[Image](imageLoader: ImageLoader[Image]) extends EditorCo
     registerStyleSheetImages(model.styleSheet).void
   }
 
-  override def eval: Eval = ctx => ctx.effect(this) {
-    case Reset => registerStyleSheetImages(ctx.model.styleSheet).void
-  }
+  override def eval: Eval = ctx =>
+    ctx.effect(this) { case Reset =>
+      registerStyleSheetImages(ctx.model.styleSheet).void
+    }
 
-  def registerStyleSheetImages(styleSheet: StyleSheetLike): IO[List[Either[Throwable, Image]]] =
-    styleSheet.images.map {
-      case (key, imageSpec) => imageLoader.registerImage(key, imageSpec).attempt
-    }.toList.sequence
+  def registerStyleSheetImages(
+      styleSheet: StyleSheetLike
+  ): IO[List[Either[Throwable, Image]]] =
+    styleSheet.images
+      .map { case (key, imageSpec) =>
+        imageLoader.registerImage(key, imageSpec).attempt
+      }
+      .toList
+      .sequence
 }

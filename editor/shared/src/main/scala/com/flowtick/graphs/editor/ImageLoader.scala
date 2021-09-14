@@ -4,8 +4,7 @@ import cats.effect.IO
 import com.flowtick.graphs.style.ImageSpec
 
 trait ImageLoader[T] {
-  def registerImage(ref: String,
-                    imageSpec: ImageSpec): IO[T]
+  def registerImage(ref: String, imageSpec: ImageSpec): IO[T]
   def getImage(ref: String): Option[T]
 }
 

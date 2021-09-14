@@ -9,7 +9,7 @@ class TopologicalSort[E, N](graph: Graph[E, N]) {
 
     dfs.foldLeft(List.empty[Step[E, N]]) {
       case (acc, Completed(step, _)) => step :: acc
-      case (acc, _) => acc
+      case (acc, _)                  => acc
     }
   }
 }

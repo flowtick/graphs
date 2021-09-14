@@ -10,9 +10,11 @@ class MathUtilSpec extends AnyFlatSpec with Matchers {
     val a = LineSegment(Vector2(0, 0), Vector2(5, 5))
     val b = LineSegment(Vector2(0, 5), Vector2(5, 0))
 
-    MathUtil.segmentIntersect(a, b) should be(Some(
-      Vector2(2.5, 2.5)
-    ))
+    MathUtil.segmentIntersect(a, b) should be(
+      Some(
+        Vector2(2.5, 2.5)
+      )
+    )
 
     // no intersection
     val c = LineSegment(Vector2(3, 0), Vector2(3, 4))
@@ -25,6 +27,10 @@ class MathUtilSpec extends AnyFlatSpec with Matchers {
     val f = LineSegment(Vector2(1, 0), Vector2(3, 0))
 
     MathUtil.segmentIntersect(e, f) should be(None)
-    MathUtil.segmentIntersect(e, f, considerCollinearOverlapAsIntersect = true) should be(Some(Vector2(1, 0)))
+    MathUtil.segmentIntersect(
+      e,
+      f,
+      considerCollinearOverlapAsIntersect = true
+    ) should be(Some(Vector2(1, 0)))
   }
 }

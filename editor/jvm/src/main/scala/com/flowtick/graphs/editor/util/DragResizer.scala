@@ -5,17 +5,13 @@ import javafx.scene.Cursor
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Region
 
-/**
- *
- * adapted from https://gist.githubusercontent.com/cannibalsticky/a3057d6e9c1f029d99e6bc95f9b3340e/raw/b216499cf78322746709310079974d89ce52b885/DragResizerXY.java
- *
- */
+/** adapted from
+  * https://gist.githubusercontent.com/cannibalsticky/a3057d6e9c1f029d99e6bc95f9b3340e/raw/b216499cf78322746709310079974d89ce52b885/DragResizerXY.java
+  */
 class DragResizerXY(region: Region) {
 
-  /**
-   * The margin around the control that a user can click in to start resizing
-   * the region.
-   */
+  /** The margin around the control that a user can click in to start resizing the region.
+    */
   val RESIZE_MARGIN = 10
 
   var x: Double = 0.0
@@ -46,7 +42,6 @@ class DragResizerXY(region: Region) {
       region.setCursor(Cursor.DEFAULT)
     }
   }
-
 
   //had to use 2 variables for the controll, tried without, had unexpected behaviour (going big was ok, going small nope.)
   def isInDraggableZone(event: MouseEvent): Boolean = {
@@ -119,17 +114,17 @@ object DragResizer {
         resizer.mousePressed(event)
       }
     })
-    region.setOnMouseDragged(new EventHandler[MouseEvent] () {
+    region.setOnMouseDragged(new EventHandler[MouseEvent]() {
       def handle(event: MouseEvent) {
         resizer.mouseDragged(event)
       }
     })
-    region.setOnMouseMoved(new EventHandler[MouseEvent] () {
+    region.setOnMouseMoved(new EventHandler[MouseEvent]() {
       def handle(event: MouseEvent) {
         resizer.mouseOver(event)
       }
     })
-    region.setOnMouseReleased(new EventHandler[MouseEvent] () {
+    region.setOnMouseReleased(new EventHandler[MouseEvent]() {
       def handle(event: MouseEvent) {
         resizer.mouseReleased(event)
       }

@@ -12,15 +12,11 @@ class GraphCatsSpec extends AnyFlatSpec with Matchers {
   "Graph Monoid" should "combine graphs" in {
     type NumberNodeGraph = Graph[Unit, Int]
 
-    val graphA: NumberNodeGraph = Graph.fromEdges(Set(
-      1 --> 2,
-      2 --> 3)).withNode(Node.of(10))
+    val graphA: NumberNodeGraph =
+      Graph.fromEdges(Set(1 --> 2, 2 --> 3)).withNode(Node.of(10))
 
-    val graphB: NumberNodeGraph = Graph.fromEdges(Set(
-      2 --> 3,
-      4 --> 3,
-      4 --> 5,
-      5 --> 1))
+    val graphB: NumberNodeGraph =
+      Graph.fromEdges(Set(2 --> 3, 4 --> 3, 4 --> 5, 5 --> 1))
 
     val combined = graphA |+| graphB
 
@@ -29,15 +25,11 @@ class GraphCatsSpec extends AnyFlatSpec with Matchers {
       2 --> 3,
       4 --> 3,
       4 --> 5,
-      5 --> 1).flatMap(_.toEdges)
+      5 --> 1
+    ).flatMap(_.toEdges)
 
     combined.nodes.map(_.value) should contain theSameElementsAs Seq(
-      1,
-      2,
-      3,
-      4,
-      5,
-      10
+      1, 2, 3, 4, 5, 10
     )
   }
 

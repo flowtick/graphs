@@ -7,21 +7,22 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class DepthFirstSearchSpec extends AnyFlatSpec with Matchers {
-  val graph: Graph[Unit, String] = Graph.fromEdges(Seq(
-    "1" --> "2",
-    "1" --> "3",
-
-    "2" --> "4",
-    "2" --> "5",
-
-    "3" --> "6",
-    "3" --> "7"))
+  val graph: Graph[Unit, String] = Graph.fromEdges(
+    Seq(
+      "1" --> "2",
+      "1" --> "3",
+      "2" --> "4",
+      "2" --> "5",
+      "3" --> "6",
+      "3" --> "7"
+    )
+  )
 
   "Dfs" should "traverse in depth first manner" in {
     val traversal = graph.dfs("1").run
 
-    val values: Iterable[String] = traversal.collect {
-      case Visited(step) => step.node.value
+    val values: Iterable[String] = traversal.collect { case Visited(step) =>
+      step.node.value
     }
 
     values should be(List("1", "3", "7", "6", "2", "5", "4"))
@@ -51,23 +52,30 @@ class DepthFirstSearchSpec extends AnyFlatSpec with Matchers {
 
     val traversal = graph.dfs("1").run
 
-    traversal.toList should be(List(
-      Visited(Step(Node.of("1"), None, Some(0))),
-      Visited(Step(Node.of("2"), Some(Edge.unit("1", "2")), Some(1))),
-      Completed(Step(Node.of("2"), Some(Edge.unit("1", "2")), Some(1))),
-      Completed(Step(Node.of("1"), None, Some(0)), backtrack = Some(Step(Node.of("2"), Some(Edge.unit("2", "1")), Some(1))))
-    ))
+    traversal.toList should be(
+      List(
+        Visited(Step(Node.of("1"), None, Some(0))),
+        Visited(Step(Node.of("2"), Some(Edge.unit("1", "2")), Some(1))),
+        Completed(Step(Node.of("2"), Some(Edge.unit("1", "2")), Some(1))),
+        Completed(
+          Step(Node.of("1"), None, Some(0)),
+          backtrack = Some(Step(Node.of("2"), Some(Edge.unit("2", "1")), Some(1)))
+        )
+      )
+    )
   }
 
   it should "retrieve all paths" in {
-    graph.paths("1").map(_.steps.map(_.node.id)) should be(List(
-      List("1"),
-      List("1", "2"),
-      List("1", "2", "4"),
-      List("1", "2", "5"),
-      List("1", "3"),
-      List("1", "3", "6"),
-      List("1", "3", "7"),
-    ))
+    graph.paths("1").map(_.steps.map(_.node.id)) should be(
+      List(
+        List("1"),
+        List("1", "2"),
+        List("1", "2", "4"),
+        List("1", "2", "5"),
+        List("1", "3"),
+        List("1", "3", "6"),
+        List("1", "3", "7")
+      )
+    )
   }
 }

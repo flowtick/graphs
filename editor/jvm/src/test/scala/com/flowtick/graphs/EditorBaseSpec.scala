@@ -18,42 +18,54 @@ trait EditorBaseSpec extends AnyFlatSpec with Matchers with EditorMain { self =>
   def shouldRenderImage: Boolean = false
 
   def withEditor[T](f: EditorInstance => T): T =
-    createEditor(bus => List(
-      testView(bus)
-    ))(EditorConfiguration()).flatMap(editor => IO(f(editor))).unsafeRunSync()
+    createEditor(bus =>
+      List(
+        testView(bus)
+      )
+    )(EditorConfiguration()).flatMap(editor => IO(f(editor))).unsafeRunSync()
 
-  protected def testView(bus: EditorMessageBus): EditorComponent = new EditorComponent {
-    override def init(model: EditorModel): IO[Unit] = IO.unit
+  protected def testView(bus: EditorMessageBus): EditorComponent =
+    new EditorComponent {
+      override def init(model: EditorModel): IO[Unit] = IO.unit
 
-    override def eval: Eval = ctx => ctx.effect(this) {
-      case Reset => IO {
-        ctx.model.graph.edges.foreach(log.debug)
-      }
+      override def eval: Eval = ctx =>
+        ctx.effect(this) {
+          case Reset =>
+            IO {
+              ctx.model.graph.edges.foreach(log.debug)
+            }
 
-      case export@ExportedGraph(name, value, format) =>
-        val fileName = s"target/${self.getClass.getName}_last_exported_$name"
+          case export @ ExportedGraph(name, value, format) =>
+            val fileName =
+              s"target/${self.getClass.getName}_last_exported_$name"
 
-        lastExported.update(_ => Some(export)) *> IO {
-          val out = new FileOutputStream(fileName + format.`extension`)
-          out.write(value.getBytes("UTF-8"))
-          out.flush()
-          out.close()
-        } *> {
-          if (shouldRenderImage) {
-            val renderer = SVGRendererJvm()
-            renderer
-              .renderGraph(ctx.model.graph, ctx.model.layout, ctx.model.styleSheet)
-              .flatMap(_ => IO.fromTry(renderer.toXmlString))
-              .flatMap { xmlString => IO {
-                val out = new FileOutputStream(fileName + ".svg")
-                out.write(xmlString.getBytes("UTF-8"))
-                out.flush()
-                out.close()
-              }}
-          } else IO.unit
+            lastExported.update(_ => Some(export)) *> IO {
+              val out = new FileOutputStream(fileName + format.`extension`)
+              out.write(value.getBytes("UTF-8"))
+              out.flush()
+              out.close()
+            } *> {
+              if (shouldRenderImage) {
+                val renderer = SVGRendererJvm()
+                renderer
+                  .renderGraph(
+                    ctx.model.graph,
+                    ctx.model.layout,
+                    ctx.model.styleSheet
+                  )
+                  .flatMap(_ => IO.fromTry(renderer.toXmlString))
+                  .flatMap { xmlString =>
+                    IO {
+                      val out = new FileOutputStream(fileName + ".svg")
+                      out.write(xmlString.getBytes("UTF-8"))
+                      out.flush()
+                      out.close()
+                    }
+                  }
+              } else IO.unit
+            }
+
+          case event => IO(log.debug(event))
         }
-
-      case event => IO(log.debug(event))
     }
-  }
 }

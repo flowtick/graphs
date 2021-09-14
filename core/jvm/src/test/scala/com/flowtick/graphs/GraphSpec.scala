@@ -6,47 +6,54 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class GraphSpec extends AnyFlatSpec with Matchers {
-  
-  val testGraph = Graph.fromEdges[Unit, String](Seq(
-    "A" --> "B",
-    "B" --> "C",
-    "C" --> "D",
-    "D" --> "A",
-    "A" --> "C",
-    "B" --> "D"))
+
+  val testGraph = Graph.fromEdges[Unit, String](
+    Seq(
+      "A" --> "B",
+      "B" --> "C",
+      "C" --> "D",
+      "D" --> "A",
+      "A" --> "C",
+      "B" --> "D"
+    )
+  )
 
   "Graph" should "provide incoming edges for nodes" in {
     val incomingA = testGraph.incoming("A")
-    incomingA should contain theSameElementsAs List(
-      Edge.unit("D", "A"))
+    incomingA should contain theSameElementsAs List(Edge.unit("D", "A"))
 
     val incomingB = testGraph.incoming("B")
-    incomingB should contain theSameElementsAs List(
-      Edge.unit("A", "B"))
+    incomingB should contain theSameElementsAs List(Edge.unit("A", "B"))
 
     testGraph.incoming("C") should contain theSameElementsAs List(
       Edge.unit("B", "C"),
-      Edge.unit("A", "C"))
+      Edge.unit("A", "C")
+    )
 
     testGraph.incoming("D") should contain theSameElementsAs List(
       Edge.unit("C", "D"),
-      Edge.unit("B", "D"))
+      Edge.unit("B", "D")
+    )
   }
 
   it should "provide outgoing edges for nodes" in {
     testGraph.outgoing("A") should contain theSameElementsAs List(
-      Edge.unit("A","B"),
-      Edge.unit("A","C"))
+      Edge.unit("A", "B"),
+      Edge.unit("A", "C")
+    )
 
     testGraph.outgoing("B") should contain theSameElementsAs List(
-      Edge.unit("B","C"),
-      Edge.unit("B","D"))
+      Edge.unit("B", "C"),
+      Edge.unit("B", "D")
+    )
 
     testGraph.outgoing("C") should contain theSameElementsAs List(
-      Edge.unit("C","D"))
+      Edge.unit("C", "D")
+    )
 
     testGraph.outgoing("D") should contain theSameElementsAs List(
-      Edge.unit("D","A"))
+      Edge.unit("D", "A")
+    )
   }
 
   it should "get the predecessors for a node" in {
@@ -58,7 +65,12 @@ class GraphSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "return the all the nodes of a graph" in {
-    testGraph.nodes should contain theSameElementsAs (List(Node.of("A"), Node.of("B"), Node.of("C"), Node.of("D")))
+    testGraph.nodes should contain theSameElementsAs (List(
+      Node.of("A"),
+      Node.of("B"),
+      Node.of("C"),
+      Node.of("D")
+    ))
   }
 
   it should "return the all the edges of a graph" in {
@@ -74,11 +86,12 @@ class GraphSpec extends AnyFlatSpec with Matchers {
 
   it should "return empty iterable for an empty graph" in {
     val emptyGraph = Graph.empty
-    emptyGraph.edges should be (empty)
+    emptyGraph.edges should be(empty)
   }
 
   it should "have nodes after adding an edge" in {
-    val intGraph = Graph.empty[Option[Unit], Int].addEdge(None, Node.of(1), Node.of(2))
+    val intGraph =
+      Graph.empty[Option[Unit], Int].addEdge(None, Node.of(1), Node.of(2))
     intGraph.nodes should contain theSameElementsAs List(
       Node("1", 1),
       Node("2", 2)
@@ -120,8 +133,8 @@ class GraphSpec extends AnyFlatSpec with Matchers {
       .addNode(Node.of(3))
 
     intGraph.edges.headOption match {
-      case Some(edge) => intGraph.removeEdge(edge) should be (expected)
-      case None => fail("edge was not in the graph")
+      case Some(edge) => intGraph.removeEdge(edge) should be(expected)
+      case None       => fail("edge was not in the graph")
     }
   }
 

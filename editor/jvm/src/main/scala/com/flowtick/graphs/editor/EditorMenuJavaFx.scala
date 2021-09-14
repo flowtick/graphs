@@ -11,7 +11,11 @@ import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
 
-class EditorMenuJavaFx(val messageBus: EditorMessageBus, layout: BorderPane, stage: Stage) extends EditorMenu {
+class EditorMenuJavaFx(
+    val messageBus: EditorMessageBus,
+    layout: BorderPane,
+    stage: Stage
+) extends EditorMenu {
 
   lazy val menu = {
     val bar = new MenuBar {
@@ -36,8 +40,10 @@ class EditorMenuJavaFx(val messageBus: EditorMessageBus, layout: BorderPane, sta
     val fileChooser = new FileChooser()
     fileChooser.setTitle("Open File")
 
-    val graphmlFilter = new FileChooser.ExtensionFilter("graphml files (*.graphml)", "*.graphml")
-    val jsonFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json")
+    val graphmlFilter =
+      new FileChooser.ExtensionFilter("graphml files (*.graphml)", "*.graphml")
+    val jsonFilter =
+      new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json")
 
     fileChooser.getExtensionFilters.add(graphmlFilter)
     fileChooser.getExtensionFilters.add(jsonFilter)
@@ -47,7 +53,7 @@ class EditorMenuJavaFx(val messageBus: EditorMessageBus, layout: BorderPane, sta
     case Right(Some(file)) => {
       val format = file.getAbsolutePath.split("\\.").lastOption match {
         case Some("json") => JsonFormat
-        case _ => GraphMLFormat
+        case _            => GraphMLFormat
       }
       loadGraph(file.getAbsolutePath, format)
     }
@@ -55,26 +61,37 @@ class EditorMenuJavaFx(val messageBus: EditorMessageBus, layout: BorderPane, sta
     case Left(error) => IO.raiseError(error)
   }
 
-  case class ShortCut(keyCode: Option[KeyCode] = None, modifiers: List[KeyCombination.Modifier] = List.empty) {
-    def toCombination: Option[KeyCodeCombination] = keyCode.map(code => new KeyCodeCombination(code, modifiers.map(_.delegate): _*))
+  case class ShortCut(
+      keyCode: Option[KeyCode] = None,
+      modifiers: List[KeyCombination.Modifier] = List.empty
+  ) {
+    def toCombination: Option[KeyCodeCombination] =
+      keyCode.map(code => new KeyCodeCombination(code, modifiers.map(_.delegate): _*))
   }
 
   override def bindShortcut(action: Action): IO[Unit] = IO {
-    val matchingShortCut = action.shortCut.split("\\+").foldLeft[ShortCut](ShortCut()) {
-      case (shortcut, nextPart) => nextPart match {
-        case "alt" => shortcut.copy(modifiers = shortcut.modifiers.::(KeyCombination.AltDown))
-        case "ctrl" => shortcut.copy(modifiers = shortcut.modifiers.::(KeyCombination.ControlDown))
-        case "shift" => shortcut.copy(modifiers = shortcut.modifiers.::(KeyCombination.ShiftDown))
-        case "ins" => shortcut.copy(keyCode = Some(KeyCode.Insert))
-        case "del" => shortcut.copy(keyCode = Some(KeyCode.Delete))
-        case other => shortcut.copy(keyCode = KeyCode.values.find(_.name.toLowerCase == other.toLowerCase))
+    val matchingShortCut =
+      action.shortCut.split("\\+").foldLeft[ShortCut](ShortCut()) { case (shortcut, nextPart) =>
+        nextPart match {
+          case "alt" =>
+            shortcut
+              .copy(modifiers = shortcut.modifiers.::(KeyCombination.AltDown))
+          case "ctrl" =>
+            shortcut.copy(modifiers = shortcut.modifiers.::(KeyCombination.ControlDown))
+          case "shift" =>
+            shortcut.copy(modifiers = shortcut.modifiers.::(KeyCombination.ShiftDown))
+          case "ins" => shortcut.copy(keyCode = Some(KeyCode.Insert))
+          case "del" => shortcut.copy(keyCode = Some(KeyCode.Delete))
+          case other =>
+            shortcut.copy(keyCode = KeyCode.values.find(_.name.toLowerCase == other.toLowerCase))
+        }
       }
-    }
 
     matchingShortCut.toCombination.foreach { combination =>
-      val currentHandler = Option[EventHandler[_ >: KeyEvent]](stage.scene.value.getOnKeyReleased)
+      val currentHandler =
+        Option[EventHandler[_ >: KeyEvent]](stage.scene.value.getOnKeyReleased)
       stage.scene.value.setOnKeyReleased((event) => {
-        if(combination.`match`(event)) {
+        if (combination.`match`(event)) {
           event.consume()
           action.handler(event)
         } else {
@@ -90,17 +107,18 @@ class EditorMenuJavaFx(val messageBus: EditorMessageBus, layout: BorderPane, sta
 
   override def handleExported(exported: ExportedGraph): IO[Unit] = for {
     file <- IO {
-      new FileChooser(){
+      new FileChooser() {
         title = s"Save as ${exported.format.`extension`}"
       }.showSaveDialog(stage)
     }.map(Option(_))
     _ <- file match {
-      case Some(path) => IO {
-        val out = new FileOutputStream(path)
-        out.write(exported.value.getBytes("UTF-8"))
-        out.flush()
-        out.close()
-      }
+      case Some(path) =>
+        IO {
+          val out = new FileOutputStream(path)
+          out.write(exported.value.getBytes("UTF-8"))
+          out.flush()
+          out.close()
+        }
       case None => IO.unit
     }
   } yield ()

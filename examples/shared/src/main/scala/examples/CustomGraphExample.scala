@@ -11,8 +11,14 @@ trait CustomGraphExample {
     override def apply(value: MyNode): String = value.id
   }
 
-  val graph = Graph.fromEdges(Set(
-    MyNode("first_node", "My first node") --> MyNode("second_node", "My second node")))
+  val graph = Graph.fromEdges(
+    Set(
+      MyNode("first_node", "My first node") --> MyNode(
+        "second_node",
+        "My second node"
+      )
+    )
+  )
 
   println(graph.edges)
   // #custom_graph

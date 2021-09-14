@@ -8,14 +8,27 @@ import scalafx.scene.control._
 import scalafx.scene.layout._
 import scalafx.scene.text.{Font, FontWeight}
 
-case class PropertyFormGroupFx(property: PropertySpec,
-                               init: () => Unit,
-                               set: Json => Unit) extends PropertyFormGroup
+case class PropertyFormGroupFx(
+    property: PropertySpec,
+    init: () => Unit,
+    set: Json => Unit
+) extends PropertyFormGroup
 
-class EditorPropertiesJavaFx(val messageBus: EditorMessageBus, layout: BorderPane) extends EditorProperties {
+class EditorPropertiesJavaFx(
+    val messageBus: EditorMessageBus,
+    layout: BorderPane
+) extends EditorProperties {
   val pane = new AnchorPane() {
     visible = false
-    background = new Background(Array(new BackgroundFill(scalafx.scene.paint.Color.LightGray, new CornerRadii(0), Insets.Empty)))
+    background = new Background(
+      Array(
+        new BackgroundFill(
+          scalafx.scene.paint.Color.LightGray,
+          new CornerRadii(0),
+          Insets.Empty
+        )
+      )
+    )
 
     viewOrder_(-10)
 
@@ -32,7 +45,10 @@ class EditorPropertiesJavaFx(val messageBus: EditorMessageBus, layout: BorderPan
     enabled
   }
 
-  override protected def setPropertiesGroups(properties: List[PropertySpec], elementProperties: ElementProperties): IO[List[PropertyFormGroup]] = for {
+  override protected def setPropertiesGroups(
+      properties: List[PropertySpec],
+      elementProperties: ElementProperties
+  ): IO[List[PropertyFormGroup]] = for {
     groups <- IO {
 
       pane.children.clear()
@@ -43,7 +59,9 @@ class EditorPropertiesJavaFx(val messageBus: EditorMessageBus, layout: BorderPan
       }
 
       closeLabel.onMouseClicked = _ => {
-        messageBus.publish(EditorToggle(EditorToggle.editKey, Some(false))).unsafeRunSync()
+        messageBus
+          .publish(EditorToggle(EditorToggle.editKey, Some(false)))
+          .unsafeRunSync()
       }
 
       val grid = new GridPane()
@@ -58,16 +76,14 @@ class EditorPropertiesJavaFx(val messageBus: EditorMessageBus, layout: BorderPan
       grid.add(closeLabel, 2, 0)
       pane.children.add(grid)
 
-      properties.sortBy(_.order).zipWithIndex.map {
-        case (property, index) => propertyGroup(property, index + 1)(grid)
+      properties.sortBy(_.order).zipWithIndex.map { case (property, index) =>
+        propertyGroup(property, index + 1)(grid)
       }
     }
   } yield groups
 
-
   def label(property: PropertySpec): Label = {
-    val label = new Label(property.title) {
-    }
+    val label = new Label(property.title) {}
     val tooltip = new Tooltip {
       text = property.description.getOrElse("")
     }
@@ -75,23 +91,35 @@ class EditorPropertiesJavaFx(val messageBus: EditorMessageBus, layout: BorderPan
     label
   }
 
-  def propertyGroup(property: PropertySpec, index: Int)(grid: GridPane): PropertyFormGroupFx = property.inputType match {
+  def propertyGroup(property: PropertySpec, index: Int)(
+      grid: GridPane
+  ): PropertyFormGroupFx = property.inputType match {
     case NumberInput =>
       lazy val input = new TextField()
 
-      PropertyFormGroupFx(property,
+      PropertyFormGroupFx(
+        property,
         init = () => {
           grid.add(label(property), 0, index)
           grid.add(input, 1, index)
 
           input.text.addListener(new ChangeListener[String] {
-            override def changed(observableValue: ObservableValue[_ <: String], oldValue: String, newValue: String): Unit = {
-              property.handler(JsonValue(Json.fromDoubleOrString(newValue.toDouble)))
+            override def changed(
+                observableValue: ObservableValue[_ <: String],
+                oldValue: String,
+                newValue: String
+            ): Unit = {
+              property.handler(
+                JsonValue(Json.fromDoubleOrString(newValue.toDouble))
+              )
             }
           })
         },
         set = (newJson: Json) => {
-          val newText = NumberInput.fromJson(property.key, newJson).map(_.toString).getOrElse("")
+          val newText = NumberInput
+            .fromJson(property.key, newJson)
+            .map(_.toString)
+            .getOrElse("")
           input.setText(newText)
         }
       )
@@ -99,13 +127,18 @@ class EditorPropertiesJavaFx(val messageBus: EditorMessageBus, layout: BorderPan
     case BooleanInput =>
       lazy val input = new CheckBox()
 
-      PropertyFormGroupFx(property,
+      PropertyFormGroupFx(
+        property,
         init = () => {
           grid.add(label(property), 0, index)
           grid.add(input, 1, index)
 
           input.selected.addListener(new ChangeListener[java.lang.Boolean] {
-            override def changed(observableValue: ObservableValue[_ <: java.lang.Boolean], oldValue: java.lang.Boolean, newValue: java.lang.Boolean): Unit = {
+            override def changed(
+                observableValue: ObservableValue[_ <: java.lang.Boolean],
+                oldValue: java.lang.Boolean,
+                newValue: java.lang.Boolean
+            ): Unit = {
               property.handler(JsonValue(Json.fromBoolean(newValue)))
             }
           })
@@ -118,19 +151,27 @@ class EditorPropertiesJavaFx(val messageBus: EditorMessageBus, layout: BorderPan
     case IntegerInput =>
       lazy val input = new TextField()
 
-      PropertyFormGroupFx(property,
+      PropertyFormGroupFx(
+        property,
         init = () => {
           grid.add(label(property), 0, index)
           grid.add(input, 1, index)
 
           input.text.addListener(new ChangeListener[String] {
-            override def changed(observableValue: ObservableValue[_ <: String], oldValue: String, newValue: String): Unit = {
+            override def changed(
+                observableValue: ObservableValue[_ <: String],
+                oldValue: String,
+                newValue: String
+            ): Unit = {
               property.handler(JsonValue(Json.fromInt(newValue.toInt)))
             }
           })
         },
         set = (newJson: Json) => {
-          val newText = IntegerInput.fromJson(property.key, newJson).map(_.toString).getOrElse("")
+          val newText = IntegerInput
+            .fromJson(property.key, newJson)
+            .map(_.toString)
+            .getOrElse("")
           input.setText(newText)
         }
       )
@@ -138,46 +179,61 @@ class EditorPropertiesJavaFx(val messageBus: EditorMessageBus, layout: BorderPan
     case ColorInputType =>
       val input = new ColorPicker()
 
-      PropertyFormGroupFx(property, () => {
-        grid.add(label(property), 0, index)
-        grid.add(input, 1, index)
+      PropertyFormGroupFx(
+        property,
+        () => {
+          grid.add(label(property), 0, index)
+          grid.add(input, 1, index)
 
-        input.value.addListener(new ChangeListener[Color] {
-          override def changed(observableValue: ObservableValue[_ <: Color], oldColor: Color, newColor: Color): Unit = {
-            property.handler(ColorValue(newColor.toString))
-          }
-        })
-      }, (newJson: Json) => {
-        input.value = newJson.asString.map(Color.web).getOrElse(Color.WHITE)
-      })
-
+          input.value.addListener(new ChangeListener[Color] {
+            override def changed(
+                observableValue: ObservableValue[_ <: Color],
+                oldColor: Color,
+                newColor: Color
+            ): Unit = {
+              property.handler(ColorValue(newColor.toString))
+            }
+          })
+        },
+        (newJson: Json) => {
+          input.value = newJson.asString.map(Color.web).getOrElse(Color.WHITE)
+        }
+      )
 
     case _ =>
       val input = new TextArea()
 
-      PropertyFormGroupFx(property, () => {
-        grid.add(label(property), 0, index)
-        grid.add(input, 1, index)
+      PropertyFormGroupFx(
+        property,
+        () => {
+          grid.add(label(property), 0, index)
+          grid.add(input, 1, index)
 
-        input.text.addListener(new ChangeListener[String] {
-          override def changed(observableValue: ObservableValue[_ <: String], oldValue: String, newValue: String): Unit = {
-            if (property.inputType == JsonInputType) {
-              io.circe.parser.decode[Json](newValue) match {
-                case Right(json) => property.handler(JsonValue(json))
-                case Left(_) =>
-              }
-            } else property.handler(JsonValue(Json.fromString(newValue)))
-          }
-        })
-      }, (newJson: Json) => {
-        val newText = if (property.inputType == JsonInputType) {
-          newJson.spaces2
-        } else TextInput.fromJson(property.key, newJson).getOrElse("")
+          input.text.addListener(new ChangeListener[String] {
+            override def changed(
+                observableValue: ObservableValue[_ <: String],
+                oldValue: String,
+                newValue: String
+            ): Unit = {
+              if (property.inputType == JsonInputType) {
+                io.circe.parser.decode[Json](newValue) match {
+                  case Right(json) => property.handler(JsonValue(json))
+                  case Left(_)     =>
+                }
+              } else property.handler(JsonValue(Json.fromString(newValue)))
+            }
+          })
+        },
+        (newJson: Json) => {
+          val newText = if (property.inputType == JsonInputType) {
+            newJson.spaces2
+          } else TextInput.fromJson(property.key, newJson).getOrElse("")
 
-        val rows = newText.split("\n").length
-        input.text.value = newText
-        input.setPrefRowCount(if(rows == 0) 1 else rows)
-      })
+          val rows = newText.split("\n").length
+          input.text.value = newText
+          input.setPrefRowCount(if (rows == 0) 1 else rows)
+        }
+      )
   }
 
 }

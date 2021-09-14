@@ -13,14 +13,20 @@ import scalafx.scene.text.{Text, TextAlignment}
 import scalafx.scene.transform.Affine
 import scalafx.scene.{Group, Node}
 
-class EditorGraphNodeFx(nodeId: String,
-                        geometry: Geometry,
-                        labelValue: Option[String],
-                        shape: NodeShape)(transformation: Affine,
-                                          handleSelect: ElementRef => Boolean => IO[Unit],
-                                          handleDrag: Option[DragStart[Node]] => IO[Unit],
-                                          handleDoubleClick: Any => IO[Unit]) extends Group { self =>
-  val defaultBorderStyle = shape.borderStyle.orElse(Some(BorderStyle("#888888", styleType = Some("line"), width = Some(1.0))))
+class EditorGraphNodeFx(
+    nodeId: String,
+    geometry: Geometry,
+    labelValue: Option[String],
+    shape: NodeShape
+)(
+    transformation: Affine,
+    handleSelect: ElementRef => Boolean => IO[Unit],
+    handleDrag: Option[DragStart[Node]] => IO[Unit],
+    handleDoubleClick: Any => IO[Unit]
+) extends Group { self =>
+  val defaultBorderStyle = shape.borderStyle.orElse(
+    Some(BorderStyle("#888888", styleType = Some("line"), width = Some(1.0)))
+  )
 
   lazy val fallBackShape = new Rectangle {
     x = 0
@@ -33,15 +39,20 @@ class EditorGraphNodeFx(nodeId: String,
   }
 
   val vectorShape: Shape = shape.shapeType match {
-    case Some(ShapeType.Ellipse) => new Ellipse {
-      centerX = geometry.width / 2
-      centerY = geometry.height / 2
-      radiusX = geometry.width / 2
-      radiusY = geometry.height / 2
-      fill = shape.fill.flatMap(_.color).map(Color.web).getOrElse(Color.Transparent)
-      stroke = shape.borderStyle.map(border => Color.web(border.color)) getOrElse Color.Transparent
-      strokeWidth = shape.borderStyle.flatMap(_.width).getOrElse(0.0)
-    }
+    case Some(ShapeType.Ellipse) =>
+      new Ellipse {
+        centerX = geometry.width / 2
+        centerY = geometry.height / 2
+        radiusX = geometry.width / 2
+        radiusY = geometry.height / 2
+        fill = shape.fill
+          .flatMap(_.color)
+          .map(Color.web)
+          .getOrElse(Color.Transparent)
+        stroke =
+          shape.borderStyle.map(border => Color.web(border.color)) getOrElse Color.Transparent
+        strokeWidth = shape.borderStyle.flatMap(_.width).getOrElse(0.0)
+      }
 
     case Some(ShapeType.RoundRectangle) =>
       new Rectangle {
@@ -51,8 +62,12 @@ class EditorGraphNodeFx(nodeId: String,
         arcHeight = 5.0
         width = geometry.width
         height = geometry.height
-        fill = shape.fill.flatMap(_.color).map(Color.web).getOrElse(Color.Transparent)
-        stroke = shape.borderStyle.map(border => Color.web(border.color)) getOrElse Color.Transparent
+        fill = shape.fill
+          .flatMap(_.color)
+          .map(Color.web)
+          .getOrElse(Color.Transparent)
+        stroke =
+          shape.borderStyle.map(border => Color.web(border.color)) getOrElse Color.Transparent
         strokeWidth = shape.borderStyle.flatMap(_.width).getOrElse(0.0)
       }
     case _ => fallBackShape
@@ -60,12 +75,15 @@ class EditorGraphNodeFx(nodeId: String,
 
   val nodeShape: Node = shape.image
     .flatMap(img => ImageLoaderFx.getImage(img))
-    .orElse(shape.svgContent.flatMap(svg => ImageLoaderFx.getImage(svg.refId))) match {
-    case Some(loaded) => new ImageView {
-      fitWidth = geometry.width
-      fitHeight = geometry.height
-      image = loaded
-    }
+    .orElse(
+      shape.svgContent.flatMap(svg => ImageLoaderFx.getImage(svg.refId))
+    ) match {
+    case Some(loaded) =>
+      new ImageView {
+        fitWidth = geometry.width
+        fitHeight = geometry.height
+        image = loaded
+      }
 
     case _ => vectorShape
   }
@@ -100,21 +118,35 @@ class EditorGraphNodeFx(nodeId: String,
 
   onMousePressed = new EventHandler[MouseEvent] {
     override def handle(event: MouseEvent): Unit = {
-      handleSelect(ElementRef(nodeId, NodeType))(event.isControlDown).unsafeRunSync()
+      handleSelect(ElementRef(nodeId, NodeType))(event.isControlDown)
+        .unsafeRunSync()
     }
   }
 
-  selectRect.onMousePressed = new EventHandler[MouseEvent]  {
+  selectRect.onMousePressed = new EventHandler[MouseEvent] {
     override def handle(event: MouseEvent): Unit = {
       event.consume()
-      val mousePos = transformation.inverseTransform(event.getSceneX, event.getSceneY)
+      val mousePos =
+        transformation.inverseTransform(event.getSceneX, event.getSceneY)
 
       if (event.getClickCount == 2) {
         handleDoubleClick(event).unsafeRunSync()
       }
 
       if (event.isPrimaryButtonDown) {
-        nodeDragStart = Some(DragStart(mousePos.getX, mousePos.getY, selectRect.x.value, selectRect.y.value, self, ElementRef(nodeId, NodeType), None, 0.0, 0.0))
+        nodeDragStart = Some(
+          DragStart(
+            mousePos.getX,
+            mousePos.getY,
+            selectRect.x.value,
+            selectRect.y.value,
+            self,
+            ElementRef(nodeId, NodeType),
+            None,
+            0.0,
+            0.0
+          )
+        )
       }
     }
   }
@@ -123,7 +155,8 @@ class EditorGraphNodeFx(nodeId: String,
     override def handle(event: MouseEvent): Unit = {
       event.consume()
 
-      val mousePos = transformation.inverseTransform(event.getSceneX, event.getSceneY)
+      val mousePos =
+        transformation.inverseTransform(event.getSceneX, event.getSceneY)
 
       if (event.isPrimaryButtonDown) {
         nodeDragStart = nodeDragStart.map { dragStart =>
@@ -136,7 +169,11 @@ class EditorGraphNodeFx(nodeId: String,
           selectRect.x = newX
           selectRect.y = newY
 
-          dragStart.copy(lastPos = Some(PagePoint(newX, newY)), deltaX = deltaX, deltaY = deltaY)
+          dragStart.copy(
+            lastPos = Some(PagePoint(newX, newY)),
+            deltaX = deltaX,
+            deltaY = deltaY
+          )
         }
       }
     }

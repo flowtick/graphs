@@ -10,17 +10,21 @@ trait JsonExample {
     import io.circe
     import io.circe.Json
 
-    val graph: Graph[Unit, String] = Graph.fromEdges(Set(
-      "A" --> "D",
-      "A" --> "C",
-      "A" --> "B",
-      "B" --> "E",
-      "B" --> "F",
-      "B" --> "G",
-      "E" --> "H"))
+    val graph: Graph[Unit, String] = Graph.fromEdges(
+      Set(
+        "A" --> "D",
+        "A" --> "C",
+        "A" --> "B",
+        "B" --> "E",
+        "B" --> "F",
+        "B" --> "G",
+        "E" --> "H"
+      )
+    )
 
     val json: Json = ToJson[Unit, Unit, String](graph)
-    val parsed: Either[circe.Error, JsonGraph[Unit, Unit, String]] = FromJson[Unit, Unit, String](json.noSpaces)
+    val parsed: Either[circe.Error, JsonGraph[Unit, Unit, String]] =
+      FromJson[Unit, Unit, String](json.noSpaces)
 
     require(parsed.map(_.graph).contains(graph))
     // #json_simple
@@ -43,14 +47,18 @@ trait JsonExample {
       override def apply(value: MyNode): String = value.id
     }
 
-    val graph: Graph[Unit, MyNode] = Graph.fromEdges(Set(
-      MyNode("1", 42) --> MyNode("2", 43)
-    ))
+    val graph: Graph[Unit, MyNode] = Graph.fromEdges(
+      Set(
+        MyNode("1", 42) --> MyNode("2", 43)
+      )
+    )
 
     implicit val nodeId = Identifiable.identify[MyNode](_.id)
 
     val json: Json = ToJson[Unit, Unit, MyNode](graph)
-    val parsed: Either[circe.Error, JsonGraph[Unit, Unit, MyNode]] = FromJson(json.noSpaces)
+    val parsed: Either[circe.Error, JsonGraph[Unit, Unit, MyNode]] = FromJson(
+      json.noSpaces
+    )
 
     require(parsed.map(_.graph).contains(graph))
     // #json_custom

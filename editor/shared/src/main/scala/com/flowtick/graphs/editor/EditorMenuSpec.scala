@@ -6,10 +6,12 @@ import cats.effect.IO
 import cats.implicits._
 import com.flowtick.graphs.graphml.{GraphML, GraphMLGraph}
 
-final case class Action(title: String,
-                        shortCut: String,
-                        handler: Any => Unit,
-                        icon: Option[String] = None) {
+final case class Action(
+    title: String,
+    shortCut: String,
+    handler: Any => Unit,
+    icon: Option[String] = None
+) {
   def fullTitle = s"$title [$shortCut]"
 }
 
@@ -17,34 +19,74 @@ sealed trait MenuType
 case object DropUp extends MenuType
 case object Toolbar extends MenuType
 
-final case class EditorMenuSpec(title: String,
-                                menuType: MenuType,
-                                actions: List[Action],
-                                icon: Option[String] = None)
+final case class EditorMenuSpec(
+    title: String,
+    menuType: MenuType,
+    actions: List[Action],
+    icon: Option[String] = None
+)
 
 trait EditorMenu extends EditorComponent {
   def messageBus: EditorMessageBus
 
-  lazy val editorMenus: List[EditorMenuSpec] = List (
-    EditorMenuSpec("File", Toolbar, actions = List(
-      Action("New File", "ctrl+n", triggerFileNew, Some("file")),
-      Action("Open File", "ctrl+o", triggerFileOpen, Some("upload")),
-      Action("Export JSON", "ctrl+shift+e", triggerExportJson, icon = Some("file-download")),
-      Action("Export XML", "ctrl+e", triggerExportXML, Some("file-code"))
-    ), icon = Some("file")),
-    EditorMenuSpec("Edit", Toolbar, actions = List(
-      Action("Undo", "ctrl+z", triggerUndo, icon = Some("undo")),
-      Action("Insert Element", "ins", triggerAdd, icon = Some("plus-circle")),
-      Action("Select All", "alt+a", triggerSelectAll, icon = Some("object-group")),
-      Action("Unselect", "alt+shift+a", triggerUnselect, icon = Some("object-ungroup")),
-      Action("Delete Selection", "del", triggerDelete, icon = Some("trash")),
-      Action("Connect Selection", "alt+c", toggleConnect, icon = Some("code-branch"))
-    )),
-    EditorMenuSpec("View", Toolbar, actions = List(
-      Action("Reset View", "ctrl+0", triggerResetView, icon = Some("search-location")),
-      Action("Show Palette", "f4", togglePalette, icon = Some("palette")),
-      Action("Show Properties", "f2", toggleEdit, icon = Some("edit")),
-    ))
+  lazy val editorMenus: List[EditorMenuSpec] = List(
+    EditorMenuSpec(
+      "File",
+      Toolbar,
+      actions = List(
+        Action("New File", "ctrl+n", triggerFileNew, Some("file")),
+        Action("Open File", "ctrl+o", triggerFileOpen, Some("upload")),
+        Action(
+          "Export JSON",
+          "ctrl+shift+e",
+          triggerExportJson,
+          icon = Some("file-download")
+        ),
+        Action("Export XML", "ctrl+e", triggerExportXML, Some("file-code"))
+      ),
+      icon = Some("file")
+    ),
+    EditorMenuSpec(
+      "Edit",
+      Toolbar,
+      actions = List(
+        Action("Undo", "ctrl+z", triggerUndo, icon = Some("undo")),
+        Action("Insert Element", "ins", triggerAdd, icon = Some("plus-circle")),
+        Action(
+          "Select All",
+          "alt+a",
+          triggerSelectAll,
+          icon = Some("object-group")
+        ),
+        Action(
+          "Unselect",
+          "alt+shift+a",
+          triggerUnselect,
+          icon = Some("object-ungroup")
+        ),
+        Action("Delete Selection", "del", triggerDelete, icon = Some("trash")),
+        Action(
+          "Connect Selection",
+          "alt+c",
+          toggleConnect,
+          icon = Some("code-branch")
+        )
+      )
+    ),
+    EditorMenuSpec(
+      "View",
+      Toolbar,
+      actions = List(
+        Action(
+          "Reset View",
+          "ctrl+0",
+          triggerResetView,
+          icon = Some("search-location")
+        ),
+        Action("Show Palette", "f4", togglePalette, icon = Some("palette")),
+        Action("Show Properties", "f2", toggleEdit, icon = Some("edit"))
+      )
+    )
   )
 
   def initMenus: IO[Unit]
@@ -52,16 +94,18 @@ trait EditorMenu extends EditorComponent {
   def bindShortcut(action: Action): IO[Unit]
   def triggerFileOpen: Any => Unit
 
-  override lazy val eval: Eval = ctx => ctx.effect(this) {
-    case exported: ExportedGraph => handleExported(exported)
-  }
+  override lazy val eval: Eval = ctx =>
+    ctx.effect(this) { case exported: ExportedGraph =>
+      handleExported(exported)
+    }
 
   override def init(model: EditorModel): IO[Unit] = for {
     _ <- initMenus
     tryBindings <- bindShortcuts.attempt
     _ <- tryBindings match {
       case Right(_) => IO.unit
-      case Left(error) => IO(println(s"unable to bind shortcuts? $error", error))
+      case Left(error) =>
+        IO(println(s"unable to bind shortcuts? $error", error))
     }
   } yield ()
 
@@ -69,7 +113,9 @@ trait EditorMenu extends EditorComponent {
     editorMenus.flatMap(_.actions).map(bindShortcut).sequence.void
 
   def toggleConnect: Any => Unit = _ => {
-    messageBus.publish(EditorToggle(EditorToggle.connectKey, Some(true))).unsafeRunSync()
+    messageBus
+      .publish(EditorToggle(EditorToggle.connectKey, Some(true)))
+      .unsafeRunSync()
   }
 
   def triggerFileNew: Any => Unit = _ => {
@@ -77,7 +123,9 @@ trait EditorMenu extends EditorComponent {
   }
 
   def togglePalette: Any => Unit = _ => {
-    messageBus.publish(EditorToggle(EditorToggle.paletteKey, None)).unsafeRunSync()
+    messageBus
+      .publish(EditorToggle(EditorToggle.paletteKey, None))
+      .unsafeRunSync()
   }
 
   def toggleEdit: Any => Unit = _ => {
@@ -100,9 +148,9 @@ trait EditorMenu extends EditorComponent {
     messageBus.publish(Export(JsonFormat)).unsafeRunSync()
   }
 
-  def triggerDelete : Any => Unit = _ => messageBus.publish(DeleteSelection).unsafeRunSync()
-  def triggerUndo : Any => Unit = _ => messageBus.publish(Undo).unsafeRunSync()
-  def triggerSelectAll : Any => Unit = _ => messageBus.publish(SelectAll).unsafeRunSync()
+  def triggerDelete: Any => Unit = _ => messageBus.publish(DeleteSelection).unsafeRunSync()
+  def triggerUndo: Any => Unit = _ => messageBus.publish(Undo).unsafeRunSync()
+  def triggerSelectAll: Any => Unit = _ => messageBus.publish(SelectAll).unsafeRunSync()
 
   def triggerAdd: Any => Unit = _ => {
     val id = UUID.randomUUID().toString

@@ -7,7 +7,10 @@ import scala.scalajs.js.annotation.JSGlobal
 trait AceSession extends js.Any {
   def setMode(mode: String): Unit = js.native
   def setValue(value: String): Unit = js.native
-  def on(event: String, handler: js.Function1[js.UndefOr[js.Object], Unit]): Unit = js.native
+  def on(
+      event: String,
+      handler: js.Function1[js.UndefOr[js.Object], Unit]
+  ): Unit = js.native
 }
 
 @js.native
@@ -19,7 +22,10 @@ trait AceConfig extends js.Any {
 trait AceEditor extends js.Any {
   def setTheme(theme: String): Unit = js.native
   def session: AceSession = js.native
-  def on(event: String, handler: js.Function1[js.UndefOr[js.Object], Unit]): Unit = js.native
+  def on(
+      event: String,
+      handler: js.Function1[js.UndefOr[js.Object], Unit]
+  ): Unit = js.native
   def getValue(): String = js.native
 }
 
