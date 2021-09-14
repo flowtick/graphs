@@ -3,6 +3,7 @@ package com.flowtick.graphs.graphml
 import cats.data.ValidatedNel
 import cats.data.Validated._
 import com.flowtick.graphs.graphml.GraphMLDatatype.isValueProperty
+import com.flowtick.graphs.layout.{EdgePath, PointSpec}
 import com.flowtick.graphs.style._
 
 import scala.xml.{Node, NodeSeq}
@@ -57,7 +58,7 @@ class GraphMLEdgeDatatype[T](edgeDatatype: Datatype[T]) extends Datatype[GraphML
           (for {
             shape <- edge.shape
             label <- shape.labelStyle
-            position <- label.position.orElse(Some(PointSpec(0.0, 0.0)))
+            position <- label.position.orElse(Some(StylePos(0.0, 0.0)))
           } yield <y:EdgeLabel alignment="center"
                                configuration="AutoFlippingLabel"
                                distance="2.0"
@@ -148,7 +149,7 @@ class GraphMLEdgeDatatype[T](edgeDatatype: Datatype[T]) extends Datatype[GraphML
             for {
               x <- GraphMLDatatype.singleAttributeValue("x", elem).map(_.toDouble).orElse(Some(0.0))
               y <- GraphMLDatatype.singleAttributeValue("y", elem).map(_.toDouble).orElse(Some(0.0))
-            } yield PointSpec(x, y)
+            } yield StylePos(x, y)
           )
           shape.copy(edgeStyle = shape.edgeStyle.map(_.copy(labelStyle = Some(label))), labelValue = Some(elem.text.trim))
 

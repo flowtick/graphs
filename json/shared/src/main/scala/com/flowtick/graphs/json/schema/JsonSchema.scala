@@ -33,6 +33,7 @@ final case class Schema[E]($id: Option[String] = None,
                         minLength: Option[Int] = None,
                         maxLength: Option[Int] = None,
                         pattern: Option[String] = None,
+                        format: Option[String] = None,
                         extension: Option[E] = None) {
   def definitionsCompat: Option[Map[String, Schema[E]]] = definitions.orElse($defs)
 }

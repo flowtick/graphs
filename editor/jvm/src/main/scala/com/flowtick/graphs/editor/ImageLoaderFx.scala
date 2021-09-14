@@ -1,14 +1,13 @@
 package com.flowtick.graphs.editor
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, FileOutputStream, InputStream}
-import java.util.Base64
 import cats.effect.IO
 import cats.implicits._
+import com.flowtick.graphs.editor.view.SVGTranscoder
 import com.flowtick.graphs.style.ImageSpec
-import org.apache.batik.transcoder.image.PNGTranscoder
-import org.apache.batik.transcoder.{SVGAbstractTranscoder, TranscoderInput, TranscoderOutput}
 import scalafx.scene.image.Image
 
+import java.io.{ByteArrayInputStream, FileOutputStream, InputStream}
+import java.util.Base64
 import scala.collection.mutable
 
 object ImageLoaderFx extends ImageLoader[Image] {
@@ -37,7 +36,7 @@ object ImageLoaderFx extends ImageLoader[Image] {
           case "dataUrl" =>
             imageSpec.data.split(",").toList match {
               case "data:image/png;base64" :: base64Data :: Nil =>
-                scaledImage(inputStreamFromBase64(base64Data) , scaleWidth, scaleHeight)
+                scaledImage(inputStreamFromBase64(base64Data), scaleWidth, scaleHeight)
 
               case "data:image/svg+xml;base64" :: base64Data :: Nil =>
                 renderSvg(ref, inputStreamFromBase64(base64Data), scaleWidth, scaleHeight)
@@ -47,7 +46,7 @@ object ImageLoaderFx extends ImageLoader[Image] {
           case "url" =>
             val loadImage = IO(scala.io.Source.fromURL(imageSpec.data)).bracket { imageSource =>
               for {
-                data <-  IO(new ByteArrayInputStream(imageSource.mkString.getBytes("UTF-8")))
+                data <- IO(new ByteArrayInputStream(imageSource.mkString.getBytes("UTF-8")))
                 image <- if (imageSpec.data.toLowerCase.endsWith(".svg")) {
                   renderSvg(ref, data, scaleWidth, scaleHeight)
                 } else IO(new Image(data, scaleWidth.getOrElse(defaultScale), scaleHeight.getOrElse(defaultScale), preserveRatio, smooth))
@@ -72,32 +71,6 @@ object ImageLoaderFx extends ImageLoader[Image] {
     new ByteArrayInputStream(Base64.getDecoder.decode(base64))
   }
 
-  private def renderSvg(id: String,
-                        input: InputStream,
-                        scaleWidth: Option[Double],
-                        scaleHeight: Option[Double]): IO[Image] = IO(input).bracket { data =>
-    val dpi = 100
-    val pixelUnitToMillimeter = (2.54f / dpi) * 10
-    val pngTranscoder = new PNGTranscoder()
-    pngTranscoder.addTranscodingHint(SVGAbstractTranscoder.KEY_PIXEL_UNIT_TO_MILLIMETER, pixelUnitToMillimeter)
-
-    scaleWidth.foreach(width => pngTranscoder.addTranscodingHint(SVGAbstractTranscoder.KEY_WIDTH, width.toFloat))
-    scaleHeight.foreach(height => pngTranscoder.addTranscodingHint(SVGAbstractTranscoder.KEY_HEIGHT, height.toFloat))
-
-    val input = new TranscoderInput(data)
-    val outputStream = new ByteArrayOutputStream()
-    val output = new TranscoderOutput(outputStream)
-    pngTranscoder.transcode(input, output)
-    val outputBytes = outputStream.toByteArray
-
-    val fileOut = new FileOutputStream(s"target/$id.png")
-    fileOut.write(outputBytes)
-    fileOut.flush()
-    fileOut.close()
-
-    scaledImage(new ByteArrayInputStream(outputBytes), scaleWidth, scaleHeight)
-  }(data => IO(data.close()))
-
   private def scaledImage(inputStream: InputStream,
                           scaleWidth: Option[Double],
                           scaleHeight: Option[Double]): IO[Image] = IO {
@@ -106,4 +79,20 @@ object ImageLoaderFx extends ImageLoader[Image] {
       throw new RuntimeException(s"unable to load image", image.exception.value)
     } else image
   }
+
+  def renderSvg(id: String,
+                input: InputStream,
+                scaleWidth: Option[Double],
+                scaleHeight: Option[Double]): IO[Image] =
+    SVGTranscoder
+      .transcodeSvgToPng(input, scaleWidth, scaleHeight)
+      .flatMap { bytes =>
+        val fileOut = new FileOutputStream(s"target/$id.png")
+        fileOut.write(bytes)
+        fileOut.flush()
+        fileOut.close()
+
+        scaledImage(new ByteArrayInputStream(bytes), scaleWidth, scaleHeight)
+      }
+
 }

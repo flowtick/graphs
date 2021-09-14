@@ -1,6 +1,6 @@
 package com.flowtick.graphs.graphml
 
-import com.flowtick.graphs.layout.{DefaultGeometry, Geometry}
+import com.flowtick.graphs.layout.{DefaultGeometry, EdgePath, Geometry}
 import com.flowtick.graphs.{Edge, Graph, Node, Relation}
 import com.flowtick.graphs.style._
 

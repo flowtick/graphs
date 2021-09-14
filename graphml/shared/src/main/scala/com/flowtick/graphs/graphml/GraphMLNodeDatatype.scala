@@ -71,7 +71,7 @@ class GraphMLNodeDatatype[T](nodeValueDatatype: Datatype[T]) extends Datatype[Gr
           for {
             x <- GraphMLDatatype.singleAttributeValue("x", elem).map(_.toDouble).orElse(Some(0.0))
             y <- GraphMLDatatype.singleAttributeValue("y", elem).map(_.toDouble).orElse(Some(0.0))
-          } yield PointSpec(x, y)
+          } yield StylePos(x, y)
         )
         shape.copy(nodeShape = shape.nodeShape.map(_.copy(labelStyle = Some(label))), labelValue = Option(elem.text.trim))
 

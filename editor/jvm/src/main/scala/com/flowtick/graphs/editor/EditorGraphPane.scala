@@ -3,20 +3,20 @@ package com.flowtick.graphs.editor
 import cats.effect.IO
 import com.flowtick.graphs
 import com.flowtick.graphs._
-import com.flowtick.graphs.style._
-import com.flowtick.graphs.layout.{DefaultGeometry, Geometry}
+import com.flowtick.graphs.editor.util.DrawUtil
+import com.flowtick.graphs.editor.view.GraphElement
+import com.flowtick.graphs.layout.{DefaultGeometry, PointSpec}
 import javafx.event.EventHandler
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.scene.layout.{BorderPane, Pane, Priority}
 import scalafx.scene.paint.Color
+import scalafx.scene.shape.Line._
 import scalafx.scene.shape.{Circle, Line, Polygon, Polyline}
 import scalafx.scene.text.{Text, TextAlignment}
 import scalafx.scene.transform.Affine
 import scalafx.scene.{Group, Node}
-import Line._
-import com.flowtick.graphs.editor.util.DrawUtil
 
-final case class JFXElement(id: ElementRef, group: Node, selectElem: Node, label : Node) extends GraphElement[Node]
+final case class JFXElement(id: ElementRef, group: Node, selectElem: Option[Node], label : Node) extends GraphElement[Node]
 
 class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean => IO[Unit],
                       handleDrag: Option[DragStart[Node]] => IO[Unit],
@@ -199,7 +199,7 @@ class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean =>
 
       group.children.add(edgeGroup)
 
-      JFXElement(ElementRef(edge.id, EdgeType), edgeGroup, selectGroup, label)
+      JFXElement(ElementRef(edge.id, EdgeType), edgeGroup, Some(selectGroup), label)
     }
   }
 
@@ -210,17 +210,17 @@ class EditorGraphPane(layout: BorderPane)(handleSelect: ElementRef => Boolean =>
     group.children.add(graphNode)
     group.children.add(graphNode.selectRect)
 
-    Some(JFXElement(ElementRef(node.id, NodeType), graphNode, graphNode.selectRect, graphNode.label))
+    Some(JFXElement(ElementRef(node.id, NodeType), graphNode, Some(graphNode.selectRect), graphNode.label))
   }
 
   override def setSelection(element: GraphElement[Node]): IO[Unit] = element.id.elementType match {
-    case NodeType => IO(element.selectElem.setVisible(true))
-    case EdgeType => IO(element.selectElem.visible = true)
+    case NodeType => IO(element.selectElem.foreach(_.setVisible(true)))
+    case EdgeType => IO(element.selectElem.foreach(_.visible = true))
   }
 
   override def unsetSelection(element: GraphElement[Node]): IO[Unit] = element.id.elementType match {
-    case NodeType => IO(element.selectElem.setVisible(false))
-    case EdgeType => IO(element.selectElem.visible = false)
+    case NodeType => IO(element.selectElem.foreach(_.setVisible(false)))
+    case EdgeType => IO(element.selectElem.foreach(_.visible = false))
   }
 
   override def deleteElement(element: GraphElement[Node]): IO[Unit] = IO {

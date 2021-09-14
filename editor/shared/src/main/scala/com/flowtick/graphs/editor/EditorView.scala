@@ -3,7 +3,8 @@ package com.flowtick.graphs.editor
 import cats.effect.IO
 import cats.effect.concurrent.Ref
 import cats.implicits._
-import com.flowtick.graphs.style.PointSpec
+import com.flowtick.graphs.editor.view.GraphElement
+import com.flowtick.graphs.layout.PointSpec
 import com.flowtick.graphs.{Edge, Node}
 
 final case class PanContext(mouseAnchorX: Double, mouseAnchorY: Double, translateAnchorX: Double, translateAnchorY: Double)
@@ -78,17 +79,10 @@ trait Page[T, E] {
   def endDrag: E => Option[DragStart[T]] = _ => dragStartRef.getAndUpdate(_ => None).unsafeRunSync()
 }
 
-trait GraphElement[+T] {
-  def id: ElementRef
-  def group: T
-  def selectElem: T
-  def label: T
-}
-
 final case class ViewModel[T](graphElements: Map[ElementRef, GraphElement[T]])
 
 trait EditorView[T, E] extends EditorComponent {
-  lazy val page = Ref.unsafe[IO, Page[T, E]](createPage.unsafeRunSync())
+  lazy val pageRef: Ref[IO, Option[Page[T, E]]] = Ref.unsafe(None)
   lazy val viewModel: Ref[IO, ViewModel[T]] = Ref.unsafe(ViewModel(Map.empty))
 
   override def order: Double = 0.4
@@ -96,6 +90,8 @@ trait EditorView[T, E] extends EditorComponent {
   def createPage: IO[Page[T, E]]
 
   def messageBus: EditorMessageBus
+
+  protected def requirePage: IO[Page[T, E]] = pageRef.get.flatMap(IO.fromOption(_)(new IllegalStateException("page not set")))
 
   def handleSelect(element: ElementRef): Boolean => IO[Unit] = append => for {
     vm <- viewModel.get
@@ -114,8 +110,7 @@ trait EditorView[T, E] extends EditorComponent {
   } yield messageBus.publish(MoveBy(dragEvent.deltaX, dragEvent.deltaY)).void).getOrElse(IO.unit)
 
   def appendEdge(editorModel: EditorModel)(edge: Edge[EditorGraphEdge]): IO[Option[GraphElement[T]]] = for {
-    page <- page.get
-
+    page <- requirePage
     edgeElement <- page.addEdge(edge, editorModel)
 
     _ <- {
@@ -129,7 +124,7 @@ trait EditorView[T, E] extends EditorComponent {
   } yield edgeElement
 
   def appendNode(editorModel: EditorModel)(node: Node[EditorGraphNode]): IO[Option[GraphElement[T]]] = for {
-    pageElem <- page.get
+    pageElem <- requirePage
     nodeElement <- pageElem.addNode(node, editorModel)
     _ <- {
       def withNode(vm: ViewModel[T]): ViewModel[T] = nodeElement
@@ -156,7 +151,7 @@ trait EditorView[T, E] extends EditorComponent {
                     id: ElementRef,
                     model: EditorModel)(update: EL => IO[Option[GraphElement[T]]]): IO[Option[GraphElement[T]]] = for {
     vm <- viewModel.get
-    p <- page.get
+    p <- requirePage
     updated <- vm.graphElements.get(id) match {
       case Some(element: GraphElement[T]) =>
         p.deleteElement(element) *> update(value).flatTap {
@@ -175,15 +170,13 @@ trait EditorView[T, E] extends EditorComponent {
     }
   } yield updated
 
-  def handleLoaded(editorModel: EditorModel): IO[Unit] = {
+
+  override def init(model: EditorModel): IO[Unit] =
     for {
-      oldPage <- page.get
       newPage <- createPage
-      _ <- page.set(newPage)
-      _ <- setNewPage(newPage, oldPage)
-      rendered <- renderGraph(editorModel)
+      _ <- pageRef.set(Some(newPage))
+      rendered <- renderGraph(model)
     } yield rendered
-  }
 
   def renderGraph(editorModel: EditorModel): IO[Unit] = for {
     vm <- viewModel.get
@@ -195,7 +188,7 @@ trait EditorView[T, E] extends EditorComponent {
   def handleEvents: Eval = ctx => ctx.effect(this) {
     case ResetTransformation => handleResetTransformation
 
-    case Reset => handleLoaded(ctx.model).void
+    case Reset => init(ctx.model).void
 
     case setModel: SetModel => renderGraph(setModel.model)
 
@@ -208,7 +201,7 @@ trait EditorView[T, E] extends EditorComponent {
   }.flatMap(handleCreateNode)
 
   def handleResetTransformation: IO[Unit] = for {
-    p <- page.get
+    p <- requirePage
     _ <- p.resetTransformation
   } yield ()
 
@@ -216,7 +209,7 @@ trait EditorView[T, E] extends EditorComponent {
 
   def handleCreateNode: Eval = ctx => ctx.transformIO {
     case create: AddNode => for {
-      p <- page.get
+      p <- requirePage
       center = p.pageCenter
     } yield {
       ctx
@@ -227,18 +220,17 @@ trait EditorView[T, E] extends EditorComponent {
   def updateSelections(oldSelections: Set[ElementRef], newSelections: Set[ElementRef]): IO[Unit] =
     for {
       vm <- viewModel.get
-      p <- page.get
+      p <- requirePage
       _ <- IO {
+        // TODO: FP
         oldSelections.foreach(elem => vm.graphElements.get(elem).foreach(p.unsetSelection(_).unsafeRunSync()))
         newSelections.foreach(elem => vm.graphElements.get(elem).foreach(p.setSelection(_).unsafeRunSync()))
       }
     } yield ()
 
-  def setNewPage(newPage: Page[T, E], oldPage: Page[T, E]): IO[Unit]
-
   def deleteElementRef(elementRef: ElementRef): IO[Unit] = for {
     vm <- viewModel.get
-    p <- page.get
+    p <- requirePage
     _ <- vm.graphElements.get(elementRef).map(element => p.deleteElement(element)).getOrElse(IO.unit)
     _ <- viewModel.update(vm => vm.copy(graphElements = vm.graphElements - elementRef))
   } yield ()
