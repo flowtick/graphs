@@ -1,4 +1,3 @@
-[![travis ci](https://api.travis-ci.org/flowtick/graphs.svg?branch=master)](https://travis-ci.org/flowtick/graphs)
 [![latest release](https://img.shields.io/maven-central/v/com.flowtick/graphs-core_2.12.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.flowtick%20AND%20a:graphs*)
 
 # graphs
