@@ -7,32 +7,47 @@ val catsV = "2.6.1"
 val xmlsV = "0.1.11"
 val circeVersion = "0.14.1"
 
-lazy val commonSettings = Seq(
-  resolvers ++= Seq(
-    Resolver.bintrayRepo("flowtick", "jgraphx")
-  ),
+inThisBuild(List(
   organization := "com.flowtick",
-  scalaVersion := mainScalaVersion,
-  crossScalaVersions := Seq(mainScalaVersion, compatScalaVersion),
-  libraryDependencies ++=
-    "org.scalatest" %%% "scalatest" % "3.2.9" % Test ::
-    "org.scalacheck" %% "scalacheck" % "1.15.4" % Test ::
-    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.5.0" ::
-    Nil,
-  licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://flowtick.github.io/graphs")),
+  licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+  developers := List(
+    Developer(id = "adrobisch", name = "Andreas Drobisch", email = "github@drobisch.com", url = url("http://drobisch.com"))
+  ),
   scmInfo := Some(
     ScmInfo(
       url("https://github.com/flowtick/graphs"),
       "scm:git@github.com:flowtick/graphs.git"
     )
   ),
-  developers := List(
-    Developer(id = "adrobisch", name = "Andreas Drobisch", email = "github@drobisch.com", url = url("http://drobisch.com"))
+  scalaVersion := mainScalaVersion,
+  crossScalaVersions := Seq(mainScalaVersion, compatScalaVersion),
+  githubWorkflowPublish := Seq(
+    WorkflowStep.Sbt(
+      List("ci-release"),
+      env = Map(
+        "PGP_PASSPHRASE" -> "${{ secrets.PGP_PASSPHRASE }}",
+        "PGP_SECRET" -> "${{ secrets.PGP_SECRET }}",
+        "SONATYPE_PASSWORD" -> "${{ secrets.SONATYPE_PASSWORD }}",
+        "SONATYPE_USERNAME" -> "${{ secrets.SONATYPE_USERNAME }}"
+      )
+    )
   ),
+  githubWorkflowTargetTags ++= Seq("v*"),
+  githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v"))),
+  githubWorkflowBuild := Seq(WorkflowStep.Sbt(List("scalafmtCheckAll", "test"))),
+  dynverSeparator := "-"
+))
+
+lazy val commonSettings = Seq(
+  scalacOptions += (if (scalaVersion.value.contains("2.13")) "" else "-Ypartial-unification"),
+  libraryDependencies ++=
+    "org.scalatest" %%% "scalatest" % "3.2.9" % Test ::
+    "org.scalacheck" %% "scalacheck" % "1.15.4" % Test ::
+    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.5.0" ::
+    Nil,
   autoAPIMappings := true,
-  siteSubdirName in ScalaUnidoc := "latest/api",
-  scalacOptions += (if (scalaVersion.value.contains("2.13")) "" else "-Ypartial-unification")
+  siteSubdirName in ScalaUnidoc := "latest/api"
 )
 
 lazy val core = (crossProject(JVMPlatform, JSPlatform) in file(".") / "core")
