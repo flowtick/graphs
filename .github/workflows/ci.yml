@@ -52,7 +52,7 @@ jobs:
       - name: Check that workflows are up to date
         run: sbt ++${{ matrix.scala }} githubWorkflowCheck
 
-      - run: sbt ++${{ matrix.scala }} scalafmtCheckAll test
+      - run: sbt ++${{ matrix.scala }} scalafmtCheckAll test docs/makeSite
 
       - name: Compress target directories
         run: tar cf targets.tar layout/jvm/target editor/jvm/target docs/target layout/js/target json/jvm/target core/js/target examples/js/target graphml/jvm/target style/js/target editor/js/target style/jvm/target core/jvm/target examples/jvm/target graphml/js/target json/js/target cats/js/target cats/jvm/target target project/target
