@@ -36,7 +36,7 @@ inThisBuild(List(
   githubWorkflowTargetTags ++= Seq("v*"),
   githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v"))),
   githubWorkflowBuild := Seq(WorkflowStep.Sbt(List("scalafmtCheckAll", "test", "docs/makeSite"))),
-  githubWorkflowJavaVersions := Seq("adopt@1.16.0-1"),
+  githubWorkflowJavaVersions := Seq("adopt@1.15.0-2"),
   dynverSeparator := "-"
 ))
 
