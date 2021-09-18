@@ -1,221 +1,143 @@
 <!DOCTYPE html>
-<html lang="en" class="no-js">
+<html class="no-js" lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="x-ua-compatible" content="ie=edge">
-<meta name="description" content="graphs">
-<meta name="generator" content="Paradox, paradox-material-theme=0.6.0, mkdocs-material=3.0.3">
-
-<meta name="lang:clipboard.copy" content="Copy to clipboard">
-<meta name="lang:clipboard.copied" content="Copied to clipboard">
-<meta name="lang:search.language" content="">
-<meta name="lang:search.pipeline.stopwords" content="true">
-<meta name="lang:search.pipeline.trimmer" content="true">
-<meta name="lang:search.result.none" content="No matching documents">
-<meta name="lang:search.result.one" content="1 matching document">
-<meta name="lang:search.result.other" content="# matching documents">
-<meta name="lang:search.tokenizer" content="[\s\-]+">
-
-
-<meta name="description" content="graphs">
-<link rel="shortcut icon" href="assets/images/favicon.png">
 <title>Algorithms · graphs</title>
-<link rel="stylesheet" href="assets/stylesheets/application.451f80e5.css">
-<link rel="stylesheet" href="assets/stylesheets/application-palette.22915126.css">
-<meta name="theme-color" content="#4caf50" />
-<link rel="stylesheet" href="lib/material__tabs/dist/mdc.tabs.min.css">
-<link rel="stylesheet" href="lib/prettify/prettify.css">
-<script src="assets/javascripts/modernizr.1aa3b519.js"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700|Iosevka">
-<style>
-body,input{font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif}
-code,kbd,pre{font-family:"Iosevka","Courier New",Courier,monospace}
-</style>
-<link rel="stylesheet" href="assets/fonts/font-awesome.css">
-<link rel="stylesheet" href="assets/fonts/material-icons.css">
-<link rel="stylesheet" href="assets/stylesheets/paradox-material-theme.css">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content='docs'/>
+<link rel="canonical" href="https://flowtick.github.io/graphsalgorithms.html"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="js/page.js"></script>
+<script type="text/javascript" src="js/warnOldVersion.js"></script>
+<script type="text/javascript" src="js/groups.js"></script>
+<script type="text/javascript" src="js/snippets.js"></script>
+<link rel="stylesheet" type="text/css" href="lib/foundation/dist/foundation.min.css"/>
+<link rel="stylesheet" type="text/css" href="css/page.css"/>
+
+<!--
+<link rel="shortcut icon" href="images/favicon.ico" />
+-->
 </head>
-<body
-data-md-color-primary="green"
-data-md-color-accent="green"
->
-<input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
-<input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-<label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
-<header class="md-header" data-md-component="header">
-<nav class="md-header-nav md-grid">
-<div class="md-flex">
-<div class="md-flex__cell md-flex__cell--shrink">
-<a href="index.html" title="graphs" class="md-header-nav__button md-logo">
-<i class="md-icon">linear_scale</i>
-</a>
-</div>
-<div class="md-flex__cell md-flex__cell--shrink">
-<label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
-</div>
-<div class="md-flex__cell md-flex__cell--stretch">
-<div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-<span class="md-header-nav__topic">
-graphs
-</span>
-<span class="md-header-nav__topic">
-Algorithms
-</span>
-</div>
-</div>
-<div class="md-flex__cell md-flex__cell--shrink">
-<label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
-<div class="md-search" data-md-component="search" role="dialog">
-<label class="md-search__overlay" for="__search"></label>
-<div class="md-search__inner" role="search">
-<form class="md-search__form" name="search">
-<input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
-<label class="md-icon md-search__icon" for="__search"></label>
-<button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">&#xE5CD;</button>
-</form>
-<div class="md-search__output">
-<div class="md-search__scrollwrap" data-md-scrollfix>
-<div class="md-search-result" data-md-component="result">
-<div class="md-search-result__meta">
-Type to start searching
-</div>
-<ol class="md-search-result__list"></ol>
-</div>
-</div>
-</div>
-</div>
-</div>
 
-</div>
-<div class="md-flex__cell md-flex__cell--shrink">
-<div class="md-header-nav__source">
-<a href="https://github.com/flowtick/graphs"
-title="Go to repository"
-class="md-source"
-data-md-source="github">
-<div class="md-source__icon">
-<i class="fa fa-github"></i>
-</div>
-<div class="md-source__repository">
-flowtick/graphs
-</div>
-</a>
+<body>
+<div class="off-canvas-wrapper">
+<div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
 
-</div>
-</div>
-</div>
-</nav>
-</header>
-
-<div class="md-container">
-<main class="md-main">
-<div class="md-main__inner md-grid" data-md-component="container">
-<div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
-<div class="md-sidebar__scrollwrap">
-<div class="md-sidebar__inner">
-<nav class="md-nav md-nav--primary" data-md-level="0" style="visibility: hidden">
-<label class="md-nav__title md-nav__title--site" for="drawer">
-<a href="index.html" title="graphs" class="md-nav__button md-logo">
-<span class="md-nav__button md-logo">
-<i class="md-icon">linear_scale</i>
+<div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
+<nav class="off-canvas-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>graphs
 </a>
-<a href="index.html" title="graphs">
-graphs
-</a>
-</label>
-<div class="md-nav__source">
-<a href="https://github.com/flowtick/graphs"
-title="Go to repository"
-class="md-source"
-data-md-source="github">
-<div class="md-source__icon">
-<i class="fa fa-github"></i>
+<div class="version-number">
+0.6.0
 </div>
-<div class="md-source__repository">
-flowtick/graphs
 </div>
-</a>
-
-</div>
+<div class="nav-toc">
 <ul>
   <li><a href="setup.html" class="page">Setup</a></li>
   <li><a href="creating-graphs.html" class="page">Creating graphs</a></li>
   <li><a href="algorithms.html" class="active page">Algorithms</a></li>
   <li><a href="json.html" class="page">JSON support</a></li>
   <li><a href="graphml.html" class="page">GraphML support</a></li>
+  <li><a href="layout.html" class="page">Layout</a></li>
   <li><a href="cats.html" class="page">cats support</a></li>
   <li><a href="editor.html" class="page">Editor</a></li>
 </ul>
-<nav class="md-nav md-nav--secondary">
-<label class="md-nav__title" for="__toc">Table of contents</label>
-<ul>
-  <li><a href="algorithms.html#algorithms" class="header">Algorithms</a>
-  <ul>
-    <li><a href="algorithms.html#depth-first-traversal" class="header">Depth-first traversal</a></li>
-    <li><a href="algorithms.html#breadth-first-traversal" class="header">Breadth-first traversal</a></li>
-    <li><a href="algorithms.html#topological-sorting-using-a-depth-first-approach" class="header">Topological sorting using a depth-first approach</a></li>
-    <li><a href="algorithms.html#dijkstras-algorithm-for-shortest-paths" class="header">Dijkstras algorithm for shortest paths</a></li>
-  </ul></li>
-</ul>
-</nav>
+</div>
 
 </nav>
-<ul style="display: none">
-<li class="md-nav__item md-version" id="project.version">
-<label class="md-nav__link" for="__version">
-<i class="md-icon" title="Version">label_outline</i> 0.5.0
-</label>
-</li>
-</ul>
 </div>
-</div>
-</div>
-<div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
-<div class="md-sidebar__scrollwrap">
-<div class="md-sidebar__inner">
-<nav class="md-nav md-nav--secondary">
-<label class="md-nav__title" for="__toc">Table of contents</label>
-<ul>
-  <li><a href="algorithms.html#algorithms" class="header">Algorithms</a>
-  <ul>
-    <li><a href="algorithms.html#depth-first-traversal" class="header">Depth-first traversal</a></li>
-    <li><a href="algorithms.html#breadth-first-traversal" class="header">Breadth-first traversal</a></li>
-    <li><a href="algorithms.html#topological-sorting-using-a-depth-first-approach" class="header">Topological sorting using a depth-first approach</a></li>
-    <li><a href="algorithms.html#dijkstras-algorithm-for-shortest-paths" class="header">Dijkstras algorithm for shortest paths</a></li>
-  </ul></li>
-</ul>
-</nav>
 
+<div class="off-canvas-content" data-off-canvas-content>
+
+<header class="site-header expanded row">
+<div class="small-12 column">
+<a href="#" class="off-canvas-toggle hide-for-medium" data-toggle="off-canvas-menu"><svg class="svg-icon svg-icon-menu" version="1.1" id="Menu" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve"> <path class="svg-icon-menu-path" fill="#53CDEC" d="M16.4,9H3.6C3.048,9,3,9.447,3,10c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,9.447,16.952,9,16.4,9z M16.4,13
+H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
+C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
+</a>
+<div class="title"><a href="index.html">graphs</a></div>
+
+<!--
+<a href="https://www.example.com" class="logo show-for-medium">logo</a>
+-->
+</div>
+</header>
+
+<div class="expanded row">
+
+<div class="medium-3 large-2 show-for-medium column">
+<nav class="site-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>graphs
+</a>
+<div class="version-number">
+0.6.0
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="setup.html" class="page">Setup</a></li>
+  <li><a href="creating-graphs.html" class="page">Creating graphs</a></li>
+  <li><a href="algorithms.html" class="active page">Algorithms</a></li>
+  <li><a href="json.html" class="page">JSON support</a></li>
+  <li><a href="graphml.html" class="page">GraphML support</a></li>
+  <li><a href="layout.html" class="page">Layout</a></li>
+  <li><a href="cats.html" class="page">cats support</a></li>
+  <li><a href="editor.html" class="page">Editor</a></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="small-12 medium-9 large-10 column">
+<section class="site-content">
+
+<span id="version-warning"></span>
+
+<div class="page-header row">
+<div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="index.html">graphs</a></li>
+  <li>Algorithms</li>
+</ul>
 </div>
 </div>
 </div>
-<div class="md-content">
-<article class="md-content__inner md-typeset">
-<div class="md-content__searchable">
+
+<div class="page-content row">
+<div class="small-12 large-9 column" id="docs">
 <h1><a href="#algorithms" name="algorithms" class="anchor"><span class="anchor-link"></span></a>Algorithms</h1>
 <p><code>graphs</code> allows ad-hoc extension of graph instances so that you can execute some common operations and algorithms on it.</p>
 <p>Currently, the following algorithms are supported:</p>
 <h2><a href="#depth-first-traversal" name="depth-first-traversal" class="anchor"><span class="anchor-link"></span></a>Depth-first traversal</h2>
 <p>A depth first traversal visits every node <em>per branch / path</em> which means that for every node the first child will be visited and the search will be continued there, before going to its siblings.</p>
 <p>Every node will be visited.</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.5.0/examples/shared/src/main/scala/DfsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.6.0/examples/shared/src/main/scala/examples/DfsExample.scala" target="_blank" title="Go to snippet source">source</a><code class="language-scala">package examples
+
+import com.flowtick.graphs._
 import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
 
 trait DfsExample {
-  val graph = Graph.fromEdges(Set(
-    &quot;1&quot; --&gt; &quot;2&quot;,
-    &quot;1&quot; --&gt; &quot;9&quot;,
-
-    &quot;2&quot; --&gt; &quot;6&quot;,
-    &quot;2&quot; --&gt; &quot;3&quot;,
-
-    &quot;3&quot; --&gt; &quot;5&quot;,
-    &quot;3&quot; --&gt; &quot;4&quot;,
-
-    &quot;6&quot; --&gt; &quot;7&quot;,
-    &quot;6&quot; --&gt; &quot;8&quot;))
+  val graph = Graph.fromEdges(
+    Set(
+      &quot;1&quot; --&gt; &quot;2&quot;,
+      &quot;1&quot; --&gt; &quot;9&quot;,
+      &quot;2&quot; --&gt; &quot;6&quot;,
+      &quot;2&quot; --&gt; &quot;3&quot;,
+      &quot;3&quot; --&gt; &quot;5&quot;,
+      &quot;3&quot; --&gt; &quot;4&quot;,
+      &quot;6&quot; --&gt; &quot;7&quot;,
+      &quot;6&quot; --&gt; &quot;8&quot;
+    )
+  )
 
   println(graph.dfs(&quot;1&quot;).run)
   // List(1, 9, 2, 6, 8, 7, 3, 5, 4)
@@ -223,19 +145,24 @@ trait DfsExample {
 <h2><a href="#breadth-first-traversal" name="breadth-first-traversal" class="anchor"><span class="anchor-link"></span></a>Breadth-first traversal</h2>
 <p>A breadth first traversal visits every node <em>per layer</em>, which means that first all child nodes will be visited before continuing with their children.</p>
 <p>Every node will be visited.</p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.5.0/examples/shared/src/main/scala/BfsExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.6.0/examples/shared/src/main/scala/examples/BfsExample.scala" target="_blank" title="Go to snippet source">source</a><code class="language-scala">package examples
+
+import com.flowtick.graphs._
 import com.flowtick.graphs.algorithm._
 import com.flowtick.graphs.defaults._
 
 trait BfsExample {
-  val graph = Graph.fromEdges(Set(
-    &quot;A&quot; --&gt; &quot;D&quot;,
-    &quot;A&quot; --&gt; &quot;C&quot;,
-    &quot;A&quot; --&gt; &quot;B&quot;,
-    &quot;B&quot; --&gt; &quot;E&quot;,
-    &quot;B&quot; --&gt; &quot;F&quot;,
-    &quot;B&quot; --&gt; &quot;G&quot;,
-    &quot;E&quot; --&gt; &quot;H&quot;))
+  val graph = Graph.fromEdges(
+    Set(
+      &quot;A&quot; --&gt; &quot;D&quot;,
+      &quot;A&quot; --&gt; &quot;C&quot;,
+      &quot;A&quot; --&gt; &quot;B&quot;,
+      &quot;B&quot; --&gt; &quot;E&quot;,
+      &quot;B&quot; --&gt; &quot;F&quot;,
+      &quot;B&quot; --&gt; &quot;G&quot;,
+      &quot;E&quot; --&gt; &quot;H&quot;
+    )
+  )
 
   println(graph.bfs(&quot;A&quot;).run)
   // List(A, B, C, D, E, F, G, H)
@@ -243,23 +170,25 @@ trait BfsExample {
 <h2><a href="#topological-sorting-using-a-depth-first-approach" name="topological-sorting-using-a-depth-first-approach" class="anchor"><span class="anchor-link"></span></a>Topological sorting using a depth-first approach</h2>
 <p><blockquote> <a href="https://en.wikipedia.org/wiki/Topological_sorting">https://en.wikipedia.org/wiki/Topological_sorting</a>:</p>
 <p>&ldquo;topological ordering of a directed graph is a linear ordering of its vertices such that for every directed edge uv from vertex u to vertex v, u comes before v in the ordering. For instance, the vertices of the graph may represent tasks to be performed, and the edges may represent constraints that one task must be performed before another&rdquo; </blockquote></p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.5.0/examples/shared/src/main/scala/TopologicalSortingExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs._
-import com.flowtick.graphs.defaults._
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.6.0/examples/shared/src/main/scala/examples/TopologicalSortingExample.scala" target="_blank" title="Go to snippet source">source</a><code class="language-scala">package examples
+
+import com.flowtick.graphs._
 import com.flowtick.graphs.algorithm._
+import com.flowtick.graphs.defaults._
 
 trait TopologicalSortingExample {
-  lazy val graph = Graph.fromEdges(Set(
-    &quot;A&quot; --&gt; &quot;B&quot;,
-    &quot;B&quot; --&gt; &quot;C&quot;,
-    &quot;D&quot; --&gt; &quot;A&quot;))
+  lazy val graph = Graph.fromEdges(Set(&quot;A&quot; --&gt; &quot;B&quot;, &quot;B&quot; --&gt; &quot;C&quot;, &quot;D&quot; --&gt; &quot;A&quot;))
 
-  lazy val clothingDependencies = Graph.fromEdges(Set(
-    &quot;Underpants&quot; --&gt; &quot;Pants&quot;,
-    &quot;Pants&quot; --&gt; &quot;Coat&quot;,
-    &quot;Pullover&quot; --&gt; &quot;Coat&quot;,
-    &quot;Undershirt&quot; --&gt; &quot;Pullover&quot;,
-    &quot;Pants&quot; --&gt; &quot;Shoes&quot;,
-    &quot;Socks&quot; --&gt; &quot;Shoes&quot;))
+  lazy val clothingDependencies = Graph.fromEdges(
+    Set(
+      &quot;Underpants&quot; --&gt; &quot;Pants&quot;,
+      &quot;Pants&quot; --&gt; &quot;Coat&quot;,
+      &quot;Pullover&quot; --&gt; &quot;Coat&quot;,
+      &quot;Undershirt&quot; --&gt; &quot;Pullover&quot;,
+      &quot;Pants&quot; --&gt; &quot;Shoes&quot;,
+      &quot;Socks&quot; --&gt; &quot;Shoes&quot;
+    )
+  )
 
   println(graph.topologicalSort)
   // List(D, A, B, C)
@@ -270,102 +199,125 @@ trait TopologicalSortingExample {
 <h2><a href="#dijkstras-algorithm-for-shortest-paths" name="dijkstras-algorithm-for-shortest-paths" class="anchor"><span class="anchor-link"></span></a>Dijkstras algorithm for shortest paths</h2>
 <p><blockquote> <a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm">https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm</a>:</p>
 <p>For a given source node in the graph, the algorithm finds the shortest path between that node and every other. It can also be used for finding the shortest paths from a single node to a single destination node by stopping the algorithm once the shortest path to the destination node has been determined. </blockquote></p>
-<pre class="prettyprint"><a class="icon go-to-source" href="https://github.com/flowtick/graphs/tree/v0.5.0/examples/shared/src/main/scala/DijkstraExample.scala" target="_blank" title="Go to snippet source"></a><code class="language-scala">import com.flowtick.graphs.Graph
-import com.flowtick.graphs.defaults._
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.6.0/examples/shared/src/main/scala/examples/DijkstraExample.scala" target="_blank" title="Go to snippet source">source</a><code class="language-scala">package examples
+
+import com.flowtick.graphs.Graph
 import com.flowtick.graphs.algorithm._
+import com.flowtick.graphs.defaults._
 
 object DijkstraGraph {
   // example taken from https://de.wikipedia.org/wiki/Dijkstra-Algorithmus
-  val cities: Graph[Int, String] = Graph.fromEdges(Set(
-    &quot;Frankfurt&quot; --&gt; (85, &quot;Mannheim&quot;),
-    &quot;Frankfurt&quot; --&gt; (217, &quot;Wuerzburg&quot;),
-    &quot;Frankfurt&quot; --&gt; (173, &quot;Kassel&quot;),
-    &quot;Mannheim&quot; --&gt; (80, &quot;Karlsruhe&quot;),
-    &quot;Wuerzburg&quot; --&gt; (186, &quot;Erfurt&quot;),
-    &quot;Wuerzburg&quot; --&gt; (103, &quot;Nuernberg&quot;),
-    &quot;Stuttgart&quot; --&gt; (183, &quot;Nuernberg&quot;),
-    &quot;Kassel&quot; --&gt; (502, &quot;Muenchen&quot;),
-    &quot;Nuernberg&quot; --&gt; (167, &quot;Muenchen&quot;),
-    &quot;Karlsruhe&quot; --&gt; (250, &quot;Augsburg&quot;),
-    &quot;Augsburg&quot; --&gt; (84, &quot;Muenchen&quot;)))
+  // #cities
+  val cities: Graph[Int, String] = Graph.fromEdges(
+    Set(
+      &quot;Frankfurt&quot; --&gt; (85, &quot;Mannheim&quot;),
+      &quot;Frankfurt&quot; --&gt; (217, &quot;Wuerzburg&quot;),
+      &quot;Frankfurt&quot; --&gt; (173, &quot;Kassel&quot;),
+      &quot;Mannheim&quot; --&gt; (80, &quot;Karlsruhe&quot;),
+      &quot;Wuerzburg&quot; --&gt; (186, &quot;Erfurt&quot;),
+      &quot;Wuerzburg&quot; --&gt; (103, &quot;Nuernberg&quot;),
+      &quot;Stuttgart&quot; --&gt; (183, &quot;Nuernberg&quot;),
+      &quot;Kassel&quot; --&gt; (502, &quot;Muenchen&quot;),
+      &quot;Nuernberg&quot; --&gt; (167, &quot;Muenchen&quot;),
+      &quot;Karlsruhe&quot; --&gt; (250, &quot;Augsburg&quot;),
+      &quot;Augsburg&quot; --&gt; (84, &quot;Muenchen&quot;)
+    )
+  )
+  // #cities
 }
 
 trait DijkstraExample {
   println(DijkstraGraph.cities.dijkstra.shortestPath(&quot;Frankfurt&quot;, &quot;Muenchen&quot;))
   // ListBuffer(Frankfurt --&gt; Wuerzburg[217], Wuerzburg --&gt; Nuernberg[103], Nuernberg --&gt; Muenchen[167])
 }</code></pre>
+<div class="source-github">
+The source code for this page can be found <a href="https://github.com/flowtick/graphs/tree/v0.6.0/docs/src/main/paradox/algorithms.md">here</a>.
 </div>
-<div>
-<a href="https://github.com/flowtick/graphs/tree/v0.5.0/docs/algorithms.md" title="Edit this page" class="md-source-file md-edit">
-Edit this page
-</a>
-</div>
-<div class="print-only">
-<span class="md-source-file md-version">
-0.5.0
-</span>
-</div>
-</article>
+
+<div class="nav-next">
+<p><strong>Next:</strong> <a href="json.html">JSON support</a></p>
 </div>
 </div>
-</main>
-<footer class="md-footer">
-<div class="md-footer-nav">
-<nav class="md-footer-nav__inner md-grid">
-<a href="creating-graphs.html" title="Creating graphs" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
-<div class="md-flex__cell md-flex__cell--shrink">
-<i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+<div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="algorithms.html#algorithms" class="header">Algorithms</a>
+  <ul>
+    <li><a href="algorithms.html#depth-first-traversal" class="header">Depth-first traversal</a></li>
+    <li><a href="algorithms.html#breadth-first-traversal" class="header">Breadth-first traversal</a></li>
+    <li><a href="algorithms.html#topological-sorting-using-a-depth-first-approach" class="header">Topological sorting using a depth-first approach</a></li>
+    <li><a href="algorithms.html#dijkstras-algorithm-for-shortest-paths" class="header">Dijkstras algorithm for shortest paths</a></li>
+  </ul></li>
+</ul>
 </div>
-<div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
-<span class="md-flex__ellipsis">
-<span class="md-footer-nav__direction">
-Previous
-</span>
-Creating graphs
-</span>
 </div>
-</a>
-<a href="json.html" title="JSON support" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
-<div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
-<span class="md-flex__ellipsis">
-<span class="md-footer-nav__direction">
-Next
-</span>
-JSON support
-</span>
-</div>
-<div class="md-flex__cell md-flex__cell--shrink">
-<i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
-</div>
-</a>
 </nav>
 </div>
-<div class="md-footer-meta md-typeset">
-<div class="md-footer-meta__inner md-grid">
-<div class="md-footer-copyright">
-<div class="md-footer-copyright__highlight">
-© graphs contributors
 </div>
-Powered by
-<a href="https://github.com/lightbend/paradox">Paradox</a>
-and
-<a href="https://jonas.github.io/paradox-material-theme/">Paradox Material Theme</a>
+
+</section>
+</div>
+
+</div>
+
+<footer class="site-footer">
+
+<section class="site-footer-nav">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 medium-4 large-3 text-center column">
+<div class="nav-links">
+<ul>
+<!-- <li><a href="https://www.example.com/products/">Products</a> -->
+</ul>
+</div>
+</div>
 
 </div>
 </div>
 </div>
+</section>
+
+<section class="site-footer-base">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 text-center large-9 column">
+
+<!--
+<div class="copyright">
+<span class="text">&copy; 2021</span>
+<a href="https://www.example.com" class="logo">logo</a>
+</div>
+-->
+</div>
+
+</div>
+</div>
+</div>
+</section>
 </footer>
 
 </div>
-<script src="assets/javascripts/application.583bbe55.js"></script>
-<script src="assets/javascripts/paradox-material-theme.js"></script>
-<script>app.initialize({version:"0.17",url:{base:"."}})</script>
+</div>
+</div>
+</body>
+
+<script type="text/javascript" src="lib/foundation/dist/foundation.min.js"></script>
+<script type="text/javascript">jQuery(document).foundation();</script>
+<script type="text/javascript" src="js/magellan.js"></script>
+
+<style type="text/css">@import "lib/prettify/prettify.css";</style>
 <script type="text/javascript" src="lib/prettify/prettify.js"></script>
 <script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
-<script type="text/javascript">
-document.addEventListener("DOMContentLoaded", function(event) {
-window.prettyPrint && prettyPrint();
-});
-</script>
-</body>
+<script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '0.6.0', 'https://flowtick.github.io/graphs')});</script>
+
+
 </html>
