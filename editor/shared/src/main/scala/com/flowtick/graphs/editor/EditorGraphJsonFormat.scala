@@ -72,9 +72,6 @@ object EditorGraphJsonFormat {
           .downField("graph")
           .downField("nodes")
           .as[List[Node[EditorGraphNode]]]
-          .map(
-            _.iterator.map(node => (node.id, node)).toMap
-          ) // convert to map to look up edge references
 
         edges <- json
           .downField("graph")
@@ -91,7 +88,10 @@ object EditorGraphJsonFormat {
           .downField("schemas")
           .as[List[Either[String, EditorModel.EditorSchema]]]
       } yield EditorGraph(
-        Graph.fromNodes(nodes).withEdges(edges.getOrElse(List.empty)),
+        Graph
+          .empty[EditorGraphEdge, EditorGraphNode]
+          .withNodes(nodes)
+          .withEdges(edges.getOrElse(List.empty)),
         styleSheets,
         layouts,
         schemas

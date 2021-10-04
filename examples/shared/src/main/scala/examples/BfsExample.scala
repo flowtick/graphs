@@ -17,6 +17,6 @@ trait BfsExample {
     )
   )
 
-  println(graph.bfs("A").run)
+  println(graph.bfs("A").steps.map(_.node.id))
   // List(A, B, C, D, E, F, G, H)
 }

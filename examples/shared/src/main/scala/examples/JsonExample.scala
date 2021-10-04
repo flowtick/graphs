@@ -5,10 +5,10 @@ trait JsonExample {
     // #json_simple
     import com.flowtick.graphs._
     import com.flowtick.graphs.defaults._
-    import com.flowtick.graphs.json._
     import com.flowtick.graphs.json.format.default._
-    import io.circe
-    import io.circe.Json
+    import io.circe._
+    import io.circe.syntax._
+    import io.circe.parser._
 
     val graph: Graph[Unit, String] = Graph.fromEdges(
       Set(
@@ -22,11 +22,10 @@ trait JsonExample {
       )
     )
 
-    val json: Json = ToJson[Unit, Unit, String](graph)
-    val parsed: Either[circe.Error, JsonGraph[Unit, Unit, String]] =
-      FromJson[Unit, Unit, String](json.noSpaces)
+    val json: Json = graph.asJson
+    val parsed: Either[Error, Graph[Unit, String]] = decode[Graph[Unit, String]](json.noSpaces)
 
-    require(parsed.map(_.graph).contains(graph))
+    require(parsed == Right(graph))
     // #json_simple
     println(json.noSpaces)
   }
@@ -35,17 +34,15 @@ trait JsonExample {
     // #json_custom
     import com.flowtick.graphs._
     import com.flowtick.graphs.defaults._
-    import com.flowtick.graphs.json._
     import com.flowtick.graphs.json.format.default._
-    import io.circe
-    import io.circe.Json
+    import io.circe._
     import io.circe.generic.auto._
+    import io.circe.syntax._
+    import io.circe.parser._
 
     case class MyNode(id: String, value: Double)
 
-    implicit val myNodeId: Identifiable[MyNode] = new Identifiable[MyNode] {
-      override def apply(value: MyNode): String = value.id
-    }
+    implicit val myNodeId: Identifiable[MyNode] = (value: MyNode) => value.id
 
     val graph: Graph[Unit, MyNode] = Graph.fromEdges(
       Set(
@@ -53,14 +50,10 @@ trait JsonExample {
       )
     )
 
-    implicit val nodeId = Identifiable.identify[MyNode](_.id)
+    val json: Json = graph.asJson
+    val parsed = decode[Graph[Unit, MyNode]](json.noSpaces)
 
-    val json: Json = ToJson[Unit, Unit, MyNode](graph)
-    val parsed: Either[circe.Error, JsonGraph[Unit, Unit, MyNode]] = FromJson(
-      json.noSpaces
-    )
-
-    require(parsed.map(_.graph).contains(graph))
+    require(parsed == Right(graph))
     // #json_custom
   }
 }

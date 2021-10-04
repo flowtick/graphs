@@ -1,8 +1,7 @@
 package com.flowtick.graphs
 
 import org.scalacheck.Gen
-import defaults._
-import defaults.anyId._
+import defaults.id._
 
 object GraphGen {
   def edgesGen[E, N](implicit

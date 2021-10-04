@@ -2,16 +2,18 @@ package com.flowtick.graphs.editor
 
 import com.flowtick.graphs.layout.GraphLayoutLike
 import com.flowtick.graphs.style.{StyleRef, StyleSheet}
-import com.flowtick.graphs.{Edge, Graph, Labeled, Node}
+import com.flowtick.graphs.{Edge, Graph, Identifiable, Labeled, Node}
 import io.circe.Json
 
 trait EditorGraphElement {
+  def id: String
   def data: Json
   def label: Option[String]
   def schemaRef: Option[String]
 }
 
 final case class EditorGraphNode(
+    id: String,
     data: Json,
     stencil: Option[String],
     schemaRef: Option[String],
@@ -19,6 +21,7 @@ final case class EditorGraphNode(
 ) extends EditorGraphElement
 
 final case class EditorGraphEdge(
+    id: String,
     data: Json,
     connector: Option[String],
     schemaRef: Option[String],
@@ -33,6 +36,10 @@ final case class EditorGraph(
 )
 
 object EditorGraphNode {
+  implicit val identifiableEditorNode = new Identifiable[EditorGraphNode] {
+    override def apply(value: EditorGraphNode): String = value.id
+  }
+
   implicit val editorNodeStyleRef: StyleRef[Node[EditorGraphNode]] =
     new StyleRef[Node[EditorGraphNode]] {
       override def id(element: Node[EditorGraphNode]): Option[String] = Some(

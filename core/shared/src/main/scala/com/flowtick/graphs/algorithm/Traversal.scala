@@ -1,7 +1,7 @@
 package com.flowtick.graphs.algorithm
 
 import com.flowtick.graphs.{Edge, Graph, Node}
-import com.flowtick.graphs.algorithm.Traversal.Marker
+import com.flowtick.graphs.algorithm.Traversal.{Marker, Step}
 
 import scala.collection.compat.immutable.LazyList
 import scala.collection.immutable.Queue
@@ -22,6 +22,19 @@ trait Traversal[E] {
   def run: Iterable[E]
 }
 
+trait StepTraversal[E, N] extends Traversal[TraversalEvent[Step[E, N]]] {
+  def steps: Iterable[Step[E, N]] = run.map(_.state)
+  def completed: Iterable[Step[E, N]] = run.collect { case Completed(state, _) =>
+    state
+  }
+  def visited: Iterable[Step[E, N]] = run.collect { case Visited(state) =>
+    state
+  }
+  def cycles: Iterable[Step[E, N]] = run.collect { case Backtrack(state) =>
+    state
+  }
+}
+
 object Traversal {
   sealed trait Marker[+T]
 
@@ -34,6 +47,38 @@ object Traversal {
       depth: Option[Int] = None
   )
 
+  def nextState[E, N](
+      nodeStep: Step[E, N],
+      currentState: TraversalState[Step[E, N], Node[N]],
+      graph: Graph[E, N]
+  ): TraversalState[Step[E, N], Node[N]] =
+    currentState.triggerCompletion { nextState =>
+      val visited = nextState.mark(nodeStep.node, MarkerVisited)
+      graph.outgoing(nodeStep.node.id).foldLeft(visited) { case (added, edge) =>
+        val continue = for {
+          nextNode <- graph.findNode(edge.to)
+          nextStep = Step(
+            nextNode,
+            Some(edge),
+            depth = nodeStep.depth.map(_ + 1)
+          )
+        } yield {
+          if (added.getMarker(nextNode).contains(MarkerVisited)) {
+            added.mark(
+              nextNode,
+              MarkerComplete(
+                Some(
+                  Step(nodeStep.node, Some(edge), nodeStep.depth)
+                )
+              )
+            ) // backtracking
+          } else added.add(nextStep)
+        }
+
+        continue.getOrElse(added)
+      }
+    }(nodeStep)
+
   def nodes[E, N](graph: Graph[E, N])(initialNodes: Iterable[Node[N]])(
       state: TraversalState[Step[E, N], Node[N]]
   ): Iterable[TraversalEvent[Step[E, N]]] = {
@@ -45,54 +90,19 @@ object Traversal {
       .unfold[TraversalEvent[Step[E, N]], TraversalState[Step[E, N], Node[N]]](
         initialState
       ) { lastState =>
-        val (nodeStepOpt, currentState) = lastState.next
+        val (nodeStepOpt, currentState: TraversalState[Step[E, N], Node[N]]) = lastState.next
 
         nodeStepOpt.map { nodeStep =>
           currentState.getMarker(nodeStep.node) match {
             case None =>
-              val withNextNodes = currentState.triggerCompletion { nextState =>
-                val visited = nextState.mark(nodeStep.node, MarkerVisited)
-                graph.outgoing(nodeStep.node.id).foldLeft(visited) { case (added, edge) =>
-                  val continue = for {
-                    nextNode <- graph.findNode(edge.to)
-                    nextStep = Step(
-                      nextNode,
-                      Some(edge),
-                      depth = nodeStep.depth.map(_ + 1)
-                    )
-                  } yield {
-                    if (added.getMarker(nextNode).contains(MarkerVisited)) {
-                      added.mark(
-                        nextNode,
-                        MarkerComplete(
-                          Some(
-                            Step(nodeStep.node, Some(edge), nodeStep.depth)
-                          )
-                        )
-                      ) // backtracking
-                    } else added.add(nextStep)
-                  }
-
-                  continue.getOrElse(added)
-                }
-              }(nodeStep)
-
-              ((Visited(nodeStep), withNextNodes))
-
+              (Visited(nodeStep), nextState(nodeStep, currentState, graph))
             case Some(MarkerVisited) =>
-              (
-                (
-                  Completed(nodeStep),
-                  currentState.mark(nodeStep.node, MarkerComplete(None))
-                )
-              )
+              (Completed(nodeStep), currentState.mark(nodeStep.node, MarkerComplete(None)))
             case Some(MarkerComplete(Some(backtrack))) =>
-              ((Completed(nodeStep, Some(backtrack)), currentState))
+              (Completed(nodeStep, Some(backtrack)), currentState)
             case Some(MarkerComplete(None)) =>
-              (
-                (Skipped(nodeStep)),
-                currentState
-              ) // node appeared twice in state (was part of the inital state and the current traversal)
+              // node appeared twice in state (was part of the inital state and the current traversal)
+              (Skipped(nodeStep), currentState)
           }
         }
       }

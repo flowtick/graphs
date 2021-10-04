@@ -8,10 +8,8 @@ package object defaults {
   implicit val identifiableInt: Identifiable[Int] =
     Identifiable.identify(int => int.toString)
 
-  object anyId {
-    implicit val identifyAny = new Identifiable[Any] {
-      override def apply(value: Any): String = value.toString
-    }
+  object id {
+    implicit val identifyAny: Identifiable[Any] = (value: Any) => value.toString
   }
 
   object label {

@@ -6,9 +6,9 @@ package object algorithm {
   final case class Path[E, N](steps: List[Step[E, N]])
 
   implicit class GraphOps[M, E, N](graph: Graph[E, N]) {
-    def bfs(startNode: String): Traversal[TraversalEvent[Step[E, N]]] =
+    def bfs(startNode: String): StepTraversal[E, N] =
       new BreadthFirstTraversal[E, N](Seq(startNode), graph)
-    def dfs(startNode: String): Traversal[TraversalEvent[Step[E, N]]] =
+    def dfs(startNode: String): StepTraversal[E, N] =
       new DepthFirstTraversal[E, N](Seq(startNode), graph)
     def topologicalSort: List[Step[E, N]] =
       new TopologicalSort[E, N](graph).sort

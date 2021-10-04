@@ -18,6 +18,6 @@ trait DfsExample {
     )
   )
 
-  println(graph.dfs("1").run)
+  println(graph.dfs("1").steps.map(_.node.id))
   // List(1, 9, 2, 6, 8, 7, 3, 5, 4)
 }

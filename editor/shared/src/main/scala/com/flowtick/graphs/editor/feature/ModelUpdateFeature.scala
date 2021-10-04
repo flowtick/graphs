@@ -25,11 +25,10 @@ class ModelUpdateFeature extends EditorComponent {
         .flatMap(ctx.model.palette.findStencil)
         .orElse(ctx.model.palette.stencils.headOption) match {
         case Some(Stencil(stencil, _, _, schemaRef)) =>
-          Node(
-            addNode.id,
-            EditorGraphNode(Json.obj(), Some(stencil), schemaRef)
+          Node.of(
+            EditorGraphNode(addNode.id, Json.obj(), Some(stencil), schemaRef)
           )
-        case None => Node(addNode.id, EditorGraphNode(Json.obj(), None, None))
+        case None => Node.of(EditorGraphNode(addNode.id, Json.obj(), None, None))
       }
 
       withNewNode(
@@ -72,6 +71,7 @@ class ModelUpdateFeature extends EditorComponent {
         .orElse(ctx.model.palette.connectors.headOption)
 
     val editorEdge = EditorGraphEdge(
+      edge.id,
       Json.obj(),
       connector.map(_.id),
       schemaRef = connector.flatMap(_.schemaRef)
@@ -114,9 +114,9 @@ class ModelUpdateFeature extends EditorComponent {
                 .updateSchema(_.merge(schemaFromGraphOrDefault.toList))
                 .updateGraph(
                   _.withNode(
-                    Node(
-                      node.id,
+                    Node.of(
                       EditorGraphNode(
+                        node.id,
                         node.value.value,
                         None,
                         None,
@@ -157,6 +157,7 @@ class ModelUpdateFeature extends EditorComponent {
                         Edge(
                           edge.id,
                           EditorGraphEdge(
+                            edge.id,
                             edge.value.value,
                             None,
                             None,

@@ -1,5 +1,6 @@
 package com.flowtick.graphs.cat
 
+import cats.Applicative
 import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
 import cats.implicits._
@@ -11,6 +12,7 @@ class GraphCatsSpec extends AnyFlatSpec with Matchers {
 
   "Graph Monoid" should "combine graphs" in {
     type NumberNodeGraph = Graph[Unit, Int]
+    import com.flowtick.graphs.defaults.id._
 
     val graphA: NumberNodeGraph =
       Graph.fromEdges(Set(1 --> 2, 2 --> 3)).withNode(Node.of(10))
@@ -34,11 +36,29 @@ class GraphCatsSpec extends AnyFlatSpec with Matchers {
   }
 
   "Graph Applicative" should "map over nodes" in {
-    val numberGraph: Graph[Unit, Int] = Graph.fromEdges[Unit, Int](Set(1 --> 2))
-    val doubledNodes: Graph[Unit, Int] = numberGraph.map(_ * 2)
+    val addOne = (x: Int) => x + 1
+    val timesTwo = (x: Int) => x * 2
 
-    doubledNodes.findNode("1").map(_.value) should be(Some(2))
-    doubledNodes.findNode("2").map(_.value) should be(Some(4))
+    implicit val id: Identifiable[Any] = {
+      case f if f == addOne   => "addOne"
+      case f if f == timesTwo => "timesTwo"
+      case other              => other.toString
+    }
+
+    val functionGraph: Graph[Unit, Int => Int] = Graph.fromEdges(
+      Set(addOne --> timesTwo)
+    )
+
+    val numberGraph: Graph[Unit, Int] = Graph.fromEdges[Unit, Int](Set(1 --> 2, 2 --> 3))
+
+    val applied = Applicative[({ type GraphType[T] = Graph[Unit, T] })#GraphType]
+      .ap(functionGraph)(numberGraph)
+
+    applied should be(
+      Graph.fromEdges[Unit, Int](
+        Set(2 --> 3, 3 --> 4) ++ Set(2 --> 4, 4 --> 6)
+      )
+    )
   }
 
 }
