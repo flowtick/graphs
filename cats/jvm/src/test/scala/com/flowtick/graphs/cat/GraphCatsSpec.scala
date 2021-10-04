@@ -1,6 +1,5 @@
 package com.flowtick.graphs.cat
 
-import cats.Applicative
 import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
 import cats.implicits._
@@ -51,13 +50,32 @@ class GraphCatsSpec extends AnyFlatSpec with Matchers {
 
     val numberGraph: Graph[Unit, Int] = Graph.fromEdges[Unit, Int](Set(1 --> 2, 2 --> 3))
 
-    val applied = Applicative[({ type GraphType[T] = Graph[Unit, T] })#GraphType]
-      .ap(functionGraph)(numberGraph)
+    val applied = GraphApplicative[Unit].ap(functionGraph)(numberGraph)
 
-    applied should be(
-      Graph.fromEdges[Unit, Int](
-        Set(2 --> 3, 3 --> 4) ++ Set(2 --> 4, 4 --> 6)
+    val expectedApplied = Graph.fromEdges[Unit, Int](
+      Set(2 --> 3, 3 --> 4) ++ Set(2 --> 4, 4 --> 6)
+    )
+
+    applied should be(expectedApplied)
+
+    val timesTenGraph = Graph.fromEdges[Unit, Int](
+      Set(
+        10 --> 20,
+        20 --> 30
       )
+    )
+
+    numberGraph.map(_ * 10) should be(timesTenGraph)
+  }
+
+  "Graph Traverse" should "traverse" in {
+    import com.flowtick.graphs.defaults.id.identifyAny
+
+    val numberGraph: Graph[Unit, Option[Int]] =
+      Graph.fromEdges[Unit, Int](Set(1 --> 2)).map(value => Some(value * 3))
+
+    GraphNodeTraverse[Unit].sequence(numberGraph) should be(
+      Some(Graph.fromEdges[Unit, Int](Set(3 --> 6)))
     )
   }
 

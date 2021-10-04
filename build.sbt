@@ -48,7 +48,8 @@ lazy val commonSettings = Seq(
     "org.scala-lang.modules" %%% "scala-collection-compat" % "2.5.0" ::
     Nil,
   autoAPIMappings := true,
-  siteSubdirName in ScalaUnidoc := "latest/api"
+  siteSubdirName in ScalaUnidoc := "latest/api",
+  addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full)
 )
 
 lazy val core = (crossProject(JVMPlatform, JSPlatform) in file(".") / "core")

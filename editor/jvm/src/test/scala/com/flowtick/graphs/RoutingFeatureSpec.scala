@@ -30,12 +30,14 @@ class RoutingFeatureSpec extends EditorBaseSpec {
       case Some(posAfterAdd) =>
         posAfterAdd.x should be(100.0)
         posAfterAdd.y should be(100.0)
+      case None => fail()
     }
 
     moved.model.layout.nodeGeometry(firstNodeId) match {
       case Some(posAfterMove) =>
         posAfterMove.x should be(110.0)
         posAfterMove.y should be(110.0)
+      case None => fail()
     }
 
     val edgeAfterMove = moved.model.graph.findEdge(edgeId)
