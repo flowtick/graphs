@@ -1,19 +1,8 @@
 import cats.effect.IO
 import com.flowtick.graphs.editor.view.{SVGRendererJvm, SVGRendererOptions, SVGTranscoder}
-import com.flowtick.graphs.layout.{ELkLayoutJVM, GraphLayoutOps}
+import com.flowtick.graphs.layout.{ForceDirectedLayout, GraphLayoutOps}
 import com.flowtick.graphs.style._
-import examples.{
-  BfsExample,
-  CatsExample,
-  CustomGraphExample,
-  DfsExample,
-  DijkstraExample,
-  GraphMLExample,
-  JsonExample,
-  LayoutExample,
-  SimpleGraphExample,
-  TopologicalSortingExample
-}
+import examples._
 
 import java.io.FileOutputStream
 
@@ -34,7 +23,7 @@ object LayoutExampleApp extends LayoutExample with App {
 
   implicit val contextShift =
     IO.contextShift(scala.concurrent.ExecutionContext.Implicits.global)
-  override def layoutOps: GraphLayoutOps = ELkLayoutJVM
+  override def layoutOps: GraphLayoutOps = ForceDirectedLayout
 
   def writeToFile(path: String, content: Array[Byte]): IO[Unit] = IO {
     val out = new FileOutputStream(path)
@@ -82,12 +71,8 @@ object LayoutExampleApp extends LayoutExample with App {
       "target/layout_example.svg",
       renderer.toXmlString.get.getBytes("UTF-8")
     )
-    _ <- writeToFile(
-      "target/layout_example.png",
-      SVGTranscoder
-        .svgXmlToPng(renderer.toXmlString.get, None, None)
-        .unsafeRunSync()
-    )
+    pngData <- SVGTranscoder.svgXmlToPng(renderer.toXmlString.get, None, None)
+    _ <- writeToFile("target/layout_example.png", pngData)
   } yield ()
 
   renderImages.unsafeRunSync()

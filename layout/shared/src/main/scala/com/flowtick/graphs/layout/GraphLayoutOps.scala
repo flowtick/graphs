@@ -152,10 +152,12 @@ object LayoutType {
 final case class GraphLayoutConfiguration(
     nodeWidth: Double = 80,
     nodeHeight: Double = 40,
+    scale: Option[Double] = None,
     spacing: Option[Double] = None,
     spacingNodeNode: Option[Double] = None,
     direction: Option[LayoutDirection] = None,
-    layoutType: Option[LayoutType] = None
+    layoutType: Option[LayoutType] = None,
+    seed: Option[Long] = None
 )
 
 trait GraphLayoutOps {

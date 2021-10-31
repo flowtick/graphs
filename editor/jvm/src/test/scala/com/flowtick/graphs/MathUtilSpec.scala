@@ -1,7 +1,7 @@
 package com.flowtick.graphs
 
-import com.flowtick.graphs.editor.util.MathUtil.{LineSegment, Vector2}
-import com.flowtick.graphs.editor.util.MathUtil
+import com.flowtick.graphs.util.MathUtil
+import com.flowtick.graphs.util.MathUtil.{LineSegment, Vector2}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

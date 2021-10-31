@@ -1,4 +1,6 @@
-package com.flowtick.graphs.editor.util
+package com.flowtick.graphs.util
+
+import scala.util.Random
 
 /** line segment intersection adapted from
   * https://www.codeproject.com/tips/862988/find-the-intersection-point-of-two-line-segments
@@ -6,22 +8,44 @@ package com.flowtick.graphs.editor.util
 object MathUtil {
   final case class Vector2(x: Double, y: Double) {
     def -(other: Vector2): Vector2 = copy(x = x - other.x, y = y - other.y)
+
     def +(other: Vector2): Vector2 = copy(x = x + other.x, y = y + other.y)
+
     def *(other: Vector2): Double = x * other.x + y * other.y
+
+    def /(n: Double): Vector2 = if (n == 0.0) Vector2(0, 0) else Vector2(x / n, y / n)
+
+    def length: Double = Math.sqrt(x * x + y * y)
+
+    def normal: Vector2 = Vector2(-y, x)
+
+    def normalise: Vector2 = this / length
+
     def times(factor: Double): Vector2 = copy(x = x * factor, y = y * factor)
+
     def cross(other: Vector2): Double = x * other.y - y * other.x
+
     def same(other: Vector2): Boolean =
       MathUtil.isZero(x - other.x) && MathUtil.isZero(y - other.y)
+  }
+
+  object Vector2 {
+    val zero: Vector2 = Vector2(0.0, 0.0)
+    def random(generator: scala.util.Random = new Random()): Vector2 =
+      Vector2(10.0 * (generator.nextDouble() - 0.5), 10.0 * (generator.nextDouble() - 0.5))
   }
 
   final case class LineSegment(start: Vector2, end: Vector2)
 
   final case class Rectangle(topLeft: Vector2, bottomRight: Vector2) {
     def top: LineSegment = LineSegment(topLeft, topLeft.copy(x = bottomRight.x))
+
     def left: LineSegment =
       LineSegment(topLeft, topLeft.copy(y = bottomRight.y))
+
     def bottom: LineSegment =
       LineSegment(bottomRight, bottomRight.copy(x = topLeft.x))
+
     def right: LineSegment =
       LineSegment(bottomRight, bottomRight.copy(y = topLeft.y))
   }
