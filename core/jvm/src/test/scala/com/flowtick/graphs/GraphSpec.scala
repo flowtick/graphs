@@ -91,7 +91,7 @@ class GraphSpec extends AnyFlatSpec with Matchers {
 
   it should "have nodes after adding an edge" in {
     val intGraph =
-      Graph.empty[Option[Unit], Int].withEdgeValue(None, Node.of(1), Node.of(2))
+      Graph.empty[Option[Unit], Int].addEdge(None, 1, 2)
     intGraph.nodes should contain theSameElementsAs List(
       Node("1", 1),
       Node("2", 2)
@@ -109,7 +109,7 @@ class GraphSpec extends AnyFlatSpec with Matchers {
       .addNode(node3)
 
     intGraph.removeNodeValue(node3) should be(
-      Graph.empty[Unit, Int].withEdgeValue((), Node.of(1), Node.of(2))
+      Graph.empty[Unit, Int].addEdge((), 1, 2)
     )
 
     val expected = Graph
@@ -123,8 +123,8 @@ class GraphSpec extends AnyFlatSpec with Matchers {
   it should "remove edges" in {
     val intGraph = Graph
       .empty[Unit, Int]
-      .withEdgeValue((), Node.of(1), Node.of(2))
-      .withNode(Node.of(3))
+      .addEdge((), 1, 2)
+      .addNode(3)
 
     val expected = Graph
       .empty[Unit, Int]

@@ -3,10 +3,11 @@ package com.flowtick.graphs.cat
 import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
 import cats.implicits._
+import org.scalatest.diagrams.Diagrams
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class GraphCatsSpec extends AnyFlatSpec with Matchers {
+class GraphCatsSpec extends AnyFlatSpec with Matchers with Diagrams {
   import com.flowtick.graphs.cat.instances._
 
   "Graph Monoid" should "combine graphs" in {

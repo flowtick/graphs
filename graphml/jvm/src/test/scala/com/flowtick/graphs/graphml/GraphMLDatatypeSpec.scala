@@ -199,7 +199,9 @@ class GraphMLDatatypeSpec extends AnyFlatSpec with Matchers {
         ) should contain theSameElementsAs graphML.graph.nodes.map(_.id)
         parsedGraph.graph.edges.map(
           _.id
-        ) should contain theSameElementsAs graphML.graph.edges.map(_.id)
+        ) should contain theSameElementsAs graphML.graph.edges.map { edge =>
+          s"${edge.from}-${edge.to}"
+        }
 
       case Left(errors) => fail(s"parsing errors ${errors.toString}")
     }

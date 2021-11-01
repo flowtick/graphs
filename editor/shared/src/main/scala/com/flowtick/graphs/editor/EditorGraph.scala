@@ -57,6 +57,10 @@ object EditorGraphNode {
 }
 
 object EditorGraphEdge {
+  implicit val identifiableEditorEdge = new Identifiable[EditorGraphEdge] {
+    override def apply(value: EditorGraphEdge): String = value.id
+  }
+
   implicit val editorEdgeStyleRef: StyleRef[Edge[EditorGraphEdge]] =
     new StyleRef[Edge[EditorGraphEdge]] {
       override def id(element: Edge[EditorGraphEdge]): Option[String] = Some(

@@ -41,8 +41,11 @@ final case class GraphMLProperty(
 class GraphMLDatatype[E, N](
     nodeDataType: Datatype[GraphMLNode[N]],
     edgeDataType: Datatype[GraphMLEdge[E]]
-)(implicit edgeLabel: Labeled[Edge[GraphMLEdge[E]], String])
-    extends Datatype[GraphMLGraph[E, N]] {
+)(implicit
+    edgeLabel: Labeled[Edge[GraphMLEdge[E]], String],
+    nodeId: Identifiable[GraphMLNode[N]],
+    edgeId: Identifiable[GraphMLEdge[E]]
+) extends Datatype[GraphMLGraph[E, N]] {
   val nodeTargetHint = Some("node")
   val edgeTargetHint = Some("edge")
   val metaTargetHint = Some("meta")
@@ -130,7 +133,7 @@ class GraphMLDatatype[E, N](
       resources: Seq[GraphMLResource]
   ): Validated[NonEmptyList[Throwable], GraphMLGraph[E, N]] =
     parseGraphNodes(graph, graphKeys).andThen { parsedGraph =>
-      parseEdges(parsedGraph.edgesXml, parsedGraph.nodes, graphKeys).andThen { edges =>
+      parseEdges(parsedGraph.edgesXml, graphKeys).andThen { edges =>
         valid(
           GraphMLGraph(
             Graph(edges, parsedGraph.nodes.values),
@@ -142,7 +145,6 @@ class GraphMLDatatype[E, N](
 
   protected def parseEdges(
       edgeXmlNodes: List[scala.xml.Node],
-      nodes: scala.collection.Map[String, Node[GraphMLNode[N]]],
       keys: scala.collection.Map[String, GraphMLKey]
   ): Validated[NonEmptyList[Throwable], List[Edge[GraphMLEdge[E]]]] = {
     edgeXmlNodes.map { edgeNode =>
@@ -224,7 +226,8 @@ class GraphMLDatatype[E, N](
 
 object GraphMLDatatype {
   def apply[E, N](implicit
-      identifiable: Identifiable[GraphMLNode[N]],
+      nodeId: Identifiable[GraphMLNode[N]],
+      edgeId: Identifiable[GraphMLEdge[E]],
       edgeLabel: Labeled[Edge[GraphMLEdge[E]], String],
       nodeDataType: Datatype[N],
       edgeDataType: Datatype[E]

@@ -12,17 +12,19 @@ package object cat {
     * @tparam N
     *   node type
     */
-  class GraphMonoid[E, N](nodeId: Identifiable[N]) extends Monoid[Graph[E, N]] {
-    override def empty: Graph[E, N] = Graph.empty[E, N](nodeId)
+  class GraphMonoid[E, N](nodeId: Identifiable[N], edgeId: Identifiable[E])
+      extends Monoid[Graph[E, N]] {
+    override def empty: Graph[E, N] = Graph.empty[E, N](nodeId, edgeId)
 
     override def combine(x: Graph[E, N], y: Graph[E, N]): Graph[E, N] =
       (x.edges ++ y.edges)
-        .foldLeft(Graph.empty[E, N](nodeId))(_ withEdge _)
+        .foldLeft(Graph.empty[E, N](nodeId, edgeId))(_ withEdge _)
         .withNodes(x.nodes ++ y.nodes)
   }
 
   object GraphMonoid {
-    def apply[E, N](implicit nodeId: Identifiable[N]) = new GraphMonoid[E, N](nodeId)
+    def apply[E, N](implicit nodeId: Identifiable[N], edgeId: Identifiable[E]) =
+      new GraphMonoid[E, N](nodeId, edgeId)
   }
 
   class GraphNodeApplicative[E](implicit id: Identifiable[Any]) extends Applicative[Graph[E, *]] {
@@ -30,24 +32,22 @@ package object cat {
 
     override def ap[A, B](functionGraph: Graph[E, A => B])(graph: Graph[E, A]): Graph[E, B] =
       GraphMonoid[E, B].combineAll(graph.nodes.map(node => {
-        Graph
-          .empty[E, B]
-          .addNodes(
-            functionGraph.nodes
-              .filter(node => graph.outgoing(node.id).isEmpty && graph.incoming(node.id).isEmpty)
-              .map(_.value(node.value))
-          )
-          .withEdges(
-            functionGraph.nodes.flatMap(f =>
-              graph
-                .outgoing(node.id)
-                .flatMap(edge => {
-                  for {
-                    toNode <- graph.findNode(edge.to)
-                  } yield Edge.of(edge.value, id(f.value(node.value)), id(f.value(toNode.value)))
-                })
-            )
-          )
+        functionGraph.nodes.foldLeft(Graph.empty[E, B]) { case (acc, f) =>
+          graph.outgoing(node.id).foldLeft(acc) { case (result, edge) =>
+            val fromNode = f.value(node.value)
+            graph
+              .findNode(edge.to)
+              .map(existingToNode => {
+                val toNode = f.value(existingToNode.value)
+
+                result
+                  .addNode(fromNode)
+                  .addNode(toNode)
+                  .withEdgeValue(edge.value, id(fromNode), id(toNode))
+              })
+              .getOrElse(result)
+          }
+        }
       }))
   }
 
@@ -96,7 +96,10 @@ package object cat {
   }
 
   trait GraphInstances {
-    implicit def graphMonoid[E, N](implicit nodeId: Identifiable[N]): Monoid[Graph[E, N]] =
+    implicit def graphMonoid[E, N](implicit
+        nodeId: Identifiable[N],
+        edgeId: Identifiable[E]
+    ): Monoid[Graph[E, N]] =
       GraphMonoid[E, N]
     implicit def graphNodeApplicative[E](implicit id: Identifiable[Any]): Applicative[Graph[E, *]] =
       GraphApplicative[E]

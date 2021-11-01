@@ -10,7 +10,7 @@ import xmls.XMLS
 import scala.collection.GenTraversable
 import scala.reflect.ClassTag
 import scala.util.{Either, Left, Right}
-import scala.xml.{Elem, NodeSeq, Text}
+import scala.xml.{Elem, NodeSeq}
 
 package object graphml {
   trait Serializer[T] {
@@ -333,7 +333,8 @@ package object graphml {
   }
 
   implicit def graphMLDataType[E, N](implicit
-      identifiable: Identifiable[GraphMLNode[N]],
+      nodeId: Identifiable[GraphMLNode[N]],
+      edgeId: Identifiable[GraphMLEdge[E]],
       edgeLabel: Labeled[Edge[GraphMLEdge[E]], String],
       nodeDataType: Datatype[N],
       edgeDataType: Datatype[E]
@@ -361,6 +362,9 @@ package object graphml {
 
   implicit def graphMLNodeIdentifiable[N]: Identifiable[GraphMLNode[N]] =
     (node: GraphMLNode[N]) => node.id
+
+  implicit def graphMLEdgeIdentifiable[E]: Identifiable[GraphMLEdge[E]] =
+    (edge: GraphMLEdge[E]) => edge.id
 
   implicit def graphMLEdgeLabel[V, N]: Labeled[Edge[GraphMLEdge[V]], String] =
     (edge: Edge[GraphMLEdge[V]]) => edge.value.id
@@ -443,7 +447,7 @@ package object graphml {
           labelValue = edgeLabel(edge)
         )
 
-        Edge.of(mlEdge, edge.from, edge.to)
+        Edge(edge.id, mlEdge, edge.from, edge.to)
       }
 
       GraphMLGraph(Graph(edges = mlEdges, nodes = mlNodes), GraphMLMeta())
