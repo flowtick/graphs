@@ -1,7 +1,7 @@
 package com.flowtick.graphs.graphml
 
 import com.flowtick.graphs.layout.{DefaultGeometry, EdgePath, Geometry}
-import com.flowtick.graphs.{Edge, Graph, Node, Relation}
+import com.flowtick.graphs.{Edge, Graph, Identifiable, Node, Relation}
 import com.flowtick.graphs.style._
 
 final case class GraphMLKey(
@@ -96,7 +96,10 @@ final case class GraphMLMeta(
 )
 
 object GraphML {
-  def empty[E, N]: GraphMLGraph[E, N] = GraphMLGraph[E, N](
+  def empty[E, N](implicit
+      nodeId: Identifiable[GraphMLNode[N]],
+      edgeId: Identifiable[GraphMLEdge[E]]
+  ): GraphMLGraph[E, N] = GraphMLGraph[E, N](
     Graph.empty[GraphMLEdge[E], GraphMLNode[N]],
     GraphMLMeta()
   )
@@ -106,12 +109,18 @@ object GraphML {
       edges: Iterable[Edge[GraphMLEdge[E]]],
       nodes: Iterable[Node[GraphMLNode[N]]] = Iterable.empty,
       keys: Seq[GraphMLKey] = Seq.empty
+  )(implicit
+      nodeId: Identifiable[GraphMLNode[N]],
+      edgeId: Identifiable[GraphMLEdge[E]]
   ): GraphMLGraph[E, N] = {
     GraphMLGraph(Graph(edges = edges, nodes = nodes), GraphMLMeta(keys = keys))
   }
 
   def fromEdges[E, N](
       edges: Iterable[Relation[GraphMLEdge[E], GraphMLNode[N]]]
+  )(implicit
+      nodeId: Identifiable[GraphMLNode[N]],
+      edgeId: Identifiable[GraphMLEdge[E]]
   ): GraphMLGraph[E, N] =
     GraphMLGraph(Graph.fromEdges(edges), GraphMLMeta())
 }

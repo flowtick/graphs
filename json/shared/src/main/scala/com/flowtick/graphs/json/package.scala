@@ -17,23 +17,23 @@ package object json {
 
       import io.circe.generic.semiauto._
 
-      implicit def nodeEncoder[N](implicit
+      implicit def wrappedNodeEncoder[N](implicit
           nodeEncoder: Encoder[N]
       ): Encoder[Node[N]] = deriveEncoder[Node[N]]
-      implicit def nodeDecoder[N](implicit
+      implicit def wrappedNodeDecoder[N](implicit
           nodeDecoder: Decoder[N]
       ): Decoder[Node[N]] = deriveDecoder[Node[N]]
 
-      implicit def edgeEncoder[E, N](implicit
+      implicit def wrappedEdgeEncoder[E, N](implicit
           edgeEncoder: Encoder[E]
       ): Encoder[Edge[E]] = graphsEdgeEncoder[E, N]
-      implicit def edgeDecoder[E, N](implicit
+      implicit def wrappedEdgeDecoder[E, N](implicit
           edgeDecoder: Decoder[E]
       ): Decoder[Edge[E]] = deriveDecoder[Edge[E]]
 
       implicit def defaultGraphEncoder[E, N](implicit
-          nodesEncoder: Encoder[Node[N]],
-          edgesEncoder: Encoder[Edge[E]]
+          nodeEncoder: Encoder[Node[N]],
+          edgeEncoder: Encoder[Edge[E]]
       ): Encoder[Graph[E, N]] = new Encoder[Graph[E, N]] {
         override def apply(a: Graph[E, N]): Json = {
           val fields = new ListBuffer[(String, Json)]
@@ -44,9 +44,10 @@ package object json {
       }
 
       implicit def defaultGraphDecoder[E, N](implicit
-          nodesDecoder: Decoder[Node[N]],
+          nodeDecoder: Decoder[Node[N]],
           edgeDecoder: Decoder[Edge[E]],
-          nodeId: Identifiable[N]
+          nodeId: Identifiable[N],
+          edgeId: Identifiable[E]
       ): Decoder[Graph[E, N]] = new Decoder[Graph[E, N]] {
         override def apply(c: HCursor): Result[Graph[E, N]] = for {
           nodes <- c
@@ -87,16 +88,17 @@ package object json {
           nodeDecoder: Decoder[N]
       ): Decoder[Node[N]] = deriveDecoder[Node[N]]
 
-      implicit def edgeEncoder[E, N](implicit
+      implicit def wrappedEdgeEncoder[E, N](implicit
           edgeEncoder: Encoder[E]
       ): Encoder[Edge[E]] = graphsEdgeEncoder[E, N]
-      implicit def edgeDecoder[E, N](implicit
+
+      implicit def wrappedEdgeDecoder[E, N](implicit
           edgeDecoder: Decoder[E]
       ): Decoder[Edge[E]] = deriveDecoder[Edge[E]]
 
       implicit def embeddedGraphEncoder[E, N](implicit
-          nodesEncoder: Encoder[N],
-          edgesEncoder: Encoder[Edge[E]]
+          nodeEncoder: Encoder[N],
+          edgeEncoder: Encoder[E]
       ): Encoder[Graph[E, N]] = new Encoder[Graph[E, N]] {
         override def apply(a: Graph[E, N]): Json = Json
           .obj(
@@ -107,10 +109,10 @@ package object json {
       }
 
       implicit def embeddedGraphDecoder[E, N](implicit
-          nodesDecoder: Decoder[N],
+          nodeDecoder: Decoder[N],
           edgeDecoder: Decoder[E],
-          edgesDecoder: Decoder[Edge[E]],
-          nodeId: Identifiable[N]
+          nodeId: Identifiable[N],
+          edgeId: Identifiable[E]
       ): Decoder[Graph[E, N]] = new Decoder[Graph[E, N]] {
         override def apply(c: HCursor): Result[Graph[E, N]] = for {
           nodes <- c.downField("nodes").as[List[N]]

@@ -8,6 +8,14 @@ package object defaults {
   implicit val identifiableInt: Identifiable[Int] =
     Identifiable.identify(int => int.toString)
 
+  private final case class IdentifiableOption[T](id: Identifiable[T])
+      extends Identifiable[Option[T]] {
+    override def apply(value: Option[T]): String = value.map(id(_)).getOrElse("none")
+  }
+
+  implicit def identifiableOption[T](implicit id: Identifiable[T]): Identifiable[Option[T]] =
+    IdentifiableOption(id)
+
   object id {
     implicit val identifyAny: Identifiable[Any] = (value: Any) => value.toString
   }

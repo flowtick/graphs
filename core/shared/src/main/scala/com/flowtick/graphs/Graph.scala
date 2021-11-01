@@ -63,16 +63,17 @@ final case class Relation[+E, +N](
     to: Node[N],
     symmetric: Boolean = false
 ) {
-  def toEdges: Iterable[Edge[E]] =
+  def toEdges(implicit id: Identifiable[E]): Iterable[Edge[E]] =
     if (symmetric)
       Iterable(Edge.of(value, from.id, to.id), Edge.of(value, to.id, from.id))
     else Iterable(Edge.of(value, from.id, to.id))
 }
 
 object Edge {
-  def of[E, N](value: E, from: String, to: String): Edge[E] =
-    Edge(s"$from-$to", value, from, to)
-  def unit[N](from: String, to: String): Edge[Unit] = Edge.of((), from, to)
+  def of[E](value: E, from: String, to: String)(implicit id: Identifiable[E]): Edge[E] =
+    Edge(s"$from-${id(value)}-$to", value, from, to)
+  def unit(from: String, to: String)(implicit id: Identifiable[Unit]): Edge[Unit] =
+    Edge.of((), from, to)
 }
 
 final case class Node[+N](id: String, value: N) {
@@ -88,6 +89,7 @@ object Node {
 
 private[graphs] final case class GraphInstance[E, N](
     nodeId: Identifiable[N],
+    edgeId: Identifiable[E],
     nodesById: scala.collection.Map[String, Node[N]] =
       scala.collection.immutable.TreeMap.empty[String, Node[N]],
     incomingById: scala.collection.Map[String, Set[String]] =
@@ -195,6 +197,7 @@ private[graphs] final case class GraphInstance[E, N](
 // #graph
 trait Graph[E, N] {
   def nodeId: Identifiable[N]
+  def edgeId: Identifiable[E]
 
   def edges: Iterable[Edge[E]]
   def nodes: Iterable[Node[N]]
@@ -228,15 +231,15 @@ trait Graph[E, N] {
   def addNodes(nodeValues: Iterable[N]): Graph[E, N] = nodeValues.foldLeft(this)(_ addNode _)
 
   def addEdge(value: E, from: N, to: N): Graph[E, N] =
-    withEdge(Edge.of(value, nodeId(from), nodeId(to)))
+    withEdge(Edge.of(value, nodeId(from), nodeId(to))(edgeId))
       .addNode(from)
       .addNode(to)
 
   def withEdge(edge: Edge[E]): Graph[E, N]
   def withNode(node: Node[N]): Graph[E, N]
 
-  def withEdgeValue(value: E, from: Node[N], to: Node[N]): Graph[E, N] =
-    withEdge(Edge.of(value, from.id, to.id)).withNode(from).withNode(to)
+  def withEdgeValue(value: E, fromId: String, toId: String): Graph[E, N] =
+    withEdge(Edge.of(value, fromId, toId)(edgeId))
 
   def withNodes(nodes: Iterable[Node[N]]): Graph[E, N] =
     nodes.foldLeft(this)(_ withNode _)
@@ -251,10 +254,11 @@ object Graph {
   def apply[E, N](
       edges: Iterable[Edge[E]] = Iterable.empty,
       nodes: Iterable[Node[N]] = Iterable.empty
-  )(implicit nodeId: Identifiable[N]): Graph[E, N] =
+  )(implicit nodeId: Identifiable[N], edgeId: Identifiable[E]): Graph[E, N] =
     empty[E, N].withEdges(edges).withNodes(nodes)
 
-  def empty[E, N](implicit nodeId: Identifiable[N]): Graph[E, N] = GraphInstance[E, N](nodeId)
+  def empty[E, N](implicit nodeId: Identifiable[N], edgeId: Identifiable[E]): Graph[E, N] =
+    GraphInstance[E, N](nodeId, edgeId)
 
   /** utility method to create a unit typed graph from iterable relations
     *
@@ -269,7 +273,7 @@ object Graph {
     */
   def fromEdges[E, N](
       relations: Iterable[Relation[E, N]]
-  )(implicit nodeId: Identifiable[N]): Graph[E, N] =
+  )(implicit nodeId: Identifiable[N], edgeId: Identifiable[E]): Graph[E, N] =
     relations.foldLeft(empty[E, N]) { (acc, relation) =>
       acc
         .withNode(relation.from)

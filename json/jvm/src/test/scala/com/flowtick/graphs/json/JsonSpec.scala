@@ -5,10 +5,11 @@ import com.flowtick.graphs.{Graph, Node}
 import io.circe._
 import io.circe.syntax._
 import io.circe.parser._
+import org.scalatest.diagrams.Diagrams
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class JsonSpec extends AnyFlatSpec with Matchers {
+class JsonSpec extends AnyFlatSpec with Matchers with Diagrams {
   val numberGraph: Graph[Unit, Int] =
     Graph.fromEdges(Set(1 --> 2)).withNode(Node.of(3))
 
@@ -40,7 +41,7 @@ class JsonSpec extends AnyFlatSpec with Matchers {
                              |  ],
                              |  "edges" : [
                              |    {
-                             |      "id" : "1-2",
+                             |      "id" : "1-()-2",
                              |      "value" : null,
                              |      "from" : "1",
                              |      "to" : "2"
@@ -75,7 +76,7 @@ class JsonSpec extends AnyFlatSpec with Matchers {
     import com.flowtick.graphs.json.format.default._
 
     val parsed =
-      Graph.empty[Unit, Int].withEdgeValue((), Node("1", 1), Node("2", 2)).asJson
+      Graph.empty[Unit, Int].addEdge((), 1, 2).asJson
 
     val edgesJson = parsed.hcursor
       .downField("edges")
@@ -92,27 +93,31 @@ class JsonSpec extends AnyFlatSpec with Matchers {
     val emptyGraph = s"""
                         |{
                         | "nodes": [1,2],
-                        | "edges": [{ "id": "1-2", "from": "1", "to": "2"}]
+                        | "edges": [{ "id": "1-none-2", "from": "1", "to": "2"}]
                         |}
                         |""".stripMargin
     import com.flowtick.graphs.json.format.embedded._
 
-    val parsed = decode[Graph[Option[Unit], Int]](emptyGraph)
-    parsed should be(
-      Right(Graph.empty[Option[Unit], Int].withEdgeValue(None, Node.of(1), Node.of(2)))
-    )
+    val expected = Graph.empty[Option[Unit], Int].addEdge(None, 1, 2)
+
+    decode[Graph[Option[Unit], Int]](emptyGraph) match {
+      case Right(parsed) =>
+        println("foo")
+        parsed.edgeId should be(expected.edgeId)
+        parsed should equal(expected)
+    }
   }
 
   it should "create embedded graph json" in {
     val expectedGraph = s"""
                         |{
                         | "nodes": [1,2],
-                        | "edges": [{ "id": "1-2", "from": "1", "to": "2", "value": null}]
+                        | "edges": [{ "id": "1-none-2", "from": "1", "to": "2", "value": null}]
                         |}
                         |""".stripMargin
     import com.flowtick.graphs.json.format.embedded._
 
-    val json = Graph.empty[Option[Unit], Int].withEdgeValue(None, Node.of(1), Node.of(2)).asJson
+    val json = Graph.empty[Option[Unit], Int].addEdge(None, 1, 2).asJson
 
     io.circe.parser.decode[Json](expectedGraph) match {
       case Right(expectedJson) => expectedJson.spaces2 should be(json.spaces2)

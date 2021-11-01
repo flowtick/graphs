@@ -5,7 +5,7 @@ import cats.data.ValidatedNel
 import com.flowtick.graphs.Graph
 import com.flowtick.graphs.graphml.{Datatype, GraphMLKey}
 import com.flowtick.graphs.json.schema.Schema
-import com.flowtick.graphs.layout.{GraphLayout, GraphLayoutLike, GraphLayouts}
+import com.flowtick.graphs.layout.{GraphLayoutLike, GraphLayouts}
 import com.flowtick.graphs.style._
 import io.circe.Json
 
