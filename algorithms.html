@@ -32,7 +32,7 @@
 <span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
-0.6.0
+0.8.0
 </div>
 </div>
 <div class="nav-toc">
@@ -76,7 +76,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
-0.6.0
+0.8.0
 </div>
 </div>
 <div class="nav-toc">
@@ -119,7 +119,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <h2><a href="#depth-first-traversal" name="depth-first-traversal" class="anchor"><span class="anchor-link"></span></a>Depth-first traversal</h2>
 <p>A depth first traversal visits every node <em>per branch / path</em> which means that for every node the first child will be visited and the search will be continued there, before going to its siblings.</p>
 <p>Every node will be visited.</p>
-<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.6.0/examples/shared/src/main/scala/examples/DfsExample.scala" target="_blank" title="Go to snippet source">source</a><code class="language-scala">package examples
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.8.0/examples/shared/src/main/scala/examples/DfsExample.scala" target="_blank" title="Go to snippet source">source</a><code class="language-scala">package examples
 
 import com.flowtick.graphs._
 import com.flowtick.graphs.algorithm._
@@ -139,13 +139,13 @@ trait DfsExample {
     )
   )
 
-  println(graph.dfs(&quot;1&quot;).run)
+  println(graph.dfs(&quot;1&quot;).steps.map(_.node.id))
   // List(1, 9, 2, 6, 8, 7, 3, 5, 4)
 }</code></pre>
 <h2><a href="#breadth-first-traversal" name="breadth-first-traversal" class="anchor"><span class="anchor-link"></span></a>Breadth-first traversal</h2>
 <p>A breadth first traversal visits every node <em>per layer</em>, which means that first all child nodes will be visited before continuing with their children.</p>
 <p>Every node will be visited.</p>
-<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.6.0/examples/shared/src/main/scala/examples/BfsExample.scala" target="_blank" title="Go to snippet source">source</a><code class="language-scala">package examples
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.8.0/examples/shared/src/main/scala/examples/BfsExample.scala" target="_blank" title="Go to snippet source">source</a><code class="language-scala">package examples
 
 import com.flowtick.graphs._
 import com.flowtick.graphs.algorithm._
@@ -164,13 +164,13 @@ trait BfsExample {
     )
   )
 
-  println(graph.bfs(&quot;A&quot;).run)
+  println(graph.bfs(&quot;A&quot;).steps.map(_.node.id))
   // List(A, B, C, D, E, F, G, H)
 }</code></pre>
 <h2><a href="#topological-sorting-using-a-depth-first-approach" name="topological-sorting-using-a-depth-first-approach" class="anchor"><span class="anchor-link"></span></a>Topological sorting using a depth-first approach</h2>
 <p><blockquote> <a href="https://en.wikipedia.org/wiki/Topological_sorting">https://en.wikipedia.org/wiki/Topological_sorting</a>:</p>
 <p>&ldquo;topological ordering of a directed graph is a linear ordering of its vertices such that for every directed edge uv from vertex u to vertex v, u comes before v in the ordering. For instance, the vertices of the graph may represent tasks to be performed, and the edges may represent constraints that one task must be performed before another&rdquo; </blockquote></p>
-<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.6.0/examples/shared/src/main/scala/examples/TopologicalSortingExample.scala" target="_blank" title="Go to snippet source">source</a><code class="language-scala">package examples
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.8.0/examples/shared/src/main/scala/examples/TopologicalSortingExample.scala" target="_blank" title="Go to snippet source">source</a><code class="language-scala">package examples
 
 import com.flowtick.graphs._
 import com.flowtick.graphs.algorithm._
@@ -199,7 +199,7 @@ trait TopologicalSortingExample {
 <h2><a href="#dijkstras-algorithm-for-shortest-paths" name="dijkstras-algorithm-for-shortest-paths" class="anchor"><span class="anchor-link"></span></a>Dijkstras algorithm for shortest paths</h2>
 <p><blockquote> <a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm">https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm</a>:</p>
 <p>For a given source node in the graph, the algorithm finds the shortest path between that node and every other. It can also be used for finding the shortest paths from a single node to a single destination node by stopping the algorithm once the shortest path to the destination node has been determined. </blockquote></p>
-<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.6.0/examples/shared/src/main/scala/examples/DijkstraExample.scala" target="_blank" title="Go to snippet source">source</a><code class="language-scala">package examples
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.8.0/examples/shared/src/main/scala/examples/DijkstraExample.scala" target="_blank" title="Go to snippet source">source</a><code class="language-scala">package examples
 
 import com.flowtick.graphs.Graph
 import com.flowtick.graphs.algorithm._
@@ -231,7 +231,7 @@ trait DijkstraExample {
   // ListBuffer(Frankfurt --&gt; Wuerzburg[217], Wuerzburg --&gt; Nuernberg[103], Nuernberg --&gt; Muenchen[167])
 }</code></pre>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/flowtick/graphs/tree/v0.6.0/docs/src/main/paradox/algorithms.md">here</a>.
+The source code for this page can be found <a href="https://github.com/flowtick/graphs/tree/v0.8.0/docs/src/main/paradox/algorithms.md">here</a>.
 </div>
 
 <div class="nav-next">
@@ -317,7 +317,7 @@ The source code for this page can be found <a href="https://github.com/flowtick/
 <script type="text/javascript" src="lib/prettify/prettify.js"></script>
 <script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
 <script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
-<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '0.6.0', 'https://flowtick.github.io/graphs')});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '0.8.0', 'https://flowtick.github.io/graphs')});</script>
 
 
 </html>

@@ -32,7 +32,7 @@
 <span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
-0.6.0
+0.8.0
 </div>
 </div>
 <div class="nav-toc">
@@ -76,7 +76,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <span class="home-icon">⌂</span>graphs
 </a>
 <div class="version-number">
-0.6.0
+0.8.0
 </div>
 </div>
 <div class="nav-toc">
@@ -116,16 +116,16 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <h2><a href="#json-support" name="json-support" class="anchor"><span class="anchor-link"></span></a>JSON support</h2>
 <p><code>graphs</code> supports the serialization of graphs as via <a href="https://github.com/circe/circe">circe</a>.</p>
 <p>You need to add the <code>graphs-json</code> dependency to use it:</p>
-<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-json&quot; % &quot;0.6.0&quot;
+<pre class="prettyprint"><code class="language-scala">libraryDependencies += &quot;com.flowtick&quot; %% &quot;graphs-json&quot; % &quot;0.8.0&quot;
 </code></pre>
 <p>For the conversion you need to have an <code>Identifiable</code> instance for the node type:</p>
 <h4><a href="#example-primitive-types-with-defaults" name="example-primitive-types-with-defaults" class="anchor"><span class="anchor-link"></span></a>Example: primitive types with defaults</h4>
-<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.6.0/examples/shared/src/main/scala/examples/JsonExample.scala#L6-L29" target="_blank" title="Go to snippet source">source</a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.8.0/examples/shared/src/main/scala/examples/JsonExample.scala#L6-L28" target="_blank" title="Go to snippet source">source</a><code class="language-scala">import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.json._
 import com.flowtick.graphs.json.format.default._
-import io.circe
-import io.circe.Json
+import io.circe._
+import io.circe.syntax._
+import io.circe.parser._
 
 val graph: Graph[Unit, String] = Graph.fromEdges(
   Set(
@@ -139,25 +139,22 @@ val graph: Graph[Unit, String] = Graph.fromEdges(
   )
 )
 
-val json: Json = ToJson[Unit, Unit, String](graph)
-val parsed: Either[circe.Error, JsonGraph[Unit, Unit, String]] =
-  FromJson[Unit, Unit, String](json.noSpaces)
+val json: Json = graph.asJson
+val parsed: Either[Error, Graph[Unit, String]] = decode[Graph[Unit, String]](json.noSpaces)
 
-require(parsed.map(_.graph).contains(graph))</code></pre>
+require(parsed == Right(graph))</code></pre>
 <h4><a href="#example-providing-the-id-for-a-custom-type" name="example-providing-the-id-for-a-custom-type" class="anchor"><span class="anchor-link"></span></a>Example: providing the ID for a custom type</h4>
-<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.6.0/examples/shared/src/main/scala/examples/JsonExample.scala#L36-L63" target="_blank" title="Go to snippet source">source</a><code class="language-scala">import com.flowtick.graphs._
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/flowtick/graphs/tree/v0.8.0/examples/shared/src/main/scala/examples/JsonExample.scala#L35-L56" target="_blank" title="Go to snippet source">source</a><code class="language-scala">import com.flowtick.graphs._
 import com.flowtick.graphs.defaults._
-import com.flowtick.graphs.json._
 import com.flowtick.graphs.json.format.default._
-import io.circe
-import io.circe.Json
+import io.circe._
 import io.circe.generic.auto._
+import io.circe.syntax._
+import io.circe.parser._
 
 case class MyNode(id: String, value: Double)
 
-implicit val myNodeId: Identifiable[MyNode] = new Identifiable[MyNode] {
-  override def apply(value: MyNode): String = value.id
-}
+implicit val myNodeId: Identifiable[MyNode] = (value: MyNode) =&gt; value.id
 
 val graph: Graph[Unit, MyNode] = Graph.fromEdges(
   Set(
@@ -165,17 +162,13 @@ val graph: Graph[Unit, MyNode] = Graph.fromEdges(
   )
 )
 
-implicit val nodeId = Identifiable.identify[MyNode](_.id)
+val json: Json = graph.asJson
+val parsed = decode[Graph[Unit, MyNode]](json.noSpaces)
 
-val json: Json = ToJson[Unit, Unit, MyNode](graph)
-val parsed: Either[circe.Error, JsonGraph[Unit, Unit, MyNode]] = FromJson(
-  json.noSpaces
-)
-
-require(parsed.map(_.graph).contains(graph))</code></pre>
+require(parsed == Right(graph))</code></pre>
 <p>Note that this example is also importing to option to treat unit as <code>null</code> in the JSON representation. </p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/flowtick/graphs/tree/v0.6.0/docs/src/main/paradox/json.md">here</a>.
+The source code for this page can be found <a href="https://github.com/flowtick/graphs/tree/v0.8.0/docs/src/main/paradox/json.md">here</a>.
 </div>
 
 <div class="nav-next">
@@ -259,7 +252,7 @@ The source code for this page can be found <a href="https://github.com/flowtick/
 <script type="text/javascript" src="lib/prettify/prettify.js"></script>
 <script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
 <script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
-<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '0.6.0', 'https://flowtick.github.io/graphs')});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '0.8.0', 'https://flowtick.github.io/graphs')});</script>
 
 
 </html>
