@@ -22,7 +22,7 @@ trait EditorBaseSpec extends AnyFlatSpec with Matchers with EditorMain { self =>
       List(
         testView(bus)
       )
-    )(EditorConfiguration()).flatMap(editor => IO(f(editor))).unsafeRunSync()
+    )(EditorConfiguration()).flatMap(editor => IO(f(editor))).unsafeToFuture()
 
   protected def testView(bus: EditorMessageBus): EditorComponent =
     new EditorComponent {

@@ -1,6 +1,7 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import com.flowtick.graphs
 import com.flowtick.graphs._
 import com.flowtick.graphs.editor.util.DrawUtil
@@ -73,7 +74,7 @@ class EditorGraphPane(layout: BorderPane)(
       event.consume()
 
       if (event.getClickCount == 2) {
-        handleDoubleClick(()).unsafeRunSync()
+        handleDoubleClick(()).unsafeToFuture()
       }
 
       if (!event.isPrimaryButtonDown) {
@@ -229,7 +230,7 @@ class EditorGraphPane(layout: BorderPane)(
       selectLine.onMousePressed = new EventHandler[MouseEvent] {
         override def handle(t: MouseEvent): Unit = {
           handleSelect(ElementRef(edge.id, EdgeType))(t.isControlDown)
-            .unsafeRunSync()
+            .unsafeToFuture()
           selectGroup.visible = true
         }
       }

@@ -9,6 +9,8 @@ import scalafx.scene.image.Image
 import scalafx.scene.layout.BorderPane
 import scalafx.scene.{Group, Scene}
 
+import cats.effect.unsafe.implicits.global
+
 object EditorMainJvm extends JFXApp with EditorMain {
 
   lazy val pageRoot = new Group
@@ -96,5 +98,5 @@ object EditorMainJvm extends JFXApp with EditorMain {
     }
   } yield editor
 
-  initEditor.unsafeRunSync()
+  initEditor.unsafeToFuture()
 }

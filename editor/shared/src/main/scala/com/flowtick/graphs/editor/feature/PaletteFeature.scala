@@ -1,10 +1,12 @@
 package com.flowtick.graphs.editor.feature
 
 import cats.effect.IO
-import cats.effect.concurrent.Ref
+import cats.effect.unsafe.implicits.global
+
 import com.flowtick.graphs.editor._
 
 import java.util.UUID
+import cats.effect.kernel.Ref
 
 trait PaletteFeature extends EditorComponent {
   def messageBus: EditorMessageBus
@@ -52,17 +54,17 @@ trait PaletteFeature extends EditorComponent {
   } yield ()
 
   def selectPaletteItem(paletteItem: Stencil): Unit = {
-    currentStencilItemRef.set(Some(paletteItem)).attempt.unsafeRunSync()
+    currentStencilItemRef.set(Some(paletteItem)).attempt.unsafeToFuture()
   }
 
   def selectConnectorItem(connectorItem: Connector): Unit = {
-    currentConnectorItemRef.set(Some(connectorItem)).attempt.unsafeRunSync()
+    currentConnectorItemRef.set(Some(connectorItem)).attempt.unsafeToFuture()
   }
 
   def createFromStencil(paletteItem: Stencil): Unit = {
     messageBus
       .publish(AddNode(UUID.randomUUID().toString, Some(paletteItem.id)))
       .attempt
-      .unsafeRunSync()
+      .unsafeToFuture()
   }
 }

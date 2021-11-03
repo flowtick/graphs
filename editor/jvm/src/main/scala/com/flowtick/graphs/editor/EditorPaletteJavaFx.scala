@@ -1,6 +1,8 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
+
 import com.flowtick.graphs.editor.feature.PaletteFeature
 import scalafx.geometry.Insets
 import scalafx.scene.control.{Accordion, TitledPane, Tooltip}
@@ -42,7 +44,7 @@ class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane)
         )
       )
 
-      model.palette.stencilGroups.zipWithIndex.foreach { case (group, index) =>
+      model.palette.stencilGroups.zipWithIndex.flatMap { case (group, index) =>
         val accordion = new Accordion()
         pane.center = accordion
 
@@ -60,7 +62,7 @@ class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane)
         }
         groupPane.content = groupContent
 
-        group.items.foreach { stencil =>
+        group.items.map { stencil =>
           val stencilImage = stencil.image
             .map(imageSpec =>
               ImageLoaderFx
@@ -68,37 +70,37 @@ class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane)
             )
             .getOrElse(fallBackImage)
 
-          val stencilView = new ImageView {
-            image = stencilImage.unsafeRunSync()
+          val stencilView = stencilImage.map(theImage => new ImageView {
+            image = theImage
             fitWidth = 32
             fitHeight = 32
-          }
+          })
 
           val tooltip = new Tooltip {
             text = stencil.title
           }
 
-          Tooltip.install(stencilView, tooltip)
+          stencilView.map { view =>
+            Tooltip.install(view, tooltip)
 
-          val stencilGroup = new VBox {
-            maxWidth = 50
-            maxHeight = 50
+            val stencilGroup = new VBox {
+              maxWidth = 50
+              maxHeight = 50
 
-            children.add(stencilView)
+              children.add(view)
 
-            onMouseClicked = e => {
-              selectPaletteItem(stencil)
+              onMouseClicked = e => {
+                selectPaletteItem(stencil)
 
-              if (e.getClickCount == 2) {
-                createFromStencil(stencil)
+                if (e.getClickCount == 2) {
+                  createFromStencil(stencil)
+                }
               }
             }
+            groupContent.children.add(stencilGroup)
           }
-
-          groupContent.children.add(stencilGroup)
         }
       }
-
     }
   } yield ()
 }

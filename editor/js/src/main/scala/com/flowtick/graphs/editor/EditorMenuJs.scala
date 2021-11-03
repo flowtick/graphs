@@ -12,6 +12,7 @@ import scalatags.JsDom.all._
 import scala.scalajs.js
 
 class EditorMenuJs(menuContainerId: String)(val messageBus: EditorMessageBus) extends EditorMenu {
+  import cats.effect.unsafe.implicits.global
 
   override def order: Double = 0.6
 
@@ -118,7 +119,7 @@ class EditorMenuJs(menuContainerId: String)(val messageBus: EditorMessageBus) ex
     reader.onload = (_: Event) =>
       messageBus
         .publish(Load(reader.result.toString, format))
-        .unsafeRunSync()
+        .unsafeToFuture()
     reader.readAsText(file)
   }
 

@@ -1,11 +1,14 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import cats.effect.concurrent.Ref
+import cats.effect.unsafe.implicits.global
+
 import cats.implicits._
+
 import com.flowtick.graphs.editor.view.GraphElement
 import com.flowtick.graphs.layout.PointSpec
 import com.flowtick.graphs.{Edge, Node}
+import cats.effect.kernel.Ref
 
 final case class PanContext(
     mouseAnchorX: Double,
@@ -96,9 +99,9 @@ trait Page[T, E] {
           Some(newDragStart)
         case None => None
       }
-      .unsafeRunSync()
+      .unsafeToFuture()
 
-  def endDrag: E => Option[DragStart[T]] = _ => dragStartRef.getAndUpdate(_ => None).unsafeRunSync()
+  def endDrag: E => IO[Option[DragStart[T]]] = _ => dragStartRef.getAndUpdate(_ => None)
 }
 
 final case class ViewModel[T](graphElements: Map[ElementRef, GraphElement[T]])
@@ -283,10 +286,10 @@ trait EditorView[T, E] extends EditorComponent {
         oldSelections.foreach(elem =>
           vm.graphElements
             .get(elem)
-            .foreach(p.unsetSelection(_).unsafeRunSync())
+            .foreach(p.unsetSelection(_).unsafeToFuture())
         )
         newSelections.foreach(elem =>
-          vm.graphElements.get(elem).foreach(p.setSelection(_).unsafeRunSync())
+          vm.graphElements.get(elem).foreach(p.setSelection(_).unsafeToFuture())
         )
       }
     } yield ()

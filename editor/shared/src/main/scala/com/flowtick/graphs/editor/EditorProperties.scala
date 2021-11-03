@@ -1,12 +1,15 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import cats.effect.concurrent.Ref
+import cats.effect.unsafe.implicits.global
+
 import cats.implicits._
+
 import com.flowtick.graphs.json.schema.Schema
 import io.circe.Json
 
 import scala.util.Try
+import cats.effect.kernel.Ref
 
 final case class ElementProperties(
     element: ElementRef,
@@ -255,7 +258,7 @@ trait EditorProperties extends EditorComponent {
           } else IO.unit
         case None => IO.unit
       }
-    } yield ()).unsafeRunSync()
+    } yield ()).unsafeToFuture()
 
   def setProperties(
       properties: List[PropertySpec],

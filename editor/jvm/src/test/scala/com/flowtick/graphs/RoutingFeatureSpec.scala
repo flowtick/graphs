@@ -22,7 +22,7 @@ class RoutingFeatureSpec extends EditorBaseSpec {
         MoveTo(ElementRef(firstNodeId, NodeType), 110.0, 110.0)
       )
       _ <- editor.bus.publish(Export(JsonFormat))
-    } yield (added, moved)).unsafeRunSync()
+    } yield (added, moved)).unsafeToFuture()
 
     moved.model.graph.edgeIds should have size (1)
 

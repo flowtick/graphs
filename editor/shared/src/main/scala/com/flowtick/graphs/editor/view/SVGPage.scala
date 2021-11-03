@@ -1,6 +1,8 @@
 package com.flowtick.graphs.editor.view
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
+
 import com.flowtick.graphs.editor._
 import com.flowtick.graphs.layout.PointSpec
 import com.flowtick.graphs.{Edge, Node}
@@ -98,14 +100,14 @@ class SVGPage[Builder, T <: Frag, Frag, E, M](
     case _ =>
   }
 
-  def click: E => Option[ElementRef] = evt =>
+  def click: E => IO[Option[ElementRef]] = evt =>
     IO {
       val elem = eventLike.target(evt)
       renderer.selectable(elem)
-    }.unsafeRunSync()
+    }
 
-  def startDrag: E => Option[DragStart[T]] = evt =>
-    (for {
+  def startDrag: E => IO[Option[DragStart[T]]] = evt =>
+    for {
       dragStart <- IO {
         val elem = eventLike.target(evt)
 
@@ -131,7 +133,7 @@ class SVGPage[Builder, T <: Frag, Frag, E, M](
         }
       }
       _ <- dragStartRef.set(dragStart)
-    } yield dragStart).unsafeRunSync()
+    } yield dragStart
 
   override def addEdge(
       edge: Edge[EditorGraphEdge],

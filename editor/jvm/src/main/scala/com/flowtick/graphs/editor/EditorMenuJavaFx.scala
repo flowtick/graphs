@@ -3,6 +3,8 @@ package com.flowtick.graphs.editor
 import java.io.{FileInputStream, FileOutputStream}
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
+
 import com.flowtick.graphs._
 import javafx.event.EventHandler
 import javafx.scene.input.KeyEvent
@@ -102,7 +104,7 @@ class EditorMenuJavaFx(
   }
 
   override def triggerFileOpen: Any => Unit = _ => {
-    openFile.unsafeRunSync()
+    openFile.unsafeToFuture()
   }
 
   override def handleExported(exported: ExportedGraph): IO[Unit] = for {

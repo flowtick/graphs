@@ -75,5 +75,5 @@ object LayoutExampleApp extends LayoutExample with App {
     _ <- writeToFile("target/layout_example.png", pngData)
   } yield ()
 
-  renderImages.unsafeRunSync()
+  renderImages.unsafeToFuture()
 }

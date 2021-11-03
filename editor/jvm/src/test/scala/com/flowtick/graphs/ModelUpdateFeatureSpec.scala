@@ -27,7 +27,7 @@ class ModelUpdateFeatureSpec extends EditorBaseSpec {
         IO.fromOption(_)(new IllegalStateException("exported graph not set"))
       )
       loaded <- editor.bus.publish(Load(exported.value, JsonFormat))
-    } yield loaded).unsafeRunSync()
+    } yield loaded).unsafeToFuture()
 
     loaded.model.graph.nodes should have size (2)
     loaded.model.graph.edges should have size (1)
@@ -56,7 +56,7 @@ class ModelUpdateFeatureSpec extends EditorBaseSpec {
         IO.fromOption(_)(new IllegalStateException("exported graph not set"))
       )
       loaded <- editor.bus.publish(Load(exported.value, JsonFormat))
-    } yield loaded).unsafeRunSync()
+    } yield loaded).unsafeToFuture()
 
     loaded.model.styleSheet
       .getNodeStyle(Some("1"))

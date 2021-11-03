@@ -4,6 +4,7 @@ import cats.effect.IO
 import com.flowtick.graphs.editor.view._
 import org.scalajs.dom
 import org.scalajs.dom.raw._
+import cats.effect.unsafe.implicits.global
 
 object EditorDomEventLike extends EventLike[Event, dom.Element] {
   override def target(event: Event): dom.Element =
@@ -71,13 +72,13 @@ object EditorPageJs {
     renderer.graphSVG.root.addEventListener(
       "mousedown",
       (e: MouseEvent) => {
-        page.startDrag(e) match {
-          case Some(_) => // we already have a selection
+        page.startDrag(e).flatMap {
+          case Some(_) => IO.unit // we already have a selection
           case None =>
-            page.click(e).foreach { clicked =>
-              handleSelect(clicked)(e.ctrlKey).unsafeRunSync()
+            page.click(e).flatMap {
+              case Some(clicked) => handleSelect(clicked)(e.ctrlKey)
             }
-        }
+        }.un
       }
     )
 
@@ -86,13 +87,13 @@ object EditorPageJs {
       "mouseup",
       (e: MouseEvent) => {
         val drag = page.endDrag(e)
-        handleDrag(drag).unsafeRunSync()
+        handleDrag(drag).unsafeToFuture()
 
         // handle up as a selection if we did not drag more the one pixel
         drag match {
           case Some(drag) if Math.abs(drag.deltaX) < 2 && Math.abs(drag.deltaY) < 2 =>
             page.click(e).foreach { element =>
-              handleSelect(element)(false).unsafeRunSync()
+              handleSelect(element)(false).unsafeToFuture()
             }
           case _ =>
         }
@@ -110,7 +111,7 @@ object EditorPageJs {
     renderer.graphSVG.root.addEventListener(
       "dblclick",
       (e: MouseEvent) => {
-        handleDoubleClick(e).unsafeRunSync()
+        handleDoubleClick(e).unsafeToFuture()
       }
     )
 

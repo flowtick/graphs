@@ -20,7 +20,7 @@ class EditorPropertiesJs(containerId: String)(val messageBus: EditorMessageBus)
       properties: List[PropertySpec],
       elementProperties: ElementProperties
   ): IO[List[PropertyFormGroup]] = for {
-    newForm <- IO(EditorPropertiesHtml.createPropertyForm(properties))
+    newForm <- EditorPropertiesHtml.createPropertyForm(properties)
     _ <- IO {
 
       if (EditorPropertiesHtml.propertiesBody.children.length == 0) {

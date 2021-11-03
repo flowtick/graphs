@@ -1,5 +1,6 @@
 package com.flowtick.graphs.editor
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import io.circe.Json
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.scene.paint.Color
@@ -61,7 +62,7 @@ class EditorPropertiesJavaFx(
       closeLabel.onMouseClicked = _ => {
         messageBus
           .publish(EditorToggle(EditorToggle.editKey, Some(false)))
-          .unsafeRunSync()
+          .unsafeToFuture()
       }
 
       val grid = new GridPane()

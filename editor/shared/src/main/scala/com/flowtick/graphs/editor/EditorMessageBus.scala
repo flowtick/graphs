@@ -1,8 +1,8 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import cats.effect.concurrent.Ref
 import cats.implicits._
+import cats.effect.kernel.Ref
 
 trait EditorMessageBus {
   def subscribe(backend: EditorComponent): IO[EditorComponent]

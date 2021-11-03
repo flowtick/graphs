@@ -13,6 +13,8 @@ import scalafx.scene.text.{Text, TextAlignment}
 import scalafx.scene.transform.Affine
 import scalafx.scene.{Group, Node}
 
+import cats.effect.unsafe.implicits.global
+
 class EditorGraphNodeFx(
     nodeId: String,
     geometry: Geometry,
@@ -119,7 +121,7 @@ class EditorGraphNodeFx(
   onMousePressed = new EventHandler[MouseEvent] {
     override def handle(event: MouseEvent): Unit = {
       handleSelect(ElementRef(nodeId, NodeType))(event.isControlDown)
-        .unsafeRunSync()
+        .unsafeToFuture()
     }
   }
 
@@ -130,7 +132,7 @@ class EditorGraphNodeFx(
         transformation.inverseTransform(event.getSceneX, event.getSceneY)
 
       if (event.getClickCount == 2) {
-        handleDoubleClick(event).unsafeRunSync()
+        handleDoubleClick(event).unsafeToFuture()
       }
 
       if (event.isPrimaryButtonDown) {
@@ -185,11 +187,11 @@ class EditorGraphNodeFx(
     override def handle(event: MouseEvent): Unit = {
       nodeDragStart match {
         case Some(drag) if Math.abs(drag.deltaX) < 2 && Math.abs(drag.deltaY) < 2 =>
-          handleSelect(drag.element)(false).unsafeRunSync()
+          handleSelect(drag.element)(false).unsafeToFuture()
         case _ =>
       }
 
-      handleDrag(nodeDragStart).unsafeRunSync()
+      handleDrag(nodeDragStart).unsafeToFuture()
     }
   }
 

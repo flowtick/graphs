@@ -6,6 +6,7 @@ import com.flowtick.graphs.style.ImageSpec
 import org.scalajs.dom.html.{Button, Div, UList}
 import org.scalajs.dom.raw.{Event, HTMLElement}
 import scalatags.JsDom.all._
+import cats.effect.unsafe.implicits.global
 
 class EditorPaletteJs(paletteElementId: String)(
     val messageBus: EditorMessageBus
@@ -119,7 +120,7 @@ class EditorPaletteJs(paletteElementId: String)(
       onclick := ((_: Event) =>
         messageBus
           .publish(EditorToggle(EditorToggle.paletteKey, Some(false)))
-          .unsafeRunSync()
+          .unsafeToFuture()
       )
     ).render
 
