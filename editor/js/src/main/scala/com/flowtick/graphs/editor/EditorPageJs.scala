@@ -72,14 +72,17 @@ object EditorPageJs {
     renderer.graphSVG.root.addEventListener(
       "mousedown",
       (e: MouseEvent) => {
-        page.startDrag(e).flatMap {
-          case Some(_) => IO.unit // we already have a selection
-          case None =>
-            page.click(e).flatMap {
-              case Some(clicked) => handleSelect(clicked)(e.ctrlKey)
-              case None          => IO.unit
-            }
-        }.unsafeToFuture()
+        page
+          .startDrag(e)
+          .flatMap {
+            case Some(_) => IO.unit // we already have a selection
+            case None =>
+              page.click(e).flatMap {
+                case Some(clicked) => handleSelect(clicked)(e.ctrlKey)
+                case None          => IO.unit
+              }
+          }
+          .unsafeToFuture()
       }
     )
 
