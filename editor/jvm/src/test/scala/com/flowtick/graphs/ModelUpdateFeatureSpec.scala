@@ -1,6 +1,7 @@
 package com.flowtick.graphs
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import com.flowtick.graphs.editor._
 import com.flowtick.graphs.layout.{DefaultGeometry, EdgePath}
 
@@ -27,7 +28,7 @@ class ModelUpdateFeatureSpec extends EditorBaseSpec {
         IO.fromOption(_)(new IllegalStateException("exported graph not set"))
       )
       loaded <- editor.bus.publish(Load(exported.value, JsonFormat))
-    } yield loaded).unsafeToFuture()
+    } yield loaded).unsafeToFuture().futureValue
 
     loaded.model.graph.nodes should have size (2)
     loaded.model.graph.edges should have size (1)
@@ -56,7 +57,7 @@ class ModelUpdateFeatureSpec extends EditorBaseSpec {
         IO.fromOption(_)(new IllegalStateException("exported graph not set"))
       )
       loaded <- editor.bus.publish(Load(exported.value, JsonFormat))
-    } yield loaded).unsafeToFuture()
+    } yield loaded).unsafeToFuture().futureValue
 
     loaded.model.styleSheet
       .getNodeStyle(Some("1"))

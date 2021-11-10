@@ -50,7 +50,7 @@ class SVGPage[Builder, T <: Frag, Frag, E, M](
     case _ => false
   }
 
-  def stopPan(event: E): Unit = {
+  def stopPan(event: E): IO[Unit] = IO {
     panStart = None
   }
 

@@ -11,8 +11,8 @@ import scalafx.scene.text.{Font, FontWeight}
 
 case class PropertyFormGroupFx(
     property: PropertySpec,
-    init: () => Unit,
-    set: Json => Unit
+    init: IO[Unit],
+    set: Json => IO[Unit]
 ) extends PropertyFormGroup
 
 class EditorPropertiesJavaFx(
@@ -100,7 +100,7 @@ class EditorPropertiesJavaFx(
 
       PropertyFormGroupFx(
         property,
-        init = () => {
+        init = IO {
           grid.add(label(property), 0, index)
           grid.add(input, 1, index)
 
@@ -116,13 +116,14 @@ class EditorPropertiesJavaFx(
             }
           })
         },
-        set = (newJson: Json) => {
-          val newText = NumberInput
-            .fromJson(property.key, newJson)
-            .map(_.toString)
-            .getOrElse("")
-          input.setText(newText)
-        }
+        set = (newJson: Json) =>
+          IO {
+            val newText = NumberInput
+              .fromJson(property.key, newJson)
+              .map(_.toString)
+              .getOrElse("")
+            input.setText(newText)
+          }
       )
 
     case BooleanInput =>
@@ -130,7 +131,7 @@ class EditorPropertiesJavaFx(
 
       PropertyFormGroupFx(
         property,
-        init = () => {
+        init = IO {
           grid.add(label(property), 0, index)
           grid.add(input, 1, index)
 
@@ -144,9 +145,10 @@ class EditorPropertiesJavaFx(
             }
           })
         },
-        set = (newJson: Json) => {
-          input.selected = BooleanInput.fromJson(property.key, newJson).getOrElse(false)
-        }
+        set = (newJson: Json) =>
+          IO {
+            input.selected = BooleanInput.fromJson(property.key, newJson).getOrElse(false)
+          }
       )
 
     case IntegerInput =>
@@ -154,7 +156,7 @@ class EditorPropertiesJavaFx(
 
       PropertyFormGroupFx(
         property,
-        init = () => {
+        init = IO {
           grid.add(label(property), 0, index)
           grid.add(input, 1, index)
 
@@ -168,13 +170,14 @@ class EditorPropertiesJavaFx(
             }
           })
         },
-        set = (newJson: Json) => {
-          val newText = IntegerInput
-            .fromJson(property.key, newJson)
-            .map(_.toString)
-            .getOrElse("")
-          input.setText(newText)
-        }
+        set = (newJson: Json) =>
+          IO {
+            val newText = IntegerInput
+              .fromJson(property.key, newJson)
+              .map(_.toString)
+              .getOrElse("")
+            input.setText(newText)
+          }
       )
 
     case ColorInputType =>
@@ -182,7 +185,7 @@ class EditorPropertiesJavaFx(
 
       PropertyFormGroupFx(
         property,
-        () => {
+        init = IO {
           grid.add(label(property), 0, index)
           grid.add(input, 1, index)
 
@@ -196,9 +199,10 @@ class EditorPropertiesJavaFx(
             }
           })
         },
-        (newJson: Json) => {
-          input.value = newJson.asString.map(Color.web).getOrElse(Color.WHITE)
-        }
+        (newJson: Json) =>
+          IO {
+            input.value = newJson.asString.map(Color.web).getOrElse(Color.WHITE)
+          }
       )
 
     case _ =>
@@ -206,7 +210,7 @@ class EditorPropertiesJavaFx(
 
       PropertyFormGroupFx(
         property,
-        () => {
+        IO {
           grid.add(label(property), 0, index)
           grid.add(input, 1, index)
 
@@ -225,15 +229,16 @@ class EditorPropertiesJavaFx(
             }
           })
         },
-        (newJson: Json) => {
-          val newText = if (property.inputType == JsonInputType) {
-            newJson.spaces2
-          } else TextInput.fromJson(property.key, newJson).getOrElse("")
+        (newJson: Json) =>
+          IO {
+            val newText = if (property.inputType == JsonInputType) {
+              newJson.spaces2
+            } else TextInput.fromJson(property.key, newJson).getOrElse("")
 
-          val rows = newText.split("\n").length
-          input.text.value = newText
-          input.setPrefRowCount(if (rows == 0) 1 else rows)
-        }
+            val rows = newText.split("\n").length
+            input.text.value = newText
+            input.setPrefRowCount(if (rows == 0) 1 else rows)
+          }
       )
   }
 

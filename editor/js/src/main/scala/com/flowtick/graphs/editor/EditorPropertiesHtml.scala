@@ -10,12 +10,11 @@ import scalatags.{JsDom, generic}
 
 import scala.scalajs.js
 import cats.implicits._
-import cats.effect.unsafe.implicits.global
 
 final case class PropertyFormGroupJs(
     property: PropertySpec,
     container: JsDom.TypedTag[Div],
-    init: () => IO[Unit],
+    init: IO[Unit],
     set: Json => IO[Unit]
 ) extends PropertyFormGroup
 
@@ -102,21 +101,25 @@ object EditorPropertiesHtml {
 
         val (_, propertyContainer) = propertyContainers(property, numberInput)
 
-        IO(PropertyFormGroupJs(
-          property,
-          propertyContainer,
-          init = () => IO {
-            numberInput.onchange = _ =>
-              property.handler(
-                JsonValue(Json.fromDoubleOrString(numberInput.value.toDouble))
+        IO(
+          PropertyFormGroupJs(
+            property,
+            propertyContainer,
+            init = IO {
+              numberInput.onchange = _ =>
+                property.handler(
+                  JsonValue(Json.fromDoubleOrString(numberInput.value.toDouble))
+                )
+            },
+            set = json =>
+              IO(numberInput.value =
+                NumberInput
+                  .fromJson(property.key, json)
+                  .map(_.toString)
+                  .getOrElse("")
               )
-          },
-          set = json =>
-            IO(numberInput.value = NumberInput
-              .fromJson(property.key, json)
-              .map(_.toString)
-              .getOrElse(""))
-        ))
+          )
+        )
 
       case BooleanInput =>
         lazy val checkbox = input(
@@ -127,18 +130,20 @@ object EditorPropertiesHtml {
 
         val (_, propertyContainer) = propertyContainers(property, checkbox)
 
-        IO(PropertyFormGroupJs(
-          property,
-          propertyContainer,
-          init = () => IO {
-            checkbox.onchange = _ =>
-              property.handler(
-                JsonValue(if (checkbox.checked) Json.True else Json.False)
-              )
-          },
-          set =
-            json => IO(checkbox.checked = BooleanInput.fromJson(property.key, json).getOrElse(false))
-        ))
+        IO(
+          PropertyFormGroupJs(
+            property,
+            propertyContainer,
+            init = IO {
+              checkbox.onchange = _ =>
+                property.handler(
+                  JsonValue(if (checkbox.checked) Json.True else Json.False)
+                )
+            },
+            set = json =>
+              IO(checkbox.checked = BooleanInput.fromJson(property.key, json).getOrElse(false))
+          )
+        )
 
       case IntegerInput =>
         lazy val integerInput = input(
@@ -152,21 +157,25 @@ object EditorPropertiesHtml {
 
         val (_, propertyContainer) = propertyContainers(property, integerInput)
 
-        IO(PropertyFormGroupJs(
-          property,
-          propertyContainer,
-          init = () => IO {
-            integerInput.onchange = _ =>
-              property.handler(
-                JsonValue(Json.fromInt(integerInput.value.toInt))
+        IO(
+          PropertyFormGroupJs(
+            property,
+            propertyContainer,
+            init = IO {
+              integerInput.onchange = _ =>
+                property.handler(
+                  JsonValue(Json.fromInt(integerInput.value.toInt))
+                )
+            },
+            set = json =>
+              IO(integerInput.value =
+                IntegerInput
+                  .fromJson(property.key, json)
+                  .map(_.toString)
+                  .getOrElse("")
               )
-          },
-          set = json =>
-            IO(integerInput.value = IntegerInput
-              .fromJson(property.key, json)
-              .map(_.toString)
-              .getOrElse(""))
-        ))
+          )
+        )
 
       case TextInput | LabelInputType | JsonInputType =>
         lazy val textAreaInput: TextArea = textarea(
@@ -226,30 +235,35 @@ object EditorPropertiesHtml {
               }
           })
 
-        createEditor.map(editor => PropertyFormGroupJs(
-          property,
-          propertyContainer,
-          init = () => IO(editor),
-          set = json => IO {
-            val newValue = TextInput.fromJson(property.key, json).getOrElse("")
-            editor match {
-              case Right(ace) => ace.session.setValue(newValue)
-              case Left(text) =>
-                text.value = newValue
-                text.rows = newValue.split("\n").length
-            }
-          }
-        ))
+        createEditor.map(editor =>
+          PropertyFormGroupJs(
+            property,
+            propertyContainer,
+            init = IO.unit,
+            set = json =>
+              IO {
+                val newValue = TextInput.fromJson(property.key, json).getOrElse("")
+                editor match {
+                  case Right(ace) => ace.session.setValue(newValue)
+                  case Left(text) =>
+                    text.value = newValue
+                    text.rows = newValue.split("\n").length
+                }
+              }
+          )
+        )
 
       case other =>
-        IO(PropertyFormGroupJs(
-          property,
-          div(
-            pre(s"unsupported property type $other", style := "display: none")
-          ),
-          () => IO.unit,
-          _ => IO.unit
-        ))
+        IO(
+          PropertyFormGroupJs(
+            property,
+            div(
+              pre(s"unsupported property type $other", style := "display: none")
+            ),
+            IO.unit,
+            _ => IO.unit
+          )
+        )
     }
 
   lazy val propertiesBody = div(

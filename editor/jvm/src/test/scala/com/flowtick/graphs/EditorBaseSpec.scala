@@ -1,16 +1,23 @@
 package com.flowtick.graphs
 
 import cats.effect.IO
-import cats.effect.concurrent.Ref
+import cats.effect.kernel.Ref
+import cats.effect.unsafe.implicits.global
 import com.flowtick.graphs.editor._
 import com.flowtick.graphs.editor.view.SVGRendererJvm
 import org.apache.logging.log4j.{LogManager, Logger}
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.io.FileOutputStream
 
-trait EditorBaseSpec extends AnyFlatSpec with Matchers with EditorMain { self =>
+trait EditorBaseSpec
+    extends AnyFlatSpec
+    with Matchers
+    with EditorMain
+    with ScalaFutures
+    with IntegrationPatience { self =>
   val log: Logger = LogManager.getLogger(getClass)
 
   val lastExported: Ref[IO, Option[ExportedGraph]] = Ref.unsafe(None)
@@ -22,7 +29,7 @@ trait EditorBaseSpec extends AnyFlatSpec with Matchers with EditorMain { self =>
       List(
         testView(bus)
       )
-    )(EditorConfiguration()).flatMap(editor => IO(f(editor))).unsafeToFuture()
+    )(EditorConfiguration()).flatMap(editor => IO(f(editor))).unsafeToFuture().futureValue
 
   protected def testView(bus: EditorMessageBus): EditorComponent =
     new EditorComponent {

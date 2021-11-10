@@ -117,7 +117,7 @@ lazy val editor = (crossProject(JVMPlatform, JSPlatform) in file(".") / "editor"
     ).map(_ % circeVersion),
     libraryDependencies += "org.typelevel" %%% "cats-effect" % "3.2.9",
     libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.4",
-    libraryDependencies += "com.codecommit" %% "cats-effect-testing-scalatest" % "0.5.4" % Test
+    libraryDependencies += "org.typelevel" %% "cats-effect-testing-scalatest" % "1.3.0" % Test
   ).dependsOn(core, graphml, json, cats)
 
 lazy val editorJS = editor.js.settings(

@@ -113,8 +113,8 @@ final case class PropertySpec(
 
 trait PropertyFormGroup {
   def property: PropertySpec
-  def init: () => Unit
-  def set: Json => Unit
+  def init: IO[Unit]
+  def set: Json => IO[Unit]
 }
 
 trait EditorProperties extends EditorComponent {
@@ -266,9 +266,7 @@ trait EditorProperties extends EditorComponent {
   ): IO[Unit] = for {
     newGroups <- setPropertiesGroups(properties, elementProperties)
     _ <- newGroups.map(setGroupValues(_, elementProperties)).sequence
-    _ <- IO(newGroups.foreach { group =>
-      group.init()
-    })
+    _ <- newGroups.map(_.init).sequence
     _ <- currentProperties.set(newGroups)
   } yield ()
 

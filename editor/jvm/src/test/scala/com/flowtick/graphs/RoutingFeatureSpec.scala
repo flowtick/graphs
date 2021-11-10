@@ -1,8 +1,10 @@
 package com.flowtick.graphs
 
+import cats.effect.unsafe.implicits.global
 import com.flowtick.graphs.editor._
+import org.scalatest.concurrent.ScalaFutures
 
-class RoutingFeatureSpec extends EditorBaseSpec {
+class RoutingFeatureSpec extends EditorBaseSpec with ScalaFutures {
   "Routing" should "update edges" in withEditor { editor =>
     val (firstNodeId, secondNodeId) = ("1", "2")
     val edgeId = "e1"
@@ -22,7 +24,7 @@ class RoutingFeatureSpec extends EditorBaseSpec {
         MoveTo(ElementRef(firstNodeId, NodeType), 110.0, 110.0)
       )
       _ <- editor.bus.publish(Export(JsonFormat))
-    } yield (added, moved)).unsafeToFuture()
+    } yield (added, moved)).unsafeToFuture().futureValue
 
     moved.model.graph.edgeIds should have size (1)
 

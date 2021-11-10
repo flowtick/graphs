@@ -1,4 +1,4 @@
-import cats.effect.IO
+import cats.effect.{ExitCode, IO, IOApp}
 import com.flowtick.graphs.editor.view.{SVGRendererJvm, SVGRendererOptions, SVGTranscoder}
 import com.flowtick.graphs.layout.{ForceDirectedLayout, GraphLayoutOps}
 import com.flowtick.graphs.style._
@@ -16,13 +16,11 @@ object SimpleGraphExampleApp extends SimpleGraphExample with App
 object TopologicalSortingExampleApp extends TopologicalSortingExample with App
 object JsonExampleApp extends JsonExample with App
 
-object LayoutExampleApp extends LayoutExample with App {
+object LayoutExampleApp extends LayoutExample with IOApp {
   import com.flowtick.graphs.defaults._
   import com.flowtick.graphs.defaults.label._
   import com.flowtick.graphs.style.defaults._
 
-  implicit val contextShift =
-    IO.contextShift(scala.concurrent.ExecutionContext.Implicits.global)
   override def layoutOps: GraphLayoutOps = ForceDirectedLayout
 
   def writeToFile(path: String, content: Array[Byte]): IO[Unit] = IO {
@@ -75,5 +73,7 @@ object LayoutExampleApp extends LayoutExample with App {
     _ <- writeToFile("target/layout_example.png", pngData)
   } yield ()
 
-  renderImages.unsafeToFuture()
+  override def run(args: List[String]): IO[ExitCode] = for {
+    _ <- renderImages
+  } yield ExitCode.Success
 }

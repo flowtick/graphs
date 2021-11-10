@@ -77,35 +77,42 @@ object EditorPageJs {
           case None =>
             page.click(e).flatMap {
               case Some(clicked) => handleSelect(clicked)(e.ctrlKey)
+              case None          => IO.unit
             }
-        }.un
+        }
       }
     )
 
     renderer.graphSVG.root.addEventListener("mousemove", page.drag)
     renderer.graphSVG.root.addEventListener(
       "mouseup",
-      (e: MouseEvent) => {
-        val drag = page.endDrag(e)
-        handleDrag(drag).unsafeToFuture()
-
-        // handle up as a selection if we did not drag more the one pixel
-        drag match {
-          case Some(drag) if Math.abs(drag.deltaX) < 2 && Math.abs(drag.deltaY) < 2 =>
-            page.click(e).foreach { element =>
-              handleSelect(element)(false).unsafeToFuture()
+      (e: MouseEvent) =>
+        {
+          for {
+            drag <- page.endDrag(e)
+            _ <- handleDrag(drag).attempt
+            result <- drag match {
+              case Some(drag) if Math.abs(drag.deltaX) < 2 && Math.abs(drag.deltaY) < 2 =>
+                page.click(e).flatMap {
+                  case Some(element) => handleSelect(element)(false)
+                  case None          => IO.unit
+                }
+              case _ => IO.unit
             }
-          case _ =>
-        }
-      }
+          } yield result
+        }.unsafeToFuture()
     )
 
     renderer.graphSVG.root.addEventListener(
       "mouseleave",
-      (e: MouseEvent) => {
-        page.stopPan(e)
-        handleDrag(page.endDrag(e))
-      }
+      (e: MouseEvent) =>
+        {
+          for {
+            _ <- page.stopPan(e)
+            drag <- page.endDrag(e)
+            result <- handleDrag(drag)
+          } yield result
+        }.unsafeToFuture()
     )
 
     renderer.graphSVG.root.addEventListener(
