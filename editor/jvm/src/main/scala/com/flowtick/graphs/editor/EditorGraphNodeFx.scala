@@ -120,8 +120,7 @@ class EditorGraphNodeFx(
 
   onMousePressed = new EventHandler[MouseEvent] {
     override def handle(event: MouseEvent): Unit = {
-      handleSelect(ElementRef(nodeId, NodeType))(event.isControlDown)
-        .unsafeToFuture()
+      handleSelect(ElementRef(nodeId, NodeType))(event.isControlDown).unsafeRunSync()
     }
   }
 
@@ -132,7 +131,7 @@ class EditorGraphNodeFx(
         transformation.inverseTransform(event.getSceneX, event.getSceneY)
 
       if (event.getClickCount == 2) {
-        handleDoubleClick(event).unsafeToFuture()
+        handleDoubleClick(event).unsafeRunSync()
       }
 
       if (event.isPrimaryButtonDown) {
@@ -187,11 +186,11 @@ class EditorGraphNodeFx(
     override def handle(event: MouseEvent): Unit = {
       nodeDragStart match {
         case Some(drag) if Math.abs(drag.deltaX) < 2 && Math.abs(drag.deltaY) < 2 =>
-          handleSelect(drag.element)(false).unsafeToFuture()
+          handleSelect(drag.element)(false).unsafeRunSync()
         case _ =>
       }
 
-      handleDrag(nodeDragStart).unsafeToFuture()
+      handleDrag(nodeDragStart).unsafeRunSync()
     }
   }
 

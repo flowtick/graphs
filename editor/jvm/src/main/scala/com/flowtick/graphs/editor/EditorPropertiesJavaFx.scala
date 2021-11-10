@@ -4,6 +4,7 @@ import cats.effect.unsafe.implicits.global
 import io.circe.Json
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.scene.paint.Color
+import scalafx.application.Platform
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control._
 import scalafx.scene.layout._
@@ -51,8 +52,7 @@ class EditorPropertiesJavaFx(
       elementProperties: ElementProperties
   ): IO[List[PropertyFormGroup]] = for {
     groups <- IO {
-
-      pane.children.clear()
+      Platform.runLater(pane.children.clear())
 
       val closeLabel = new Label("X") {
         minHeight = 30.0
@@ -75,7 +75,10 @@ class EditorPropertiesJavaFx(
       AnchorPane.setLeftAnchor(grid, 10.0)
 
       grid.add(closeLabel, 2, 0)
-      pane.children.add(grid)
+
+      Platform.runLater {
+        pane.children.add(grid)
+      }
 
       properties.sortBy(_.order).zipWithIndex.map { case (property, index) =>
         propertyGroup(property, index + 1)(grid)
@@ -186,8 +189,10 @@ class EditorPropertiesJavaFx(
       PropertyFormGroupFx(
         property,
         init = IO {
-          grid.add(label(property), 0, index)
-          grid.add(input, 1, index)
+          Platform.runLater {
+            grid.add(label(property), 0, index)
+            grid.add(input, 1, index)
+          }
 
           input.value.addListener(new ChangeListener[Color] {
             override def changed(
@@ -211,8 +216,10 @@ class EditorPropertiesJavaFx(
       PropertyFormGroupFx(
         property,
         IO {
-          grid.add(label(property), 0, index)
-          grid.add(input, 1, index)
+          Platform.runLater {
+            grid.add(label(property), 0, index)
+            grid.add(input, 1, index)
+          }
 
           input.text.addListener(new ChangeListener[String] {
             override def changed(

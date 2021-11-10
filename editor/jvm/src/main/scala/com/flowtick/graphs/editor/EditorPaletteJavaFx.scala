@@ -1,7 +1,6 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import cats.effect.unsafe.implicits.global
 
 import com.flowtick.graphs.editor.feature.PaletteFeature
 import scalafx.geometry.Insets
@@ -70,11 +69,13 @@ class EditorPaletteJavaFx(val messageBus: EditorMessageBus, layout: BorderPane)
             )
             .getOrElse(fallBackImage)
 
-          val stencilView = stencilImage.map(theImage => new ImageView {
-            image = theImage
-            fitWidth = 32
-            fitHeight = 32
-          })
+          val stencilView = stencilImage.map(theImage =>
+            new ImageView {
+              image = theImage
+              fitWidth = 32
+              fitHeight = 32
+            }
+          )
 
           val tooltip = new Tooltip {
             text = stencil.title

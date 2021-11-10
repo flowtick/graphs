@@ -79,7 +79,7 @@ object EditorPageJs {
               case Some(clicked) => handleSelect(clicked)(e.ctrlKey)
               case None          => IO.unit
             }
-        }
+        }.unsafeToFuture()
       }
     )
 

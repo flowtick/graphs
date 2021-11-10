@@ -1,18 +1,17 @@
 package com.flowtick.graphs.editor
 
-import java.io.File
-import java.net.URL
-
 import cats.effect.IO
+import cats.effect.unsafe.IORuntime
+import cats.effect.unsafe.implicits.global
 import scalafx.application.JFXApp
 import scalafx.scene.image.Image
 import scalafx.scene.layout.BorderPane
 import scalafx.scene.{Group, Scene}
 
-import cats.effect.unsafe.implicits.global
+import java.io.File
+import java.net.URL
 
 object EditorMainJvm extends JFXApp with EditorMain {
-
   lazy val pageRoot = new Group
 
   lazy val editorLayout = new BorderPane {
@@ -98,5 +97,5 @@ object EditorMainJvm extends JFXApp with EditorMain {
     }
   } yield editor
 
-  initEditor.unsafeToFuture()
+  initEditor.attempt.unsafeRunSync().foreach(println)
 }
