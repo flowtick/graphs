@@ -1,13 +1,12 @@
 package com.flowtick.graphs.editor
 
-import java.io.{FileInputStream, FileOutputStream}
-
+import java.io.{File, FileInputStream, FileOutputStream}
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-
 import com.flowtick.graphs._
 import javafx.event.EventHandler
 import javafx.scene.input.KeyEvent
+import scalafx.application.Platform
 import scalafx.scene.control.{Menu, MenuBar, MenuItem}
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
@@ -38,30 +37,35 @@ class EditorMenuJavaFx(
     bar
   }
 
-  def openFile: IO[Unit] = IO {
-    val fileChooser = new FileChooser()
-    fileChooser.setTitle("Open File")
+  def openFile: IO[Unit] = IO
+    .async_ { (cb: Either[Throwable, Option[File]] => Unit) =>
+      val fileChooser = new FileChooser()
+      fileChooser.setTitle("Open File")
 
-    val graphmlFilter =
-      new FileChooser.ExtensionFilter("graphml files (*.graphml)", "*.graphml")
-    val jsonFilter =
-      new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json")
+      val graphmlFilter =
+        new FileChooser.ExtensionFilter("graphml files (*.graphml)", "*.graphml")
+      val jsonFilter =
+        new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json")
 
-    fileChooser.getExtensionFilters.add(graphmlFilter)
-    fileChooser.getExtensionFilters.add(jsonFilter)
+      fileChooser.getExtensionFilters.add(graphmlFilter)
+      fileChooser.getExtensionFilters.add(jsonFilter)
 
-    Option(fileChooser.showOpenDialog(stage))
-  }.attempt.flatMap {
-    case Right(Some(file)) => {
-      val format = file.getAbsolutePath.split("\\.").lastOption match {
-        case Some("json") => JsonFormat
-        case _            => GraphMLFormat
+      Platform.runLater {
+        cb(Right(Option(fileChooser.showOpenDialog(stage))))
       }
-      loadGraph(file.getAbsolutePath, format)
     }
-    case Right(None) => IO(println("no file selected"))
-    case Left(error) => IO.raiseError(error)
-  }
+    .attempt
+    .flatMap {
+      case Right(Some(file)) => {
+        val format = file.getAbsolutePath.split("\\.").lastOption match {
+          case Some("json") => JsonFormat
+          case _            => GraphMLFormat
+        }
+        loadGraph(file.getAbsolutePath, format)
+      }
+      case Right(None) => IO(println("no file selected"))
+      case Left(error) => IO.raiseError(error)
+    }
 
   case class ShortCut(
       keyCode: Option[KeyCode] = None,
@@ -108,11 +112,15 @@ class EditorMenuJavaFx(
   }
 
   override def handleExported(exported: ExportedGraph): IO[Unit] = for {
-    file <- IO {
-      new FileChooser() {
-        title = s"Save as ${exported.format.`extension`}"
-      }.showSaveDialog(stage)
-    }.map(Option(_))
+    file <- IO
+      .async_ { (callback: Either[Throwable, File] => Unit) =>
+        Platform.runLater {
+          callback(Right(new FileChooser() {
+            title = s"Save as ${exported.format.`extension`}"
+          }.showSaveDialog(stage)))
+        }
+      }
+      .map(Option(_))
     _ <- file match {
       case Some(path) =>
         IO {
