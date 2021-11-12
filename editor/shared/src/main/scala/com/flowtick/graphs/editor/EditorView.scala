@@ -135,8 +135,7 @@ trait EditorView[T, E] extends EditorComponent {
 
   def handleDrag(drag: Option[DragStart[T]]): IO[Unit] = (for {
     dragEvent <- drag.filter(value => Math.abs(value.deltaY) > 0 || Math.abs(value.deltaX) > 0)
-  } yield messageBus.publish(MoveBy(dragEvent.deltaX, dragEvent.deltaY)).void)
-    .getOrElse(IO.unit)
+  } yield messageBus.publish(MoveBy(dragEvent.deltaX, dragEvent.deltaY)).void).getOrElse(IO.unit)
 
   def appendEdge(
       editorModel: EditorModel

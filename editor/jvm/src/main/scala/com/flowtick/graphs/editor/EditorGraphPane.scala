@@ -296,7 +296,7 @@ class EditorGraphPane(layout: BorderPane)(
   override def deleteElement(element: GraphElement[Node]): IO[Unit] = IO {
     Platform.runLater {
       group.children.remove(element.group)
-      group.children.remove(element.selectElem)
+      element.selectElem.foreach(group.children.remove(_))
     }
   }
 
