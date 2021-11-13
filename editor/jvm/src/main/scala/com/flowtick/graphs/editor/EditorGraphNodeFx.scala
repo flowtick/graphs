@@ -13,6 +13,8 @@ import scalafx.scene.text.{Text, TextAlignment}
 import scalafx.scene.transform.Affine
 import scalafx.scene.{Group, Node}
 
+import cats.effect.unsafe.implicits.global
+
 class EditorGraphNodeFx(
     nodeId: String,
     geometry: Geometry,
@@ -118,8 +120,7 @@ class EditorGraphNodeFx(
 
   onMousePressed = new EventHandler[MouseEvent] {
     override def handle(event: MouseEvent): Unit = {
-      handleSelect(ElementRef(nodeId, NodeType))(event.isControlDown)
-        .unsafeRunSync()
+      handleSelect(ElementRef(nodeId, NodeType))(event.isControlDown).unsafeRunSync()
     }
   }
 

@@ -3,6 +3,7 @@ package com.flowtick.graphs.editor
 import java.util.UUID
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.implicits._
 import com.flowtick.graphs.graphml.{GraphML, GraphMLGraph}
 
@@ -115,48 +116,48 @@ trait EditorMenu extends EditorComponent {
   def toggleConnect: Any => Unit = _ => {
     messageBus
       .publish(EditorToggle(EditorToggle.connectKey, Some(true)))
-      .unsafeRunSync()
+      .unsafeToFuture()
   }
 
   def triggerFileNew: Any => Unit = _ => {
-    messageBus.publish(Reset).unsafeRunSync()
+    messageBus.publish(Reset).unsafeToFuture()
   }
 
   def togglePalette: Any => Unit = _ => {
     messageBus
       .publish(EditorToggle(EditorToggle.paletteKey, None))
-      .unsafeRunSync()
+      .unsafeToFuture()
   }
 
   def toggleEdit: Any => Unit = _ => {
-    messageBus.publish(EditorToggle(EditorToggle.editKey, None)).unsafeRunSync()
+    messageBus.publish(EditorToggle(EditorToggle.editKey, None)).unsafeToFuture()
   }
 
   def triggerUnselect: Any => Unit = _ => {
-    messageBus.publish(Select(Set.empty)).unsafeRunSync()
+    messageBus.publish(Select(Set.empty)).unsafeToFuture()
   }
 
   def triggerResetView: Any => Unit = _ => {
-    messageBus.publish(ResetTransformation).unsafeRunSync()
+    messageBus.publish(ResetTransformation).unsafeToFuture()
   }
 
   def triggerExportXML: Any => Unit = _ => {
-    messageBus.publish(Export(GraphMLFormat)).unsafeRunSync()
+    messageBus.publish(Export(GraphMLFormat)).unsafeToFuture()
   }
 
   def triggerExportJson: Any => Unit = _ => {
-    messageBus.publish(Export(JsonFormat)).unsafeRunSync()
+    messageBus.publish(Export(JsonFormat)).unsafeToFuture()
   }
 
-  def triggerDelete: Any => Unit = _ => messageBus.publish(DeleteSelection).unsafeRunSync()
-  def triggerUndo: Any => Unit = _ => messageBus.publish(Undo).unsafeRunSync()
-  def triggerSelectAll: Any => Unit = _ => messageBus.publish(SelectAll).unsafeRunSync()
+  def triggerDelete: Any => Unit = _ => messageBus.publish(DeleteSelection).unsafeToFuture()
+  def triggerUndo: Any => Unit = _ => messageBus.publish(Undo).unsafeToFuture()
+  def triggerSelectAll: Any => Unit = _ => messageBus.publish(SelectAll).unsafeToFuture()
 
   def triggerAdd: Any => Unit = _ => {
     val id = UUID.randomUUID().toString
     messageBus
       .publish(AddNode(id, None))
-      .unsafeRunSync()
+      .unsafeToFuture()
   }
 
 }

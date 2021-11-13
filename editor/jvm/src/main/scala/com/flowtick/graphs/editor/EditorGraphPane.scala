@@ -1,6 +1,7 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import com.flowtick.graphs
 import com.flowtick.graphs._
 import com.flowtick.graphs.editor.util.DrawUtil
@@ -8,6 +9,7 @@ import com.flowtick.graphs.editor.view.GraphElement
 import com.flowtick.graphs.layout.{DefaultGeometry, PointSpec}
 import javafx.event.EventHandler
 import javafx.scene.input.{MouseEvent, ScrollEvent}
+import scalafx.application.Platform
 import scalafx.scene.layout.{BorderPane, Pane, Priority}
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.Line._
@@ -73,7 +75,7 @@ class EditorGraphPane(layout: BorderPane)(
       event.consume()
 
       if (event.getClickCount == 2) {
-        handleDoubleClick(()).unsafeRunSync()
+        handleDoubleClick(()).unsafeToFuture()
       }
 
       if (!event.isPrimaryButtonDown) {
@@ -185,7 +187,7 @@ class EditorGraphPane(layout: BorderPane)(
             strokeWidth = 0.5
             stroke = Color.Black
           }
-          children.add(cirlce)
+          Platform.runLater(children.add(cirlce))
         })
 
         visible = false
@@ -208,8 +210,10 @@ class EditorGraphPane(layout: BorderPane)(
         }
       }
 
-      selectGroup.children.add(selectLine)
-      selectGroup.children.add(points)
+      Platform.runLater {
+        selectGroup.children.add(selectLine)
+        selectGroup.children.add(points)
+      }
 
       val label = new Text() {
         text = textValue
@@ -228,13 +232,12 @@ class EditorGraphPane(layout: BorderPane)(
 
       selectLine.onMousePressed = new EventHandler[MouseEvent] {
         override def handle(t: MouseEvent): Unit = {
-          handleSelect(ElementRef(edge.id, EdgeType))(t.isControlDown)
-            .unsafeRunSync()
+          handleSelect(ElementRef(edge.id, EdgeType))(t.isControlDown).unsafeRunSync()
           selectGroup.visible = true
         }
       }
 
-      group.children.add(edgeGroup)
+      Platform.runLater(group.children.add(edgeGroup))
 
       JFXElement(
         ElementRef(edge.id, EdgeType),
@@ -262,8 +265,11 @@ class EditorGraphPane(layout: BorderPane)(
       node.value.label,
       shape
     )(transformation, handleSelect, handleDrag, handleDoubleClick)
-    group.children.add(graphNode)
-    group.children.add(graphNode.selectRect)
+
+    Platform.runLater {
+      group.children.add(graphNode)
+      group.children.add(graphNode.selectRect)
+    }
 
     Some(
       JFXElement(
@@ -288,8 +294,10 @@ class EditorGraphPane(layout: BorderPane)(
     }
 
   override def deleteElement(element: GraphElement[Node]): IO[Unit] = IO {
-    group.children.remove(element.group)
-    group.children.remove(element.selectElem)
+    Platform.runLater {
+      group.children.remove(element.group)
+      element.selectElem.foreach(group.children.remove(_))
+    }
   }
 
   override def resetTransformation: IO[Unit] = IO {

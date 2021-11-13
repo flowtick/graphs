@@ -1,11 +1,11 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import cats.effect.concurrent.Ref
 import cats.implicits._
 import com.flowtick.graphs.Graph
 import com.flowtick.graphs.editor.feature.{ModelUpdateFeature, RoutingFeature, UndoFeature}
 import com.flowtick.graphs.style._
+import cats.effect.kernel.Ref
 
 final case class EditorInstance(
     bus: EditorMessageBus,

@@ -1,8 +1,10 @@
 package com.flowtick.graphs.editor
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import io.circe.Json
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.scene.paint.Color
+import scalafx.application.Platform
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control._
 import scalafx.scene.layout._
@@ -10,8 +12,8 @@ import scalafx.scene.text.{Font, FontWeight}
 
 case class PropertyFormGroupFx(
     property: PropertySpec,
-    init: () => Unit,
-    set: Json => Unit
+    init: IO[Unit],
+    set: Json => IO[Unit]
 ) extends PropertyFormGroup
 
 class EditorPropertiesJavaFx(
@@ -50,8 +52,7 @@ class EditorPropertiesJavaFx(
       elementProperties: ElementProperties
   ): IO[List[PropertyFormGroup]] = for {
     groups <- IO {
-
-      pane.children.clear()
+      Platform.runLater(pane.children.clear())
 
       val closeLabel = new Label("X") {
         minHeight = 30.0
@@ -61,7 +62,7 @@ class EditorPropertiesJavaFx(
       closeLabel.onMouseClicked = _ => {
         messageBus
           .publish(EditorToggle(EditorToggle.editKey, Some(false)))
-          .unsafeRunSync()
+          .unsafeToFuture()
       }
 
       val grid = new GridPane()
@@ -74,7 +75,10 @@ class EditorPropertiesJavaFx(
       AnchorPane.setLeftAnchor(grid, 10.0)
 
       grid.add(closeLabel, 2, 0)
-      pane.children.add(grid)
+
+      Platform.runLater {
+        pane.children.add(grid)
+      }
 
       properties.sortBy(_.order).zipWithIndex.map { case (property, index) =>
         propertyGroup(property, index + 1)(grid)
@@ -99,7 +103,7 @@ class EditorPropertiesJavaFx(
 
       PropertyFormGroupFx(
         property,
-        init = () => {
+        init = IO {
           grid.add(label(property), 0, index)
           grid.add(input, 1, index)
 
@@ -115,13 +119,14 @@ class EditorPropertiesJavaFx(
             }
           })
         },
-        set = (newJson: Json) => {
-          val newText = NumberInput
-            .fromJson(property.key, newJson)
-            .map(_.toString)
-            .getOrElse("")
-          input.setText(newText)
-        }
+        set = (newJson: Json) =>
+          IO {
+            val newText = NumberInput
+              .fromJson(property.key, newJson)
+              .map(_.toString)
+              .getOrElse("")
+            input.setText(newText)
+          }
       )
 
     case BooleanInput =>
@@ -129,7 +134,7 @@ class EditorPropertiesJavaFx(
 
       PropertyFormGroupFx(
         property,
-        init = () => {
+        init = IO {
           grid.add(label(property), 0, index)
           grid.add(input, 1, index)
 
@@ -143,9 +148,10 @@ class EditorPropertiesJavaFx(
             }
           })
         },
-        set = (newJson: Json) => {
-          input.selected = BooleanInput.fromJson(property.key, newJson).getOrElse(false)
-        }
+        set = (newJson: Json) =>
+          IO {
+            input.selected = BooleanInput.fromJson(property.key, newJson).getOrElse(false)
+          }
       )
 
     case IntegerInput =>
@@ -153,7 +159,7 @@ class EditorPropertiesJavaFx(
 
       PropertyFormGroupFx(
         property,
-        init = () => {
+        init = IO {
           grid.add(label(property), 0, index)
           grid.add(input, 1, index)
 
@@ -167,13 +173,14 @@ class EditorPropertiesJavaFx(
             }
           })
         },
-        set = (newJson: Json) => {
-          val newText = IntegerInput
-            .fromJson(property.key, newJson)
-            .map(_.toString)
-            .getOrElse("")
-          input.setText(newText)
-        }
+        set = (newJson: Json) =>
+          IO {
+            val newText = IntegerInput
+              .fromJson(property.key, newJson)
+              .map(_.toString)
+              .getOrElse("")
+            input.setText(newText)
+          }
       )
 
     case ColorInputType =>
@@ -181,9 +188,11 @@ class EditorPropertiesJavaFx(
 
       PropertyFormGroupFx(
         property,
-        () => {
-          grid.add(label(property), 0, index)
-          grid.add(input, 1, index)
+        init = IO {
+          Platform.runLater {
+            grid.add(label(property), 0, index)
+            grid.add(input, 1, index)
+          }
 
           input.value.addListener(new ChangeListener[Color] {
             override def changed(
@@ -195,9 +204,10 @@ class EditorPropertiesJavaFx(
             }
           })
         },
-        (newJson: Json) => {
-          input.value = newJson.asString.map(Color.web).getOrElse(Color.WHITE)
-        }
+        (newJson: Json) =>
+          IO {
+            input.value = newJson.asString.map(Color.web).getOrElse(Color.WHITE)
+          }
       )
 
     case _ =>
@@ -205,9 +215,11 @@ class EditorPropertiesJavaFx(
 
       PropertyFormGroupFx(
         property,
-        () => {
-          grid.add(label(property), 0, index)
-          grid.add(input, 1, index)
+        IO {
+          Platform.runLater {
+            grid.add(label(property), 0, index)
+            grid.add(input, 1, index)
+          }
 
           input.text.addListener(new ChangeListener[String] {
             override def changed(
@@ -224,15 +236,16 @@ class EditorPropertiesJavaFx(
             }
           })
         },
-        (newJson: Json) => {
-          val newText = if (property.inputType == JsonInputType) {
-            newJson.spaces2
-          } else TextInput.fromJson(property.key, newJson).getOrElse("")
+        (newJson: Json) =>
+          IO {
+            val newText = if (property.inputType == JsonInputType) {
+              newJson.spaces2
+            } else TextInput.fromJson(property.key, newJson).getOrElse("")
 
-          val rows = newText.split("\n").length
-          input.text.value = newText
-          input.setPrefRowCount(if (rows == 0) 1 else rows)
-        }
+            val rows = newText.split("\n").length
+            input.text.value = newText
+            input.setPrefRowCount(if (rows == 0) 1 else rows)
+          }
       )
   }
 

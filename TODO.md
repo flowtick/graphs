@@ -33,4 +33,3 @@ Issues
 
 from JavaFX: https://bugs.openjdk.java.net/browse/JDK-8251240
 workaround for that: `-Djdk.gtk.version=2` 
-    

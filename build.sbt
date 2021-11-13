@@ -115,9 +115,9 @@ lazy val editor = (crossProject(JVMPlatform, JSPlatform) in file(".") / "editor"
       "io.circe" %%% "circe-generic",
       "io.circe" %%% "circe-parser"
     ).map(_ % circeVersion),
-    libraryDependencies += "org.typelevel" %%% "cats-effect" % "2.5.1",
+    libraryDependencies += "org.typelevel" %%% "cats-effect" % "3.2.9",
     libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.4",
-    libraryDependencies += "com.codecommit" %% "cats-effect-testing-scalatest" % "0.5.4" % Test
+    libraryDependencies += "org.typelevel" %% "cats-effect-testing-scalatest" % "1.3.0" % Test
   ).dependsOn(core, graphml, json, cats)
 
 lazy val editorJS = editor.js.settings(
@@ -138,13 +138,13 @@ lazy val osName = System.getProperty("os.name") match {
 lazy val javaFXModules = Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
 
 lazy val editorJVM = editor.jvm.settings(
-  libraryDependencies += "org.scalafx" %% "scalafx" % "14-R19",
+  libraryDependencies += "org.scalafx" %% "scalafx" % "15.0.1-R21",
   libraryDependencies += "org.fxmisc.richtext" % "richtextfx" % "0.10.5",
   libraryDependencies += "org.apache.logging.log4j" % "log4j-api" % "2.14.0",
   libraryDependencies += "org.apache.logging.log4j" % "log4j-core" % "2.14.0",
-  libraryDependencies += "org.apache.xmlgraphics" % "batik-rasterizer" % "1.13",
+  libraryDependencies += "org.apache.xmlgraphics" % "batik-rasterizer" % "1.14",
   libraryDependencies ++= javaFXModules.map( m =>
-    "org.openjfx" % s"javafx-$m" % "14.0.1" classifier osName
+    "org.openjfx" % s"javafx-$m" % "15.0.1" classifier osName
   )
 )
 

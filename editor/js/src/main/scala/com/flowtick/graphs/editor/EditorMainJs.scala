@@ -1,11 +1,14 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
+
 import org.scalajs.dom.Event
 
 import scala.scalajs.js
 import scala.scalajs.js.{JSON, undefined}
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
+import scala.concurrent.Future
 
 @JSExportTopLevel("graphs")
 object EditorMainJs extends EditorMain {
@@ -16,7 +19,7 @@ object EditorMainJs extends EditorMain {
       optionsObj: js.UndefOr[js.Object],
       menuContainerId: js.UndefOr[String] = undefined,
       paletteContainerId: js.UndefOr[String] = undefined
-  ): EditorInstanceJs = (for {
+  ): Future[EditorInstanceJs] = (for {
     options <- optionsObj.toOption
       .map(obj => IO.fromEither(EditorConfiguration.decode(obj.toString)))
       .getOrElse(IO.pure(EditorConfiguration()))
@@ -47,7 +50,7 @@ object EditorMainJs extends EditorMain {
         ),
       IO.pure
     )
-    .unsafeRunSync()
+    .unsafeToFuture()
 
   def main(args: Array[String]): Unit = {
     println("graphs loaded...")
