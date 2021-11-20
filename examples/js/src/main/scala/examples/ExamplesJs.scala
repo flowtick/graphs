@@ -1,6 +1,7 @@
 package examples
 
-import com.flowtick.graphs.layout.{ELKImport, ELkLayoutOpsJS, GraphLayoutOps}
+import com.flowtick.graphs.layout.GraphLayoutOps
+import com.flowtick.graphs.layout.elk.{ELKImport, ELkLayoutOpsJS}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 

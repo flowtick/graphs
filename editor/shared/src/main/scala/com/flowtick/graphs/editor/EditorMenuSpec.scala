@@ -1,11 +1,11 @@
 package com.flowtick.graphs.editor
 
 import java.util.UUID
-
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import cats.implicits._
 import com.flowtick.graphs.graphml.{GraphML, GraphMLGraph}
+import com.flowtick.graphs.view.ViewComponent
 
 final case class Action(
     title: String,

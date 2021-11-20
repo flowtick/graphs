@@ -1,7 +1,7 @@
 import cats.effect.{ExitCode, IO, IOApp}
-import com.flowtick.graphs.editor.view.{SVGRendererJvm, SVGRendererOptions, SVGTranscoder}
 import com.flowtick.graphs.layout.{ForceDirectedLayout, GraphLayoutOps}
 import com.flowtick.graphs.style._
+import com.flowtick.graphs.view.{SVGRendererJvm, SVGRendererOptions, SVGTranscoder, ViewContext}
 import examples._
 
 import java.io.FileOutputStream
@@ -32,6 +32,7 @@ object LayoutExampleApp extends LayoutExample with IOApp {
 
   val renderer =
     SVGRendererJvm(options = SVGRendererOptions(padding = Some(100)))
+
   val nodeShape = NodeShape(
     fill = Some(Fill(color = Some("#aaa"))),
     shapeType = Some(ShapeType.RoundRectangle),
@@ -64,7 +65,7 @@ object LayoutExampleApp extends LayoutExample with IOApp {
     layoutResult <- IO.fromFuture(IO(layout))
     _ <- renderer
       .translateAndScaleView(0, 0, 2.0)
-      .renderGraph(graph, layoutResult, styleSheet)
+      .renderGraph(ViewContext(graph, layoutResult))
     _ <- writeToFile(
       "target/layout_example.svg",
       renderer.toXmlString.get.getBytes("UTF-8")

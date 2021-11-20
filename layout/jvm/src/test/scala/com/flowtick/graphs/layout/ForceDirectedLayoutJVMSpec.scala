@@ -1,11 +1,11 @@
 package com.flowtick.graphs.layout
 
 import com.flowtick.graphs.Graph
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import com.flowtick.graphs.defaults._
 import com.flowtick.graphs.defaults.label._
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 class ForceDirectedLayoutJVMSpec extends AnyFlatSpec with Matchers with ScalaFutures {
   "Force Directed layout" should "layout plants graph" in {

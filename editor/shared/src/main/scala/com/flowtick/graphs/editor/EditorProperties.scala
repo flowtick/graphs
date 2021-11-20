@@ -2,14 +2,13 @@ package com.flowtick.graphs.editor
 
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-
 import cats.implicits._
-
 import com.flowtick.graphs.json.schema.Schema
 import io.circe.Json
 
 import scala.util.Try
 import cats.effect.kernel.Ref
+import com.flowtick.graphs.view.{EdgeElementType, ElementRef, ElementType, NodeElementType}
 
 final case class ElementProperties(
     element: ElementRef,
@@ -297,19 +296,19 @@ trait EditorProperties extends EditorComponent {
       model: EditorModel
   ): Option[ElementProperties] = for {
     element <- elementRef match {
-      case ElementRef(id, NodeType) =>
+      case ElementRef(id, NodeElementType) =>
         model.graph.findNode(id).map[EditorGraphElement](_.value)
-      case ElementRef(id, EdgeType) =>
+      case ElementRef(id, EdgeElementType) =>
         model.graph.findEdge(id).map[EditorGraphElement](_.value)
     }
 
     color = elementRef match {
-      case ElementRef(id, NodeType) =>
+      case ElementRef(id, NodeElementType) =>
         model.styleSheet
           .requireNodeStyle(Some(id), List.empty)
           .fill
           .flatMap(_.color)
-      case ElementRef(id, EdgeType) =>
+      case ElementRef(id, EdgeElementType) =>
         model.styleSheet
           .requireEdgeStyle(Some(id), List.empty)
           .edgeStyle

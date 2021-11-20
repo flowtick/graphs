@@ -2,11 +2,12 @@ package com.flowtick.graphs.editor
 
 import cats.data.Validated.{Valid, _}
 import cats.data.ValidatedNel
-import com.flowtick.graphs.Graph
+import com.flowtick.graphs.{Edge, Graph, Labeled, Node}
 import com.flowtick.graphs.graphml.{Datatype, GraphMLKey}
 import com.flowtick.graphs.json.schema.Schema
 import com.flowtick.graphs.layout.{GraphLayoutLike, GraphLayouts}
 import com.flowtick.graphs.style._
+import com.flowtick.graphs.view.{ElementRef, ViewComponent, ViewContextLike}
 import io.circe.Json
 
 import scala.xml.NodeSeq
@@ -21,7 +22,12 @@ final case class EditorModel(
     styleSheet: StyleSheetLike,
     version: Long = 0,
     config: EditorConfiguration
-) {
+)(implicit
+    val nodeLabel: Labeled[EditorGraphNode, String],
+    val nodeStyleRef: StyleRef[Node[EditorGraphNode]],
+    val edgeLabel: Labeled[EditorGraphEdge, String],
+    val edgeStyleRef: StyleRef[Edge[EditorGraphEdge]]
+) extends ViewContextLike[EditorGraphEdge, EditorGraphNode] {
   def updateGraph(
       updated: Graph[EditorGraphEdge, EditorGraphNode] => Graph[
         EditorGraphEdge,
@@ -98,3 +104,5 @@ object EditorModel {
       stringDatatype.keys(targetHint)
   }
 }
+
+trait EditorComponent extends ViewComponent[EditorContext, EditorModel]

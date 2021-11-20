@@ -2,11 +2,11 @@ package com.flowtick.graphs.editor.feature
 
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-
 import com.flowtick.graphs.editor._
 
 import java.util.UUID
 import cats.effect.kernel.Ref
+import com.flowtick.graphs.view.ViewComponent
 
 trait PaletteFeature extends EditorComponent {
   def messageBus: EditorMessageBus

@@ -3,8 +3,10 @@ package com.flowtick.graphs.editor
 import cats.effect.IO
 import cats.implicits._
 import cats.effect.kernel.Ref
+import com.flowtick.graphs.view.MessageBus
 
-trait EditorMessageBus {
+trait EditorMessageBus
+    extends MessageBus[EditorComponent, EditorCommand, EditorEvent, EditorContext] {
   def subscribe(backend: EditorComponent): IO[EditorComponent]
   def notifyEvent(
       source: EditorComponent,

@@ -76,15 +76,38 @@ lazy val layout = (crossProject(JVMPlatform, JSPlatform) in file(".") / "layout"
   .settings(commonSettings)
   .settings(
     name := "graphs-layout",
+  ).dependsOn(core)
+
+lazy val layoutJS = layout.js
+lazy val layoutJVM = layout.jvm
+
+lazy val layoutElk = (crossProject(JVMPlatform, JSPlatform) in file(".") / "layout-elk")
+  .settings(commonSettings)
+  .settings(
+    name := "graphs-layout-elk",
   ).jvmSettings(
   libraryDependencies ++= Seq(
     "org.eclipse.elk" % "org.eclipse.elk.alg.layered" % "0.7.1",
     "org.eclipse.elk" % "org.eclipse.elk.alg.mrtree" % "0.7.1"
   )
-).dependsOn(core)
+).dependsOn(layout)
 
-lazy val layoutJS = layout.js
-lazy val layoutJVM = layout.jvm
+lazy val layoutElkJS = layoutElk.js
+lazy val layoutElkJVM = layoutElk.jvm
+
+lazy val view = (crossProject(JVMPlatform, JSPlatform) in file(".") / "view")
+  .settings(commonSettings)
+  .settings(
+    name := "graphs-view",
+    libraryDependencies += "org.typelevel" %%% "cats-effect" % "3.2.9",
+    libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.4",
+    libraryDependencies += "org.typelevel" %% "cats-effect-testing-scalatest" % "1.3.0" % Test
+  ).jvmSettings(
+    libraryDependencies += "org.apache.xmlgraphics" % "batik-rasterizer" % "1.14"
+  ).dependsOn(core, layout, style)
+
+lazy val viewJS = view.js
+lazy val viewJVM = view.jvm
 
 lazy val graphml = (crossProject(JVMPlatform, JSPlatform) in file(".") / "graphml")
   .settings(commonSettings)
@@ -109,16 +132,8 @@ lazy val graphmlJVM = graphml.jvm
 lazy val editor = (crossProject(JVMPlatform, JSPlatform) in file(".") / "editor")
   .settings(commonSettings)
   .settings(
-    name := "graphs-editor",
-    libraryDependencies ++= Seq(
-      "io.circe" %%% "circe-core",
-      "io.circe" %%% "circe-generic",
-      "io.circe" %%% "circe-parser"
-    ).map(_ % circeVersion),
-    libraryDependencies += "org.typelevel" %%% "cats-effect" % "3.2.9",
-    libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.4",
-    libraryDependencies += "org.typelevel" %% "cats-effect-testing-scalatest" % "1.3.0" % Test
-  ).dependsOn(core, graphml, json, cats)
+    name := "graphs-editor"
+  ).dependsOn(core, view, graphml, json, cats)
 
 lazy val editorJS = editor.js.settings(
   scalaJSUseMainModuleInitializer := true,
@@ -142,7 +157,6 @@ lazy val editorJVM = editor.jvm.settings(
   libraryDependencies += "org.fxmisc.richtext" % "richtextfx" % "0.10.5",
   libraryDependencies += "org.apache.logging.log4j" % "log4j-api" % "2.14.0",
   libraryDependencies += "org.apache.logging.log4j" % "log4j-core" % "2.14.0",
-  libraryDependencies += "org.apache.xmlgraphics" % "batik-rasterizer" % "1.14",
   libraryDependencies ++= javaFXModules.map( m =>
     "org.openjfx" % s"javafx-$m" % "15.0.1" classifier osName
   )
@@ -168,7 +182,7 @@ lazy val json = (crossProject(JVMPlatform, JSPlatform) in file(".") / "json")
       "io.circe" %%% "circe-core",
       "io.circe" %%% "circe-generic",
       "io.circe" %%% "circe-parser"
-    ).map(_ % circeVersion % Provided)
+    ).map(_ % circeVersion)
   ).dependsOn(core)
 
 lazy val jsonJS = json.js
@@ -181,12 +195,7 @@ lazy val examples = (crossProject(JVMPlatform, JSPlatform) in file("examples"))
         name := "graphs-examples",
         libraryDependencies ++= Seq(
           "org.typelevel" %%% "cats-core" % catsV
-        ),
-        libraryDependencies ++= Seq(
-          "io.circe" %%% "circe-core",
-          "io.circe" %%% "circe-generic",
-          "io.circe" %%% "circe-parser"
-        ).map(_ % circeVersion)
+        )
       ).jsSettings(
         // command to create bundle: "examplesJS/fastOptJS::webpack"
         webpackBundlingMode := BundlingMode.LibraryAndApplication(),
@@ -196,7 +205,7 @@ lazy val examples = (crossProject(JVMPlatform, JSPlatform) in file("examples"))
         Compile / npmDependencies += "elkjs" -> "0.7.1",
 
         Compile / mainClass := Some("examples.LayoutExampleApp")
-).dependsOn(core, graphml, cats, layout, json, editor)
+).dependsOn(core, graphml, cats, layout, layoutElk, json, editor)
 
 lazy val examplesJS = examples.js
 lazy val examplesJVM = examples.jvm
@@ -220,6 +229,10 @@ lazy val graphs = (project in file("."))
     catsJS,
     layoutJS,
     layoutJVM,
+    layoutElkJS,
+    layoutElkJVM,
+    viewJS,
+    viewJVM,
     editorJS,
     editorJVM,
     jsonJS,

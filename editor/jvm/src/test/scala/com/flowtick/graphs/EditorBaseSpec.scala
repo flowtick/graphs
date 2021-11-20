@@ -4,7 +4,7 @@ import cats.effect.IO
 import cats.effect.kernel.Ref
 import cats.effect.unsafe.implicits.global
 import com.flowtick.graphs.editor._
-import com.flowtick.graphs.editor.view.SVGRendererJvm
+import com.flowtick.graphs.view.SVGRendererJvm
 import org.apache.logging.log4j.{LogManager, Logger}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.flatspec.AnyFlatSpec
@@ -55,11 +55,7 @@ trait EditorBaseSpec
               if (shouldRenderImage) {
                 val renderer = SVGRendererJvm()
                 renderer
-                  .renderGraph(
-                    ctx.model.graph,
-                    ctx.model.layout,
-                    ctx.model.styleSheet
-                  )
+                  .renderGraph(ctx.model)
                   .flatMap(_ => IO.fromTry(renderer.toXmlString))
                   .flatMap { xmlString =>
                     IO {
