@@ -55,7 +55,7 @@ jobs:
       - run: sbt ++${{ matrix.scala }} scalafmtCheckAll test docs/makeSite
 
       - name: Compress target directories
-        run: tar cf targets.tar layout/jvm/target editor/jvm/target docs/target layout/js/target json/jvm/target core/js/target examples/js/target graphml/jvm/target style/js/target editor/js/target style/jvm/target core/jvm/target examples/jvm/target graphml/js/target json/js/target cats/js/target cats/jvm/target target project/target
+        run: tar cf targets.tar layout/jvm/target view/jvm/target editor/jvm/target docs/target layout/js/target json/jvm/target core/js/target examples/js/target graphml/jvm/target style/js/target editor/js/target style/jvm/target layout-elk/js/target core/jvm/target examples/jvm/target view/js/target graphml/js/target layout-elk/jvm/target json/js/target cats/js/target cats/jvm/target target project/target
 
       - name: Upload target directories
         uses: actions/upload-artifact@v2
