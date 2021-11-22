@@ -12,8 +12,9 @@ import scalafx.scene.shape.{Ellipse, Rectangle, Shape}
 import scalafx.scene.text.{Text, TextAlignment}
 import scalafx.scene.transform.Affine
 import scalafx.scene.{Group, Node}
-
 import cats.effect.unsafe.implicits.global
+import com.flowtick.graphs.view
+import com.flowtick.graphs.view.{DragStart, ElementRef, NodeElementType, PagePoint}
 
 class EditorGraphNodeFx(
     nodeId: String,
@@ -120,7 +121,7 @@ class EditorGraphNodeFx(
 
   onMousePressed = new EventHandler[MouseEvent] {
     override def handle(event: MouseEvent): Unit = {
-      handleSelect(ElementRef(nodeId, NodeType))(event.isControlDown).unsafeRunSync()
+      handleSelect(ElementRef(nodeId, NodeElementType))(event.isControlDown).unsafeRunSync()
     }
   }
 
@@ -136,13 +137,13 @@ class EditorGraphNodeFx(
 
       if (event.isPrimaryButtonDown) {
         nodeDragStart = Some(
-          DragStart(
+          view.DragStart(
             mousePos.getX,
             mousePos.getY,
             selectRect.x.value,
             selectRect.y.value,
             self,
-            ElementRef(nodeId, NodeType),
+            ElementRef(nodeId, NodeElementType),
             None,
             0.0,
             0.0

@@ -6,6 +6,7 @@ import com.flowtick.graphs.{Edge, Node}
 import com.flowtick.graphs.util.MathUtil.{LineSegment, Rectangle, Vector2}
 import com.flowtick.graphs.layout.{EdgePath, GraphLayoutLike}
 import com.flowtick.graphs.util.MathUtil
+import com.flowtick.graphs.view._
 
 class RoutingFeature extends EditorComponent {
 
@@ -68,17 +69,17 @@ class RoutingFeature extends EditorComponent {
       .updateModel(_.updateLayout(current => newLayout.getOrElse(current)))
       .addNotification(
         this,
-        ElementUpdated(ElementRef(edge.id, EdgeType), Internal)
+        ElementUpdated(ElementRef(edge.id, EdgeElementType), Internal)
       )
   }
 
   override def eval: Eval = ctx =>
     IO(ctx.transform {
-      case ElementUpdated(ElementRef(id, EdgeType), Created, _) =>
+      case ElementUpdated(ElementRef(id, EdgeElementType), Created, _) =>
         val newEdge = ctx.model.graph.findEdge(id)
         newEdge.map(updateRouting(ctx, _)).getOrElse(ctx)
 
-      case ElementUpdated(ElementRef(id, NodeType), _, _) =>
+      case ElementUpdated(ElementRef(id, NodeElementType), _, _) =>
         val edges = ctx.model.graph.incoming(id) ++ ctx.model.graph.outgoing(id)
 
         edges.foldLeft(ctx) { case (current, edge) =>

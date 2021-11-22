@@ -4,6 +4,7 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import com.flowtick.graphs.editor._
 import com.flowtick.graphs.layout.{DefaultGeometry, EdgePath}
+import com.flowtick.graphs.view.{ElementRef, NodeElementType}
 
 class ModelUpdateFeatureSpec extends EditorBaseSpec {
   override def shouldRenderImage: Boolean = true
@@ -20,8 +21,8 @@ class ModelUpdateFeatureSpec extends EditorBaseSpec {
       _ <- editor.bus.publish(
         AddNode(secondNodeId, None, Some(200.0), Some(200.0))
       )
-      _ <- editor.bus.publish(SetLabel(ElementRef(firstNodeId, NodeType), "1"))
-      _ <- editor.bus.publish(SetLabel(ElementRef(secondNodeId, NodeType), "2"))
+      _ <- editor.bus.publish(SetLabel(ElementRef(firstNodeId, NodeElementType), "1"))
+      _ <- editor.bus.publish(SetLabel(ElementRef(secondNodeId, NodeElementType), "2"))
       _ <- editor.bus.publish(AddEdge(edgeId, firstNodeId, secondNodeId, None))
       _ <- editor.bus.publish(Export(JsonFormat))
       exported <- lastExported.get.flatMap(
@@ -51,7 +52,7 @@ class ModelUpdateFeatureSpec extends EditorBaseSpec {
       _ <- editor.bus.publish(
         AddNode(firstNodeId, None, Some(100.0), Some(100.0))
       )
-      _ <- editor.bus.publish(SetColor(ElementRef("1", NodeType), color))
+      _ <- editor.bus.publish(SetColor(ElementRef("1", NodeElementType), color))
       _ <- editor.bus.publish(Export(JsonFormat))
       exported <- lastExported.get.flatMap(
         IO.fromOption(_)(new IllegalStateException("exported graph not set"))

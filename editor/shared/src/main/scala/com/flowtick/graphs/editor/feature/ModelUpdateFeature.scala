@@ -7,6 +7,7 @@ import com.flowtick.graphs.graphml.{Datatype, FromGraphML, GraphMLGraph, GraphML
 import com.flowtick.graphs.json.schema.JsonSchema
 import com.flowtick.graphs.layout.{DefaultGeometry, GraphLayouts}
 import com.flowtick.graphs.style.{Fill, ImageSpec, NodeShape, StyleSheets}
+import com.flowtick.graphs.view._
 import com.flowtick.graphs.{Edge, Node}
 import io.circe.{Json, Printer}
 
@@ -56,7 +57,7 @@ class ModelUpdateFeature extends EditorComponent {
       }
       .addNotification(
         this,
-        ElementUpdated(ElementRef(newNode.id, NodeType), Created)
+        ElementUpdated(ElementRef(newNode.id, NodeElementType), Created)
       )
 
   val handleAddEdge: Transform = ctx =>
@@ -86,7 +87,7 @@ class ModelUpdateFeature extends EditorComponent {
         .updateModel(_.updateGraph(_ withEdge newEdge))
         .addNotification(
           this,
-          ElementUpdated(ElementRef(newEdge.id, EdgeType), Created)
+          ElementUpdated(ElementRef(newEdge.id, EdgeElementType), Created)
         )
     }).getOrElse(ctx)
   }
@@ -239,13 +240,13 @@ class ModelUpdateFeature extends EditorComponent {
 
   val moveNode: Transform = ctx =>
     ctx.transform {
-      case move @ MoveTo(ElementRef(id, NodeType), x, y) =>
+      case move @ MoveTo(ElementRef(id, NodeElementType), x, y) =>
         ctx
           .updateModel(_.updateLayout(_.updateNodePosition(id, _ => x, _ => y)))
           .addNotification(
             this,
             ElementUpdated(
-              ElementRef(id, NodeType),
+              ElementRef(id, NodeElementType),
               Changed,
               causedBy = Some(move)
             )
@@ -253,7 +254,7 @@ class ModelUpdateFeature extends EditorComponent {
 
       case move @ MoveBy(deltaX, deltaY) =>
         ctx.model.selection.foldLeft(ctx) {
-          case (updatedCtx, ElementRef(id, NodeType)) =>
+          case (updatedCtx, ElementRef(id, NodeElementType)) =>
             updatedCtx
               .updateModel(
                 _.updateLayout(_.updateNodePosition(id, _ + deltaX, _ + deltaY))
@@ -261,7 +262,7 @@ class ModelUpdateFeature extends EditorComponent {
               .addNotification(
                 this,
                 ElementUpdated(
-                  ElementRef(id, NodeType),
+                  ElementRef(id, NodeElementType),
                   Changed,
                   causedBy = Some(move)
                 )
@@ -272,21 +273,21 @@ class ModelUpdateFeature extends EditorComponent {
 
   val setNodeLabel: Transform = ctx =>
     ctx.transform {
-      case SetLabel(ElementRef(id, EdgeType), text) =>
+      case SetLabel(ElementRef(id, EdgeElementType), text) =>
         ctx
           .updateModel(
             _.updateGraph(_.updateEdge(id)(_.copy(label = Some(text))))
           )
-          .addNotification(this, ElementUpdated(ElementRef(id, EdgeType)))
+          .addNotification(this, ElementUpdated(ElementRef(id, EdgeElementType)))
 
-      case SetLabel(ElementRef(id, NodeType), text) =>
+      case SetLabel(ElementRef(id, NodeElementType), text) =>
         ctx
           .updateModel(
             _.updateGraph(_.updateNode(id)(_.copy(label = Some(text))))
           )
-          .addNotification(this, ElementUpdated(ElementRef(id, NodeType)))
+          .addNotification(this, ElementUpdated(ElementRef(id, NodeElementType)))
 
-      case SetColor(ElementRef(id, NodeType), color) =>
+      case SetColor(ElementRef(id, NodeElementType), color) =>
         ctx
           .updateModel(
             _.updateStyleSheet(
@@ -306,18 +307,18 @@ class ModelUpdateFeature extends EditorComponent {
               )
             )
           )
-          .addNotification(this, ElementUpdated(ElementRef(id, NodeType)))
+          .addNotification(this, ElementUpdated(ElementRef(id, NodeElementType)))
     }
 
   val setNodeJson: Transform = ctx =>
     ctx.transform {
-      case SetJson(ElementRef(id, NodeType), json) =>
+      case SetJson(ElementRef(id, NodeElementType), json) =>
         updateNodeJson(ctx, id, json)
 
-      case SetJson(ElementRef(id, EdgeType), json) =>
+      case SetJson(ElementRef(id, EdgeElementType), json) =>
         updateEdgeJson(ctx, id, json)
 
-      case SetJsonString(ElementRef(id, NodeType), json) =>
+      case SetJsonString(ElementRef(id, NodeElementType), json) =>
         io.circe.parser.decode[Json](json) match {
           case Right(json) =>
             updateNodeJson(ctx, id, _ => json)
@@ -325,7 +326,7 @@ class ModelUpdateFeature extends EditorComponent {
           case Left(error) => ctx.addError(this, error)
         }
 
-      case SetJsonString(ElementRef(id, EdgeType), json) =>
+      case SetJsonString(ElementRef(id, EdgeElementType), json) =>
         io.circe.parser.decode[Json](json) match {
           case Right(json) =>
             updateEdgeJson(ctx, id, _ => json)
@@ -345,7 +346,7 @@ class ModelUpdateFeature extends EditorComponent {
           _.updateNode(id)(node => node.copy(data = update(node.data)))
         )
       )
-      .addNotification(this, ElementUpdated(ElementRef(id, NodeType)))
+      .addNotification(this, ElementUpdated(ElementRef(id, NodeElementType)))
 
   private def updateEdgeJson(
       ctx: EditorContext,
@@ -358,7 +359,7 @@ class ModelUpdateFeature extends EditorComponent {
           _.updateEdge(id)(edge => edge.copy(data = update(edge.data)))
         )
       )
-      .addNotification(this, ElementUpdated(ElementRef(id, EdgeType)))
+      .addNotification(this, ElementUpdated(ElementRef(id, EdgeElementType)))
 
   val handleExport: Transform = ctx =>
     ctx.transform {
@@ -410,7 +411,7 @@ class ModelUpdateFeature extends EditorComponent {
     ctx.transform {
       case SelectAll =>
         val allNodes =
-          ctx.model.graph.nodes.map(node => ElementRef(node.id, NodeType)).toSet
+          ctx.model.graph.nodes.map(node => ElementRef(node.id, NodeElementType)).toSet
         withSelection(ctx, allNodes, append = false)
 
       case Select(selection, append) =>
@@ -425,17 +426,17 @@ class ModelUpdateFeature extends EditorComponent {
     val oldSelection = ctx.model.selection
 
     val newSelection = selection.flatMap {
-      case ElementRef(id, NodeType) =>
-        ctx.model.graph.findNode(id).map(node => ElementRef(node.id, NodeType))
-      case ElementRef(id, EdgeType) =>
-        ctx.model.graph.findEdge(id).map(edge => ElementRef(edge.id, EdgeType))
+      case ElementRef(id, NodeElementType) =>
+        ctx.model.graph.findNode(id).map(node => ElementRef(node.id, NodeElementType))
+      case ElementRef(id, EdgeElementType) =>
+        ctx.model.graph.findEdge(id).map(edge => ElementRef(edge.id, EdgeElementType))
     } ++ (if (append) oldSelection else List.empty)
 
     val withConnected: Option[EditorContext] = for {
       from <- oldSelection.headOption
       if ctx.model.connectSelection
       to <- newSelection.headOption
-      if from.elementType == NodeType && to.elementType == NodeType
+      if from.elementType == NodeElementType && to.elementType == NodeElementType
     } yield {
       ctx
         .addCommand(AddEdge(UUID.randomUUID().toString, from.id, to.id))
@@ -456,7 +457,7 @@ class ModelUpdateFeature extends EditorComponent {
   val handleDelete: Transform = ctx =>
     ctx.transform { case DeleteSelection =>
       ctx.model.selection.foldLeft(ctx) {
-        case (elementCtx, ElementRef(refId, NodeType)) =>
+        case (elementCtx, ElementRef(refId, NodeElementType)) =>
           val edges = elementCtx.model.graph.incoming(
             refId
           ) ++ elementCtx.model.graph.outgoing(refId)
@@ -466,7 +467,7 @@ class ModelUpdateFeature extends EditorComponent {
               .updateModel(model => model.updateGraph(_.removeEdgeById(edge.id)))
               .addNotification(
                 this,
-                ElementUpdated(ElementRef(edge.id, EdgeType), Deleted)
+                ElementUpdated(ElementRef(edge.id, EdgeElementType), Deleted)
               )
           }
 
@@ -474,15 +475,15 @@ class ModelUpdateFeature extends EditorComponent {
             .updateModel(model => model.updateGraph(_.removeNodeById(refId)))
             .addNotification(
               this,
-              ElementUpdated(ElementRef(refId, NodeType), Deleted)
+              ElementUpdated(ElementRef(refId, NodeElementType), Deleted)
             )
 
-        case (context, ElementRef(refId, EdgeType)) =>
+        case (context, ElementRef(refId, EdgeElementType)) =>
           context
             .updateModel(model => model.updateGraph(_.removeEdgeById(refId)))
             .addNotification(
               this,
-              ElementUpdated(ElementRef(refId, EdgeType), Deleted)
+              ElementUpdated(ElementRef(refId, EdgeElementType), Deleted)
             )
       }
     }

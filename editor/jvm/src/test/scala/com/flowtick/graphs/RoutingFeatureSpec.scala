@@ -2,6 +2,7 @@ package com.flowtick.graphs
 
 import cats.effect.unsafe.implicits.global
 import com.flowtick.graphs.editor._
+import com.flowtick.graphs.view.{ElementRef, NodeElementType}
 import org.scalatest.concurrent.ScalaFutures
 
 class RoutingFeatureSpec extends EditorBaseSpec with ScalaFutures {
@@ -21,7 +22,7 @@ class RoutingFeatureSpec extends EditorBaseSpec with ScalaFutures {
         AddEdge(edgeId, firstNodeId, secondNodeId, None)
       )
       moved <- editor.bus.publish(
-        MoveTo(ElementRef(firstNodeId, NodeType), 110.0, 110.0)
+        MoveTo(ElementRef(firstNodeId, NodeElementType), 110.0, 110.0)
       )
       _ <- editor.bus.publish(Export(JsonFormat))
     } yield (added, moved)).unsafeToFuture().futureValue

@@ -2,14 +2,13 @@ package com.flowtick.graphs.editor.view
 
 import cats.effect.IO
 import com.flowtick.graphs.editor.vendor.SVGUtil
-import com.flowtick.graphs.editor.{EdgeType, ElementRef, NodeType, PagePoint}
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import org.scalajs.dom.svg.{G, SVG}
 import scalatags.JsDom
 import scalatags.JsDom.all._
-
 import SVGRendererJs.domSVGMatrix
+import com.flowtick.graphs.view._
 
 class SVGRendererJs(options: SVGRendererOptions)
     extends SVGRenderer[dom.Element, dom.Element, dom.Node, SVGMatrix](
@@ -44,8 +43,9 @@ class SVGRendererJs(options: SVGRendererOptions)
   override def y(elem: dom.Element): Double =
     elem.asInstanceOf[SVGLocatable].getCTM().f
 
-  override def setPosition(elem: dom.Element)(x: Double, y: Double): Unit =
+  override def setPosition(elem: dom.Element)(x: Double, y: Double): Unit = {
     SVGUtil.setTransform(elem.asInstanceOf[SVGElement], s"translate($x $y)")
+  }
 
   override def selectElement(graphElement: GraphElement[Element]): IO[Unit] =
     IO {
@@ -78,8 +78,8 @@ class SVGRendererJs(options: SVGRendererOptions)
     val elementId = elem.getAttribute("data-id")
 
     val refType = elementType match {
-      case "node" => NodeType
-      case "edge" => EdgeType
+      case "node" => NodeElementType
+      case "edge" => EdgeElementType
     }
 
     ElementRef(elementId, refType)
@@ -105,6 +105,8 @@ class SVGRendererJs(options: SVGRendererOptions)
     bundle.svgAttrs.width := "100%",
     bundle.svgAttrs.height := "100%"
   )
+
+  override def toXmlString: IO[String] = IO(svgElem.toString)
 }
 
 object SVGRendererJs {

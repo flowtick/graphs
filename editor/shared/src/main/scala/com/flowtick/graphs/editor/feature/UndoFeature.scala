@@ -2,6 +2,7 @@ package com.flowtick.graphs.editor.feature
 
 import cats.effect.IO
 import com.flowtick.graphs.editor._
+import com.flowtick.graphs.view.ElementRef
 
 import scala.collection.mutable.ListBuffer
 

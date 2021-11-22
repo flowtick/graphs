@@ -160,7 +160,7 @@ final case class StyleSheet(
     StyleSheets(List(this) ++ other.filterNot(_.id == id))
 }
 
-final case class StyleSheets(styleSheets: List[StyleSheet]) extends StyleSheetLike {
+final case class StyleSheets(styleSheets: List[StyleSheet] = List.empty) extends StyleSheetLike {
   override lazy val nodeStyles: Styles[NodeShape] =
     styleSheets.view.map(_.nodeStyles).reduce(_ ++ _)
   override lazy val edgeStyles: Styles[EdgeShape] =

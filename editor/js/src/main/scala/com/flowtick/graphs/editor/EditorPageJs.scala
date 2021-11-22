@@ -1,10 +1,10 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import com.flowtick.graphs.editor.view._
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import cats.effect.unsafe.implicits.global
+import com.flowtick.graphs.view._
 
 object EditorDomEventLike extends EventLike[Event, dom.Element] {
   override def target(event: Event): dom.Element =
@@ -33,9 +33,18 @@ object EditorPageJs {
   )(
       renderer: SVGRenderer[dom.Element, dom.Element, dom.Node, SVGMatrix],
       eventLike: EventLike[Event, dom.Element]
-  ): Page[dom.Element, Event] = {
+  ): Page[dom.Element, Event, EditorGraphNode, EditorGraphEdge, EditorModel] = {
     val page =
-      new SVGPage[dom.Element, dom.Element, dom.Node, Event, SVGMatrix](
+      new SVGPage[
+        dom.Element,
+        dom.Element,
+        dom.Node,
+        Event,
+        SVGMatrix,
+        EditorGraphNode,
+        EditorGraphEdge,
+        EditorModel
+      ](
         renderer,
         eventLike
       ) {
@@ -56,8 +65,9 @@ object EditorPageJs {
     )
 
     renderer.graphSVG.panZoomRect.foreach(
-      _.addEventListener("mouseup", e => page.stopPan(e))
+      _.addEventListener("mouseup", (e: Event) => page.stopPan(e).unsafeToFuture())
     )
+
     renderer.graphSVG.panZoomRect.foreach(
       _.addEventListener(
         "mousemove",
@@ -86,7 +96,8 @@ object EditorPageJs {
       }
     )
 
-    renderer.graphSVG.root.addEventListener("mousemove", page.drag)
+    renderer.graphSVG.root
+      .addEventListener("mousemove", (e: Event) => page.drag(e).unsafeToFuture())
     renderer.graphSVG.root.addEventListener(
       "mouseup",
       (e: MouseEvent) =>

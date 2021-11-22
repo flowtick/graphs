@@ -4,13 +4,16 @@ import cats.effect.IO
 import cats.effect.kernel.Ref
 import cats.effect.unsafe.implicits.global
 import com.flowtick.graphs.editor._
-import com.flowtick.graphs.editor.view.SVGRendererJvm
+import com.flowtick.graphs.json.schema.Schema
+import com.flowtick.graphs.style.StyleSheet
+import com.flowtick.graphs.view.SVGRendererJvm
 import org.apache.logging.log4j.{LogManager, Logger}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.io.FileOutputStream
+import scala.collection.mutable.ListBuffer
 
 trait EditorBaseSpec
     extends AnyFlatSpec
@@ -18,20 +21,59 @@ trait EditorBaseSpec
     with EditorMain
     with ScalaFutures
     with IntegrationPatience { self =>
-  val log: Logger = LogManager.getLogger(getClass)
-
-  val lastExported: Ref[IO, Option[ExportedGraph]] = Ref.unsafe(None)
+  protected val log: Logger = LogManager.getLogger(getClass)
+  protected val events: ListBuffer[EditorEvent] = ListBuffer()
+  protected val lastExported: Ref[IO, Option[ExportedGraph]] = Ref.unsafe(None)
 
   def shouldRenderImage: Boolean = false
+
+  def testComponents(bus: EditorMessageBus): List[EditorComponent] = List.empty
+
+  def testSchema: Schema[EditorSchemaHints] = Schema(
+    `type` = Some(Right("object")),
+    properties = Some(
+      Map(
+        "text" -> Schema(
+          `type` = Some(Right("string"))
+        )
+      )
+    )
+  )
+
+  def testPalette: Palette = Palette(
+    stencils = List(
+      StencilGroup(
+        "test",
+        List(Stencil("test", "A Test Stencil", schemaRef = Some("#/$defs/test-schema")))
+      )
+    ),
+    styleSheet = StyleSheet(),
+    schema = Schema(
+      definitions = Some(
+        Map("test-schema" -> testSchema)
+      )
+    )
+  )
+
+  def palettes: Option[List[Palette]] = Some(List(testPalette))
+
+  def editorConfiguration: EditorConfiguration = EditorConfiguration(palettes)
 
   def withEditor[T](f: EditorInstance => T): T =
     createEditor(bus =>
       List(
-        testView(bus)
-      )
-    )(EditorConfiguration()).flatMap(editor => IO(f(editor))).unsafeToFuture().futureValue
+        testView
+      ) ++ testComponents(bus)
+    )(editorConfiguration).flatMap(editor => IO(f(editor))).unsafeToFuture().futureValue
 
-  protected def testView(bus: EditorMessageBus): EditorComponent =
+  protected def writeToFile(fileName: String)(content: String): IO[Unit] = IO {
+    val out = new FileOutputStream(fileName)
+    out.write(content.getBytes("UTF-8"))
+    out.flush()
+    out.close()
+  }
+
+  protected def testView: EditorComponent =
     new EditorComponent {
       override def init(model: EditorModel): IO[Unit] = IO.unit
 
@@ -46,33 +88,20 @@ trait EditorBaseSpec
             val fileName =
               s"target/${self.getClass.getName}_last_exported_$name"
 
-            lastExported.update(_ => Some(export)) *> IO {
-              val out = new FileOutputStream(fileName + format.`extension`)
-              out.write(value.getBytes("UTF-8"))
-              out.flush()
-              out.close()
-            } *> {
-              if (shouldRenderImage) {
-                val renderer = SVGRendererJvm()
-                renderer
-                  .renderGraph(
-                    ctx.model.graph,
-                    ctx.model.layout,
-                    ctx.model.styleSheet
-                  )
-                  .flatMap(_ => IO.fromTry(renderer.toXmlString))
-                  .flatMap { xmlString =>
-                    IO {
-                      val out = new FileOutputStream(fileName + ".svg")
-                      out.write(xmlString.getBytes("UTF-8"))
-                      out.flush()
-                      out.close()
-                    }
-                  }
-              } else IO.unit
-            }
+            lastExported.update(_ => Some(export)) *>
+              writeToFile(fileName + format.extension)(value) *>
+              (if (shouldRenderImage) {
+                 SVGRendererJvm()
+                   .renderGraph(ctx.model)
+                   .flatMap(_.toXmlString)
+                   .flatMap(writeToFile(fileName + ".svg"))
+               } else IO.unit)
 
-          case event => IO(log.debug(event))
+          case event =>
+            IO {
+              events += event
+              log.debug(event)
+            }
         }
     }
 }

@@ -2,8 +2,8 @@ package com.flowtick.graphs.editor
 
 import cats.effect.IO
 import cats.implicits._
-import com.flowtick.graphs.editor.view.SVGTranscoder
 import com.flowtick.graphs.style.ImageSpec
+import com.flowtick.graphs.view.SVGTranscoder
 import scalafx.scene.image.Image
 
 import java.io.{ByteArrayInputStream, FileOutputStream, InputStream}

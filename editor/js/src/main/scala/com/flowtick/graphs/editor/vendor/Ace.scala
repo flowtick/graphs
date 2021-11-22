@@ -32,6 +32,6 @@ trait AceEditor extends js.Any {
 @js.native
 @JSGlobal("ace")
 object Ace extends js.Any {
-  def edit(elementId: String): AceEditor = js.native
+  def edit(element: js.Any): AceEditor = js.native
   def config: AceConfig = js.native
 }

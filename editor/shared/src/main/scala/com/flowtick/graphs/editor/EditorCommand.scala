@@ -1,6 +1,7 @@
 package com.flowtick.graphs.editor
 
 import com.flowtick.graphs.layout.EdgePath
+import com.flowtick.graphs.view.ElementRef
 import io.circe.Decoder.Result
 import io.circe.{Decoder, DecodingFailure, HCursor, Json}
 
@@ -45,7 +46,6 @@ case class AddEdge(
     path: Option[EdgePath] = None
 ) extends EditorCommand
 
-case class ElementRef(id: String, elementType: ElementType)
 case class ElementUpdated(
     element: ElementRef,
     update: UpdateType = Changed,
@@ -65,10 +65,6 @@ case class EditorErrorMessage(message: String) extends EditorEvent
 
 sealed trait EditorEvent
 sealed trait EditorCommand extends EditorEvent
-
-sealed trait ElementType
-case object NodeType extends ElementType
-case object EdgeType extends ElementType
 
 sealed trait UpdateType
 case object Created extends UpdateType

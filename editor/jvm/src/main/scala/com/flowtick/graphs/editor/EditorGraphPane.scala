@@ -4,9 +4,17 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import com.flowtick.graphs
 import com.flowtick.graphs._
-import com.flowtick.graphs.editor.util.DrawUtil
-import com.flowtick.graphs.editor.view.GraphElement
 import com.flowtick.graphs.layout.{DefaultGeometry, PointSpec}
+import com.flowtick.graphs.view.util.DrawUtil
+import com.flowtick.graphs.view.{
+  DragStart,
+  EdgeElementType,
+  ElementRef,
+  GraphElement,
+  NodeElementType,
+  Page,
+  PanContext
+}
 import javafx.event.EventHandler
 import javafx.scene.input.{MouseEvent, ScrollEvent}
 import scalafx.application.Platform
@@ -30,7 +38,7 @@ class EditorGraphPane(layout: BorderPane)(
     handleDrag: Option[DragStart[Node]] => IO[Unit],
     handleDoubleClick: Any => IO[Unit]
 ) extends BorderPane
-    with Page[Node, MouseEvent] {
+    with Page[Node, MouseEvent, EditorGraphNode, EditorGraphEdge, EditorModel] {
   var panContext = PanContext(0.0, 0.0, 0.0, 0.0)
 
   val transformation = new Affine()
@@ -232,7 +240,7 @@ class EditorGraphPane(layout: BorderPane)(
 
       selectLine.onMousePressed = new EventHandler[MouseEvent] {
         override def handle(t: MouseEvent): Unit = {
-          handleSelect(ElementRef(edge.id, EdgeType))(t.isControlDown).unsafeRunSync()
+          handleSelect(ElementRef(edge.id, EdgeElementType))(t.isControlDown).unsafeRunSync()
           selectGroup.visible = true
         }
       }
@@ -240,7 +248,7 @@ class EditorGraphPane(layout: BorderPane)(
       Platform.runLater(group.children.add(edgeGroup))
 
       JFXElement(
-        ElementRef(edge.id, EdgeType),
+        ElementRef(edge.id, EdgeElementType),
         edgeGroup,
         Some(selectGroup),
         label
@@ -273,7 +281,7 @@ class EditorGraphPane(layout: BorderPane)(
 
     Some(
       JFXElement(
-        ElementRef(node.id, NodeType),
+        ElementRef(node.id, NodeElementType),
         graphNode,
         Some(graphNode.selectRect),
         graphNode.label
@@ -283,14 +291,14 @@ class EditorGraphPane(layout: BorderPane)(
 
   override def setSelection(element: GraphElement[Node]): IO[Unit] =
     element.id.elementType match {
-      case NodeType => IO(element.selectElem.foreach(_.setVisible(true)))
-      case EdgeType => IO(element.selectElem.foreach(_.visible = true))
+      case NodeElementType => IO(element.selectElem.foreach(_.setVisible(true)))
+      case EdgeElementType => IO(element.selectElem.foreach(_.visible = true))
     }
 
   override def unsetSelection(element: GraphElement[Node]): IO[Unit] =
     element.id.elementType match {
-      case NodeType => IO(element.selectElem.foreach(_.setVisible(false)))
-      case EdgeType => IO(element.selectElem.foreach(_.visible = false))
+      case NodeElementType => IO(element.selectElem.foreach(_.setVisible(false)))
+      case EdgeElementType => IO(element.selectElem.foreach(_.visible = false))
     }
 
   override def deleteElement(element: GraphElement[Node]): IO[Unit] = IO {
@@ -310,12 +318,12 @@ class EditorGraphPane(layout: BorderPane)(
   override def pageCoordinates(x: Double, y: Double): Point =
     throw new UnsupportedOperationException("not implemented yet")
 
-  override def beforeDrag: MouseEvent => Unit =
-    throw new UnsupportedOperationException("not implemented yet")
+  override def beforeDrag: MouseEvent => IO[Unit] =
+    _ => IO.raiseError(new UnsupportedOperationException("not implemented yet"))
 
   override def eventCoordinates(event: MouseEvent): Point =
     throw new UnsupportedOperationException("not implemented yet")
 
-  override def applyDrag: DragStart[Node] => Unit =
-    throw new UnsupportedOperationException("not implemented yet")
+  override def applyDrag: DragStart[Node] => IO[Unit] =
+    _ => IO.raiseError(new UnsupportedOperationException("not implemented yet"))
 }
