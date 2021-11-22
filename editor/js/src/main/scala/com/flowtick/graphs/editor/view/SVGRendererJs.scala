@@ -43,8 +43,9 @@ class SVGRendererJs(options: SVGRendererOptions)
   override def y(elem: dom.Element): Double =
     elem.asInstanceOf[SVGLocatable].getCTM().f
 
-  override def setPosition(elem: dom.Element)(x: Double, y: Double): Unit =
+  override def setPosition(elem: dom.Element)(x: Double, y: Double): Unit = {
     SVGUtil.setTransform(elem.asInstanceOf[SVGElement], s"translate($x $y)")
+  }
 
   override def selectElement(graphElement: GraphElement[Element]): IO[Unit] =
     IO {
@@ -104,6 +105,8 @@ class SVGRendererJs(options: SVGRendererOptions)
     bundle.svgAttrs.width := "100%",
     bundle.svgAttrs.height := "100%"
   )
+
+  override def toXmlString: IO[String] = IO(svgElem.toString)
 }
 
 object SVGRendererJs {

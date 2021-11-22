@@ -13,7 +13,8 @@ trait EditorSchemaLike {
       .foldRight(Map.empty[String, Schema[EditorSchemaHints]])(_ ++ _)
 }
 
-final case class EditorSchemas(schemas: List[Schema[EditorSchemaHints]]) extends EditorSchemaLike {
+final case class EditorSchemas(schemas: List[Schema[EditorSchemaHints]] = List.empty)
+    extends EditorSchemaLike {
   override def merge(other: List[Schema[EditorSchemaHints]]): EditorSchemaLike =
     copy(
       schemas ++ other.filterNot(_.$id.exists(schemas.flatMap(_.$id).contains))

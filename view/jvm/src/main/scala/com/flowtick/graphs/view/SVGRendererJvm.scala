@@ -63,8 +63,8 @@ object XmlDom {
   import javax.xml.transform.dom.DOMSource
   import javax.xml.transform.stream.StreamResult
 
-  def toString(document: Document): Try[String] =
-    Try {
+  def toString(document: Document): IO[String] =
+    IO {
       val tf = TransformerFactory.newInstance
       val trans = tf.newTransformer
       val sw = new StringWriter
@@ -122,7 +122,7 @@ class SVGRendererJvm(options: SVGRendererOptions)(implicit
   ): Option[Element] = None
   override protected def renderPanZoomRect: Option[Element] = None
 
-  def toXmlString: Try[String] = XmlDom.toString(xmlDom.svgDocument)
+  override def toXmlString: IO[String] = XmlDom.toString(xmlDom.svgDocument)
 
   override def setDimensions(width: Double, height: Double): Unit = {
     val padding = options.padding.getOrElse(0.0)

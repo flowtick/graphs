@@ -3,7 +3,7 @@ package com.flowtick.graphs.view
 import cats.effect.IO
 import cats.implicits._
 import com.flowtick.graphs.layout.{GraphLayout, GraphLayoutLike, PointSpec}
-import com.flowtick.graphs.{Edge, Graph, Identifiable, Labeled, Node}
+import com.flowtick.graphs.{Edge, Graph, Labeled, Node}
 import cats.effect.kernel.Ref
 import com.flowtick.graphs.style.{StyleRef, StyleSheet, StyleSheetLike}
 
@@ -104,7 +104,7 @@ trait Page[PageElement, PageEvent, NodeType, EdgeType, Model] {
               deltaX = deltaX,
               deltaY = deltaY
             )
-          }.flatTap(applyDrag).map(Some.apply)
+          }.flatTap(applyDrag).map(Some.apply).flatMap(dragStartRef.set)
         case None => IO.pure(None)
       }
     } yield ()

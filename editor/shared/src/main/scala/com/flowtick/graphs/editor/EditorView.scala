@@ -46,6 +46,8 @@ abstract class EditorView[T, E](messageBus: EditorMessageBus)
 
   override lazy val eval: Eval = handleEvents
 
+  override val order: Double = 0.2
+
   def handleCreateNode: Eval = ctx =>
     ctx.transformIO { case create: AddNode =>
       for {

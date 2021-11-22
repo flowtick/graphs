@@ -1,7 +1,6 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import cats.effect.unsafe.implicits.global
 import cats.implicits._
 import com.flowtick.graphs.json.schema.Schema
 import io.circe.Json
@@ -10,7 +9,9 @@ import scala.util.Try
 import cats.effect.kernel.Ref
 import com.flowtick.graphs.view.{EdgeElementType, ElementRef, ElementType, NodeElementType}
 
-final case class ElementProperties(
+import scala.concurrent.Future
+
+final case class EditorPropertiesValues(
     element: ElementRef,
     labelValue: Option[String],
     colorValue: Option[String],
@@ -25,7 +26,7 @@ case object ColorInputType extends PropertyInputType
 case object JsonInputType extends PropertyInputType
 
 case object TextInput extends PropertyInputType {
-  def fromJson(key: Option[PropertyValueKey], json: Json): Option[String] = {
+  def fromJson(key: Option[PropertyValueKey], json: Json): Option[String] =
     key
       .flatMap(_.name)
       .map(keyValue =>
@@ -35,8 +36,6 @@ case object TextInput extends PropertyInputType {
           .flatMap(_.asString)
       )
       .getOrElse(json.asString)
-
-  }
 }
 
 case object IntegerInput extends PropertyInputType {
@@ -102,7 +101,7 @@ final case class PropertySpec(
     key: Option[PropertyValueKey] = None, // no key means its the root value
     title: String,
     inputType: PropertyInputType,
-    handler: PropertyValue => Unit,
+    handler: PropertySpec.Handler,
     description: Option[String] = None,
     collapsable: Option[Boolean] = None,
     highlight: Option[String] = None,
@@ -110,9 +109,20 @@ final case class PropertySpec(
     targetType: Option[ElementType] = None
 )
 
-trait PropertyFormGroup {
+object PropertySpec {
+  type Handler = PropertyValue => IO[Unit]
+}
+
+trait PropertyControl {
   def property: PropertySpec
   def init: IO[Unit]
+
+  /** set the value of the control
+    *
+    * note: this must not call the properly handler, which would create a loop
+    *
+    * @return
+    */
   def set: Json => IO[Unit]
 }
 
@@ -121,15 +131,15 @@ trait EditorProperties extends EditorComponent {
   def initEditor(editorModel: EditorModel): IO[Unit]
   def toggleEdit(enabled: Boolean): IO[Boolean]
 
-  protected def setPropertiesGroups(
+  protected def createPropertyControls(
       properties: List[PropertySpec],
-      elementProperties: ElementProperties
-  ): IO[List[PropertyFormGroup]]
+      values: EditorPropertiesValues
+  ): IO[List[PropertyControl]]
 
   override def order: Double = 0.3
 
   lazy val currentElement: Ref[IO, Option[ElementRef]] = Ref.unsafe(None)
-  lazy val currentProperties: Ref[IO, List[PropertyFormGroup]] =
+  lazy val currentControls: Ref[IO, List[PropertyControl]] =
     Ref.unsafe(List.empty)
 
   override def init(model: EditorModel): IO[Unit] = for {
@@ -140,7 +150,7 @@ trait EditorProperties extends EditorComponent {
     ctx.effect(this) {
       case Selected(elements, _) =>
         elements.headOption
-          .flatMap(getElementProperties(_, ctx.model))
+          .flatMap(getPropertiesValues(_, ctx.model))
           .map(setElementAndReset)
           .getOrElse(IO.unit)
 
@@ -150,7 +160,7 @@ trait EditorProperties extends EditorComponent {
           _ <-
             if (current.contains(updatedElement)) {
               current
-                .flatMap(getElementProperties(_, ctx.model))
+                .flatMap(getPropertiesValues(_, ctx.model))
                 .map(updateValues)
                 .getOrElse(IO.unit)
             } else IO.unit
@@ -163,27 +173,27 @@ trait EditorProperties extends EditorComponent {
     }
 
   private def setElementAndReset(
-      elementProperties: ElementProperties
+      values: EditorPropertiesValues
   ): IO[Unit] = {
     for {
-      _ <- currentElement.set(Some(elementProperties.element))
-      _ <- resetPanel(elementProperties)
+      _ <- currentElement.set(Some(values.element))
+      _ <- resetProperties(values)
     } yield ()
   }
 
-  def resetPanel(elementProperties: ElementProperties): IO[Unit] = {
+  def resetProperties(values: EditorPropertiesValues): IO[Unit] = {
     val commonProperties: List[PropertySpec] = List(
       Some(
         PropertySpec(
           title = "Label",
           order = 0.0f,
           inputType = LabelInputType,
-          handler = handleInputValue { case JsonValue(json) =>
+          handler = handlePropertyValue { case JsonValue(json) =>
             ref => Vector(SetLabel(ref, json.asString.getOrElse("")))
           }
         )
       ).filterNot(_ =>
-        elementProperties.elementSchema.extension.exists(
+        values.elementSchema.extension.exists(
           _.hideLabelProperty.contains(true)
         )
       ),
@@ -192,16 +202,16 @@ trait EditorProperties extends EditorComponent {
           title = "Color",
           order = 0.1f,
           inputType = ColorInputType,
-          handler = handleInputValue { case ColorValue(color) =>
+          handler = handlePropertyValue { case ColorValue(color) =>
             ref => Vector(SetColor(ref, color))
           }
         )
       ).filterNot(_ =>
-        elementProperties.elementSchema.extension.exists(
+        values.elementSchema.extension.exists(
           _.hideLabelProperty.contains(true)
         )
       ),
-      elementProperties.elementSchema.`extension`
+      values.elementSchema.extension
         .filter(_.showJsonProperty.contains(true))
         .flatMap(_ =>
           Some(
@@ -213,7 +223,7 @@ trait EditorProperties extends EditorComponent {
                 "Set the JSON value directly, note: this will bypass validation and copy features."
               ),
               highlight = Some("json"),
-              handler = handleInputValue { case JsonValue(json) =>
+              handler = handlePropertyValue { case JsonValue(json) =>
                 ref => Vector(SetJsonString(ref, json.noSpaces))
               },
               collapsable = Some(false)
@@ -223,27 +233,27 @@ trait EditorProperties extends EditorComponent {
     ).flatten
 
     val propertiesMap =
-      elementProperties.elementSchema.properties.getOrElse(Map.empty)
+      values.elementSchema.properties.getOrElse(Map.empty)
 
     val schemaProperties =
       if (
-        propertiesMap.nonEmpty || elementProperties.elementSchema.`type`
+        propertiesMap.nonEmpty || values.elementSchema.`type`
           .contains(Right("object"))
       ) {
-        elementProperties.elementSchema.properties
+        values.elementSchema.properties
           .getOrElse(Map.empty)
           .flatMap { case (propertyKey, propertySchema) =>
             propertySpec(Some(propertyKey), propertySchema)
           }
-      } else List(propertySpec(None, elementProperties.elementSchema)).flatten
+      } else List(propertySpec(None, values.elementSchema)).flatten
 
-    setProperties(commonProperties ++ schemaProperties, elementProperties)
+    setProperties(commonProperties ++ schemaProperties, values)
   }
 
-  def handleInputValue(
+  def handlePropertyValue(
       f: PartialFunction[PropertyValue, ElementRef => Vector[EditorEvent]]
-  ): PropertyValue => Unit = (value: PropertyValue) =>
-    (for {
+  ): PropertyValue => IO[Unit] = (value: PropertyValue) =>
+    for {
       elem <- currentElement.get
       _ <- elem match {
         case Some(ref) =>
@@ -254,47 +264,45 @@ trait EditorProperties extends EditorComponent {
                 case other                  => messageBus.notifyEvent(this, other)
               }.sequence
             }
-          } else IO.unit
+          } else IO(println(s"unhandled value $value"))
         case None => IO.unit
       }
-    } yield ()).unsafeToFuture()
+    } yield ()
 
   def setProperties(
       properties: List[PropertySpec],
-      elementProperties: ElementProperties
+      elementProperties: EditorPropertiesValues
   ): IO[Unit] = for {
-    newGroups <- setPropertiesGroups(properties, elementProperties)
-    _ <- newGroups.map(setGroupValues(_, elementProperties)).sequence
+    newGroups <- createPropertyControls(properties, elementProperties)
+    _ <- newGroups.map(updatePropertyControl(_, elementProperties)).sequence
     _ <- newGroups.map(_.init).sequence
-    _ <- currentProperties.set(newGroups)
+    _ <- currentControls.set(newGroups)
   } yield ()
 
-  protected def setGroupValues(
-      group: PropertyFormGroup,
-      elementProperties: ElementProperties
-  ): IO[PropertyFormGroup] = IO {
-    group.property.inputType match {
+  protected def updatePropertyControl(
+      control: PropertyControl,
+      elementProperties: EditorPropertiesValues
+  ): IO[PropertyControl] =
+    (control.property.inputType match {
       case LabelInputType =>
-        group.set(Json.fromString(elementProperties.labelValue.getOrElse("")))
+        control.set(Json.fromString(elementProperties.labelValue.getOrElse("")))
       case ColorInputType =>
-        group.set(
+        control.set(
           Json.fromString(elementProperties.colorValue.getOrElse("#FFFFFF"))
         )
-      case _ => group.set(elementProperties.value)
-    }
-    group
-  }
+      case _ => control.set(elementProperties.value)
+    }) *> IO.pure(control)
 
-  private def updateValues(elementProperties: ElementProperties): IO[Unit] =
+  private def updateValues(values: EditorPropertiesValues): IO[Unit] =
     for {
-      properties <- currentProperties.get
-      _ <- properties.map(setGroupValues(_, elementProperties)).sequence
+      properties <- currentControls.get
+      _ <- properties.map(updatePropertyControl(_, values)).sequence
     } yield ()
 
-  def getElementProperties(
+  def getPropertiesValues(
       elementRef: ElementRef,
       model: EditorModel
-  ): Option[ElementProperties] = for {
+  ): Option[EditorPropertiesValues] = for {
     element <- elementRef match {
       case ElementRef(id, NodeElementType) =>
         model.graph.findNode(id).map[EditorGraphElement](_.value)
@@ -318,7 +326,7 @@ trait EditorProperties extends EditorComponent {
     elementSchema <- element.schemaRef
       .flatMap(getElementSchema(_, model.schema.definitions))
       .orElse(Some(Schema[EditorSchemaHints]()))
-  } yield ElementProperties(
+  } yield EditorPropertiesValues(
     elementRef,
     element.label,
     color,
@@ -347,8 +355,8 @@ trait EditorProperties extends EditorComponent {
         case "number"  => Some(inputProperty(key, NumberInput, schema))
         case _         => None
       }
-    case Some(Left(multiple)) => None
-    case None                 => None
+    case Some(Left(_)) => None // multiple not supported yet
+    case None          => None
   }
 
   def inputProperty(
@@ -356,7 +364,7 @@ trait EditorProperties extends EditorComponent {
       inputType: PropertyInputType,
       schema: EditorModel.EditorSchema
   ): PropertySpec = {
-    val propertyHandler = handleInputValue { case JsonValue(newValue) =>
+    val propertyHandler = handlePropertyValue { case JsonValue(newValue) =>
       ref => {
         val valueUpdate: Json => Json = key match {
           case Some(keyValue) => _.mapObject(_.add(keyValue, newValue))
@@ -383,5 +391,11 @@ trait EditorProperties extends EditorComponent {
       handler = propertyHandler
     )
   }
+}
 
+object EditorProperties {
+  import cats.effect.unsafe.implicits.global
+
+  def eventHandler[E](f: E => IO[Any]): E => Future[Any] =
+    (event: E) => f(event).unsafeToFuture()
 }

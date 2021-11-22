@@ -68,4 +68,4 @@ trait EditorPaletteLike {
     palettes.view.flatMap(_.connectors)
 }
 
-final case class EditorPalettes(palettes: List[Palette]) extends EditorPaletteLike
+final case class EditorPalettes(palettes: List[Palette] = List.empty) extends EditorPaletteLike

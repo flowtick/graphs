@@ -16,12 +16,12 @@ final case class EditorModel(
     graph: Graph[EditorGraphEdge, EditorGraphNode],
     selection: Set[ElementRef] = Set.empty,
     connectSelection: Boolean = false,
-    schema: EditorSchemaLike,
-    palette: EditorPaletteLike,
-    layout: GraphLayoutLike,
-    styleSheet: StyleSheetLike,
+    schema: EditorSchemaLike = EditorSchemas(),
+    palette: EditorPaletteLike = EditorPalettes(),
+    layout: GraphLayoutLike = GraphLayouts(),
+    styleSheet: StyleSheetLike = StyleSheets(),
     version: Long = 0,
-    config: EditorConfiguration
+    config: EditorConfiguration = EditorConfiguration()
 )(implicit
     val nodeLabel: Labeled[EditorGraphNode, String],
     val nodeStyleRef: StyleRef[Node[EditorGraphNode]],

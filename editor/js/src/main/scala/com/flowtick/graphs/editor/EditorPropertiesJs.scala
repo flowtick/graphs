@@ -16,10 +16,10 @@ class EditorPropertiesJs(containerId: String)(val messageBus: EditorMessageBus)
   override def toggleEdit(enabled: Boolean): IO[Boolean] =
     IO(EditorPropertiesHtml.propertiesToggle.click()).attempt.map(_ => true)
 
-  override def setPropertiesGroups(
+  override def createPropertyControls(
       properties: List[PropertySpec],
-      elementProperties: ElementProperties
-  ): IO[List[PropertyFormGroup]] = for {
+      values: EditorPropertiesValues
+  ): IO[List[PropertyControl]] = for {
     newForm <- EditorPropertiesHtml.createPropertyForm(properties)
     _ <- IO {
 
@@ -32,5 +32,5 @@ class EditorPropertiesJs(containerId: String)(val messageBus: EditorMessageBus)
         )
       }
     }
-  } yield newForm.groups
+  } yield newForm.controls
 }

@@ -9,12 +9,14 @@ import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.control._
 import scalafx.scene.layout._
 import scalafx.scene.text.{Font, FontWeight}
+import com.flowtick.graphs.editor.EditorProperties.eventHandler
+import javafx.scene.input.MouseEvent
 
-case class PropertyFormGroupFx(
+final case class PropertyControlFx(
     property: PropertySpec,
     init: IO[Unit],
     set: Json => IO[Unit]
-) extends PropertyFormGroup
+) extends PropertyControl
 
 class EditorPropertiesJavaFx(
     val messageBus: EditorMessageBus,
@@ -47,10 +49,10 @@ class EditorPropertiesJavaFx(
     enabled
   }
 
-  override protected def setPropertiesGroups(
+  override protected def createPropertyControls(
       properties: List[PropertySpec],
-      elementProperties: ElementProperties
-  ): IO[List[PropertyFormGroup]] = for {
+      values: EditorPropertiesValues
+  ): IO[List[PropertyControl]] = for {
     groups <- IO {
       Platform.runLater(pane.children.clear())
 
@@ -59,11 +61,10 @@ class EditorPropertiesJavaFx(
         font = Font.apply("Arial", FontWeight.Bold, 20.0)
       }
 
-      closeLabel.onMouseClicked = _ => {
-        messageBus
-          .publish(EditorToggle(EditorToggle.editKey, Some(false)))
-          .unsafeToFuture()
-      }
+      closeLabel.onMouseClicked = e =>
+        eventHandler[MouseEvent](_ => {
+          messageBus.publish(EditorToggle(EditorToggle.editKey, Some(false)))
+        })(e)
 
       val grid = new GridPane()
       grid.setHgap(10)
@@ -97,11 +98,11 @@ class EditorPropertiesJavaFx(
 
   def propertyGroup(property: PropertySpec, index: Int)(
       grid: GridPane
-  ): PropertyFormGroupFx = property.inputType match {
+  ): PropertyControlFx = property.inputType match {
     case NumberInput =>
       lazy val input = new TextField()
 
-      PropertyFormGroupFx(
+      PropertyControlFx(
         property,
         init = IO {
           grid.add(label(property), 0, index)
@@ -132,7 +133,7 @@ class EditorPropertiesJavaFx(
     case BooleanInput =>
       lazy val input = new CheckBox()
 
-      PropertyFormGroupFx(
+      PropertyControlFx(
         property,
         init = IO {
           grid.add(label(property), 0, index)
@@ -144,7 +145,7 @@ class EditorPropertiesJavaFx(
                 oldValue: java.lang.Boolean,
                 newValue: java.lang.Boolean
             ): Unit = {
-              property.handler(JsonValue(Json.fromBoolean(newValue)))
+              property.handler(JsonValue(Json.fromBoolean(newValue))).unsafeRunSync()
             }
           })
         },
@@ -157,7 +158,7 @@ class EditorPropertiesJavaFx(
     case IntegerInput =>
       lazy val input = new TextField()
 
-      PropertyFormGroupFx(
+      PropertyControlFx(
         property,
         init = IO {
           grid.add(label(property), 0, index)
@@ -169,7 +170,7 @@ class EditorPropertiesJavaFx(
                 oldValue: String,
                 newValue: String
             ): Unit = {
-              property.handler(JsonValue(Json.fromInt(newValue.toInt)))
+              property.handler(JsonValue(Json.fromInt(newValue.toInt))).unsafeRunSync()
             }
           })
         },
@@ -186,7 +187,7 @@ class EditorPropertiesJavaFx(
     case ColorInputType =>
       val input = new ColorPicker()
 
-      PropertyFormGroupFx(
+      PropertyControlFx(
         property,
         init = IO {
           Platform.runLater {
@@ -200,7 +201,7 @@ class EditorPropertiesJavaFx(
                 oldColor: Color,
                 newColor: Color
             ): Unit = {
-              property.handler(ColorValue(newColor.toString))
+              property.handler(ColorValue(newColor.toString)).unsafeRunSync()
             }
           })
         },
@@ -213,7 +214,7 @@ class EditorPropertiesJavaFx(
     case _ =>
       val input = new TextArea()
 
-      PropertyFormGroupFx(
+      PropertyControlFx(
         property,
         IO {
           Platform.runLater {
@@ -229,10 +230,10 @@ class EditorPropertiesJavaFx(
             ): Unit = {
               if (property.inputType == JsonInputType) {
                 io.circe.parser.decode[Json](newValue) match {
-                  case Right(json) => property.handler(JsonValue(json))
+                  case Right(json) => property.handler(JsonValue(json)).unsafeRunSync()
                   case Left(_)     =>
                 }
-              } else property.handler(JsonValue(Json.fromString(newValue)))
+              } else property.handler(JsonValue(Json.fromString(newValue))).unsafeRunSync()
             }
           })
         },

@@ -1,7 +1,6 @@
 package com.flowtick.graphs.view
 
 import cats.effect.IO
-import cats.effect.unsafe.implicits.global
 
 import com.flowtick.graphs.layout.PointSpec
 import com.flowtick.graphs.{Edge, Node}
@@ -30,20 +29,29 @@ trait EventLike[E, T] {
   def data(event: E): EventData
 }
 
-class SVGPage[Builder, T <: Frag, Frag, E, M, NodeType, EdgeType, Model <: ViewContextLike[
-  EdgeType,
-  NodeType
-]](
-    renderer: SVGRenderer[Builder, T, Frag, M],
-    eventLike: EventLike[E, T]
-) extends Page[T, E, NodeType, EdgeType, Model] {
+class SVGPage[
+    Builder,
+    Output <: Frag,
+    Frag,
+    EventType,
+    MatrixType,
+    NodeType,
+    EdgeType,
+    Model <: ViewContextLike[
+      EdgeType,
+      NodeType
+    ]
+](
+    renderer: SVGRenderer[Builder, Output, Frag, MatrixType],
+    eventLike: EventLike[EventType, Output]
+) extends Page[Output, EventType, NodeType, EdgeType, Model] {
   def clientWidth: Double = 500
   def clientHeight: Double = 500
   def scrollSpeed: Double = 1.0
 
   var panStart: Option[PanContext] = None
 
-  def startPan(event: E): Boolean = eventLike.data(event) match {
+  def startPan(event: EventType): Boolean = eventLike.data(event) match {
     case mouseEvent: EditorMouseEvent =>
       if (panStart.isEmpty && mouseEvent.button == 2) {
         val cursor = screenCoordinates(mouseEvent.clientX, mouseEvent.clientY)
@@ -54,7 +62,7 @@ class SVGPage[Builder, T <: Frag, Frag, E, M, NodeType, EdgeType, Model <: ViewC
     case _ => false
   }
 
-  def stopPan(event: E): IO[Unit] = IO {
+  def stopPan(event: EventType): IO[Unit] = IO {
     panStart = None
   }
 
@@ -69,7 +77,7 @@ class SVGPage[Builder, T <: Frag, Frag, E, M, NodeType, EdgeType, Model <: ViewC
     PointSpec(coordinates.x, coordinates.y)
   }
 
-  def pan(evt: E): Unit =
+  def pan(evt: EventType): Unit =
     panStart match {
       case Some(start) =>
         eventLike.data(evt) match {
@@ -89,7 +97,7 @@ class SVGPage[Builder, T <: Frag, Frag, E, M, NodeType, EdgeType, Model <: ViewC
       case None =>
     }
 
-  def zoom(evt: E): Unit = eventLike.data(evt) match {
+  def zoom(evt: EventType): Unit = eventLike.data(evt) match {
     case wheelEvent: EditorWheelEvent =>
       val cursor = pageCoordinates(wheelEvent.clientX, wheelEvent.clientY)
 
@@ -104,13 +112,13 @@ class SVGPage[Builder, T <: Frag, Frag, E, M, NodeType, EdgeType, Model <: ViewC
     case _ =>
   }
 
-  def click: E => IO[Option[ElementRef]] = evt =>
+  def click: EventType => IO[Option[ElementRef]] = evt =>
     IO {
       val elem = eventLike.target(evt)
       renderer.selectable(elem)
     }
 
-  def startDrag: E => IO[Option[DragStart[T]]] = evt =>
+  def startDrag: EventType => IO[Option[DragStart[Output]]] = evt =>
     for {
       dragStart <- IO {
         val elem = eventLike.target(evt)
@@ -121,7 +129,7 @@ class SVGPage[Builder, T <: Frag, Frag, E, M, NodeType, EdgeType, Model <: ViewC
               val startCursor = pageCoordinates(mouse.clientX, mouse.clientY)
               val pageTransform =
                 pageCoordinates(renderer.x(elem), renderer.y(elem))
-              DragStart[T](
+              DragStart[Output](
                 startCursor.x,
                 startCursor.y,
                 pageTransform.x,
@@ -142,7 +150,7 @@ class SVGPage[Builder, T <: Frag, Frag, E, M, NodeType, EdgeType, Model <: ViewC
   override def addEdge(
       edge: Edge[EdgeType],
       model: Model
-  ): IO[Option[GraphElement[T]]] = for {
+  ): IO[Option[GraphElement[Output]]] = for {
     edgeElement <- renderer.renderEdge(
       edge,
       model
@@ -152,34 +160,34 @@ class SVGPage[Builder, T <: Frag, Frag, E, M, NodeType, EdgeType, Model <: ViewC
   override def addNode(
       node: Node[NodeType],
       model: Model
-  ): IO[Option[GraphElement[T]]] = for {
+  ): IO[Option[GraphElement[Output]]] = for {
     node <- renderer.renderNode(node, model)
   } yield Some(node)
 
-  override def setSelection(element: GraphElement[T]): IO[Unit] =
-    renderer.selectElement(element: GraphElement[T])
+  override def setSelection(element: GraphElement[Output]): IO[Unit] =
+    renderer.selectElement(element: GraphElement[Output])
 
-  override def unsetSelection(element: GraphElement[T]): IO[Unit] =
+  override def unsetSelection(element: GraphElement[Output]): IO[Unit] =
     renderer.unselectElement(element)
 
-  override def deleteElement(element: GraphElement[T]): IO[Unit] =
+  override def deleteElement(element: GraphElement[Output]): IO[Unit] =
     renderer.deleteElement(element)
 
   override def resetTransformation: IO[Unit] =
     renderer.resetMatrix
 
-  override def beforeDrag: E => IO[Unit] = e => IO(eventLike.preventDefault(e))
+  override def beforeDrag: EventType => IO[Unit] = e => IO(eventLike.preventDefault(e))
 
-  override def eventCoordinates(event: E): Point = eventLike.data(event) match {
+  override def eventCoordinates(event: EventType): Point = eventLike.data(event) match {
     case e: EditorMouseEvent => PagePoint(e.clientX, e.clientY)
     case _                   => PagePoint(0, 0)
   }
 
-  override def applyDrag: DragStart[T] => IO[Unit] = dragStart =>
+  override def applyDrag: DragStart[Output] => IO[Unit] = dragStart =>
     dragStart.lastPos match {
       case Some(pos) => IO(renderer.setPosition(dragStart.dragElem)(pos.x, pos.y))
       case _         => IO.unit
     }
 
-  override def root: T = renderer.graphSVG.root
+  override def root: Output = renderer.graphSVG.root
 }

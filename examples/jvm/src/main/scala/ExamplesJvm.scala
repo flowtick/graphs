@@ -63,14 +63,15 @@ object LayoutExampleApp extends LayoutExample with IOApp {
 
   val renderImages = for {
     layoutResult <- IO.fromFuture(IO(layout))
-    _ <- renderer
+    svgString <- renderer
       .translateAndScaleView(0, 0, 2.0)
       .renderGraph(ViewContext(graph, layoutResult))
+      .flatMap(_.toXmlString)
     _ <- writeToFile(
       "target/layout_example.svg",
-      renderer.toXmlString.get.getBytes("UTF-8")
+      svgString.getBytes("UTF-8")
     )
-    pngData <- SVGTranscoder.svgXmlToPng(renderer.toXmlString.get, None, None)
+    pngData <- SVGTranscoder.svgXmlToPng(svgString, None, None)
     _ <- writeToFile("target/layout_example.png", pngData)
   } yield ()
 

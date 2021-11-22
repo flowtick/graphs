@@ -3,18 +3,11 @@ package com.flowtick.graphs.editor
 import cats.effect.IO
 import cats.implicits._
 import cats.effect.kernel.Ref
+import com.flowtick.graphs.{Graph, Identifiable}
 import com.flowtick.graphs.view.MessageBus
 
 trait EditorMessageBus
-    extends MessageBus[EditorComponent, EditorCommand, EditorEvent, EditorContext] {
-  def subscribe(backend: EditorComponent): IO[EditorComponent]
-  def notifyEvent(
-      source: EditorComponent,
-      event: EditorEvent
-  ): IO[EditorContext]
-  def publish(command: EditorCommand): IO[EditorContext]
-  def publishAll(commands: Vector[EditorCommand]): IO[Vector[EditorContext]]
-}
+    extends MessageBus[EditorComponent, EditorCommand, EditorEvent, EditorContext]
 
 final case class Notification(source: EditorComponent, event: EditorEvent)
 final case class EditorEffect(source: EditorComponent, effect: IO[Unit])
@@ -146,4 +139,12 @@ class EditorController(
     listeners <- listenersRef.get
     contexts <- commands.map(notifyListeners(_, listeners)).sequence
   } yield contexts
+}
+
+object EditorController {
+  def apply() = new EditorController(
+    Ref.unsafe(List.empty),
+    Ref.unsafe(List.empty),
+    EditorModel(Graph.empty[EditorGraphEdge, EditorGraphNode])
+  )
 }

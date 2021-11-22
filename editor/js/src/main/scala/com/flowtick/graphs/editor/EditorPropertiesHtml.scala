@@ -10,15 +10,16 @@ import scalatags.{JsDom, generic}
 
 import scala.scalajs.js
 import cats.implicits._
+import com.flowtick.graphs.editor.EditorProperties.eventHandler
 
-final case class PropertyFormGroupJs(
+final case class PropertyControlJs(
     property: PropertySpec,
     container: JsDom.TypedTag[Div],
     init: IO[Unit],
     set: Json => IO[Unit]
-) extends PropertyFormGroup
+) extends PropertyControl
 
-final case class PropertyForm(groups: List[PropertyFormGroupJs], html: Form)
+final case class PropertyForm(controls: List[PropertyControlJs], html: Form)
 
 object EditorPropertiesHtml {
   import scalatags.JsDom.all._
@@ -32,11 +33,11 @@ object EditorPropertiesHtml {
   ).render
 
   def createPropertyForm(properties: List[PropertySpec]): IO[PropertyForm] = for {
-    groups <- properties.sortBy(_.order).map(propertyGroup).sequence
+    controls <- properties.sortBy(_.order).map(propertyControl).sequence
     propertyFormHtml = form(
       id := "properties"
-    ).apply(groups.map(_.container): _*).render
-  } yield PropertyForm(groups, propertyFormHtml)
+    ).apply(controls.map(_.container): _*).render
+  } yield PropertyForm(controls, propertyFormHtml)
 
   def propertyContainers(
       property: PropertySpec,
@@ -89,11 +90,14 @@ object EditorPropertiesHtml {
     )
   }
 
-  def propertyGroup(property: PropertySpec): IO[PropertyFormGroupJs] =
+  def propertyKeyString(property: PropertySpec): String =
+    property.key.flatMap(_.name).getOrElse(property.title)
+
+  def propertyControl(property: PropertySpec): IO[PropertyControlJs] =
     property.inputType match {
       case NumberInput =>
         lazy val numberInput = input(
-          id := s"${property.key}_number",
+          id := s"${propertyKeyString(property)}_number",
           cls := s"form-control",
           `type` := "number",
           step := "0.1"
@@ -102,14 +106,15 @@ object EditorPropertiesHtml {
         val (_, propertyContainer) = propertyContainers(property, numberInput)
 
         IO(
-          PropertyFormGroupJs(
+          PropertyControlJs(
             property,
             propertyContainer,
             init = IO {
-              numberInput.onchange = _ =>
+              numberInput.onchange = eventHandler[Event] { _ =>
                 property.handler(
                   JsonValue(Json.fromDoubleOrString(numberInput.value.toDouble))
                 )
+              }
             },
             set = json =>
               IO(numberInput.value =
@@ -123,7 +128,7 @@ object EditorPropertiesHtml {
 
       case BooleanInput =>
         lazy val checkbox = input(
-          id := s"${property.key}_boolean",
+          id := s"${propertyKeyString(property)}_boolean",
           cls := s"form-control",
           `type` := "checkbox"
         ).render
@@ -131,14 +136,15 @@ object EditorPropertiesHtml {
         val (_, propertyContainer) = propertyContainers(property, checkbox)
 
         IO(
-          PropertyFormGroupJs(
+          PropertyControlJs(
             property,
             propertyContainer,
             init = IO {
-              checkbox.onchange = _ =>
+              checkbox.onchange = eventHandler[Event](_ =>
                 property.handler(
                   JsonValue(if (checkbox.checked) Json.True else Json.False)
                 )
+              )
             },
             set = json =>
               IO(checkbox.checked = BooleanInput.fromJson(property.key, json).getOrElse(false))
@@ -147,7 +153,7 @@ object EditorPropertiesHtml {
 
       case IntegerInput =>
         lazy val integerInput = input(
-          id := s"${property.key}_integer",
+          id := s"${propertyKeyString(property)}_integer",
           cls := s"form-control",
           `type` := "number",
           step := 1,
@@ -158,14 +164,15 @@ object EditorPropertiesHtml {
         val (_, propertyContainer) = propertyContainers(property, integerInput)
 
         IO(
-          PropertyFormGroupJs(
+          PropertyControlJs(
             property,
             propertyContainer,
             init = IO {
-              integerInput.onchange = _ =>
+              integerInput.onchange = eventHandler[Event](_ =>
                 property.handler(
                   JsonValue(Json.fromInt(integerInput.value.toInt))
                 )
+              )
             },
             set = json =>
               IO(integerInput.value =
@@ -179,36 +186,39 @@ object EditorPropertiesHtml {
 
       case TextInput | LabelInputType | JsonInputType =>
         lazy val textAreaInput: TextArea = textarea(
-          id := s"${property.key}_text",
-          cls := s"form-control"
+          id := s"${propertyKeyString(property)}_text",
+          cls := s"form-control",
+          onchange :=
+            eventHandler[Event](_ => {
+              val newValue = textAreaInput.value
+              property.handler(JsonValue(Json.fromString(newValue)))
+            })
         ).render
 
         val (inputContainer, propertyContainer) =
           propertyContainers(property, textAreaInput)
 
-        lazy val textAreaInit = {
-          textAreaInput.onchange = _ =>
-            property.handler(JsonValue(Json.fromString(textAreaInput.value)))
-        }
-
         lazy val createEditor: IO[Either[TextArea, AceEditor]] =
-          (property.highlight match {
+          property.highlight match {
             case Some(mode) =>
               IO {
-                val editor = Ace.edit(inputContainer.id)
+                val editor = Ace.edit(inputContainer)
                 editor.on(
                   "blur",
                   (_: js.UndefOr[js.Object]) => {
                     property.inputType match {
                       case JsonInputType =>
                         io.circe.parser.decode[Json](editor.getValue()) match {
-                          case Right(json) => property.handler(JsonValue(json))
+                          case Right(json) =>
+                            eventHandler[Unit](_ => property.handler(JsonValue(json))).apply()
                           case Left(error) => println(error)
                         }
                       case _ =>
-                        property.handler(
-                          JsonValue(Json.fromString(editor.getValue()))
-                        )
+                        eventHandler[Unit](_ =>
+                          property.handler(
+                            JsonValue(Json.fromString(editor.getValue()))
+                          )
+                        ).apply()
                     }
                   }
                 )
@@ -220,23 +230,21 @@ object EditorPropertiesHtml {
                 case Left(error) =>
                   IO {
                     println(
-                      s"unable to set ace mode $mode, falling back to textarea"
+                      s"unable to set ace mode $mode:, falling back to textarea",
+                      error
                     )
-                    println(error)
-                    textAreaInit
                     Left(textAreaInput)
                   }
               }
 
             case None =>
               IO {
-                textAreaInit
                 Left(textAreaInput)
               }
-          })
+          }
 
         createEditor.map(editor =>
-          PropertyFormGroupJs(
+          PropertyControlJs(
             property,
             propertyContainer,
             init = IO.unit,
@@ -244,7 +252,8 @@ object EditorPropertiesHtml {
               IO {
                 val newValue = TextInput.fromJson(property.key, json).getOrElse("")
                 editor match {
-                  case Right(ace) => ace.session.setValue(newValue)
+                  case Right(ace) =>
+                    ace.session.setValue(newValue)
                   case Left(text) =>
                     text.value = newValue
                     text.rows = newValue.split("\n").length
@@ -255,7 +264,7 @@ object EditorPropertiesHtml {
 
       case other =>
         IO(
-          PropertyFormGroupJs(
+          PropertyControlJs(
             property,
             div(
               pre(s"unsupported property type $other", style := "display: none")

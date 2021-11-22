@@ -102,7 +102,6 @@ class JsonSpec extends AnyFlatSpec with Matchers with Diagrams {
 
     decode[Graph[Option[Unit], Int]](emptyGraph) match {
       case Right(parsed) =>
-        println("foo")
         parsed.edgeId should be(expected.edgeId)
         parsed should equal(expected)
       case Left(error) => fail(error)

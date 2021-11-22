@@ -100,8 +100,7 @@ lazy val view = (crossProject(JVMPlatform, JSPlatform) in file(".") / "view")
   .settings(
     name := "graphs-view",
     libraryDependencies += "org.typelevel" %%% "cats-effect" % "3.2.9",
-    libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.4",
-    libraryDependencies += "org.typelevel" %% "cats-effect-testing-scalatest" % "1.3.0" % Test
+    libraryDependencies += "com.lihaoyi" %%% "scalatags" % "0.9.4"
   ).jvmSettings(
     libraryDependencies += "org.apache.xmlgraphics" % "batik-rasterizer" % "1.14"
   ).dependsOn(core, layout, style)
@@ -217,7 +216,7 @@ lazy val graphs = (project in file("."))
     publishLocal := {},
     publish := {},
     test := {},
-    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(jsonJS, graphmlJS, coreJS, catsJS, layoutJS, editorJS, examplesJS, styleJS)
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(jsonJS, graphmlJS, coreJS, catsJS, layoutJS, layoutElkJS, editorJS, examplesJS, styleJS, viewJS)
   ).aggregate(
     coreJS,
     coreJVM,

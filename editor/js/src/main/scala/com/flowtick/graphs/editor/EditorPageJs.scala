@@ -65,8 +65,9 @@ object EditorPageJs {
     )
 
     renderer.graphSVG.panZoomRect.foreach(
-      _.addEventListener("mouseup", e => page.stopPan(e))
+      _.addEventListener("mouseup", (e: Event) => page.stopPan(e).unsafeToFuture())
     )
+
     renderer.graphSVG.panZoomRect.foreach(
       _.addEventListener(
         "mousemove",
@@ -95,7 +96,8 @@ object EditorPageJs {
       }
     )
 
-    renderer.graphSVG.root.addEventListener("mousemove", page.drag)
+    renderer.graphSVG.root
+      .addEventListener("mousemove", (e: Event) => page.drag(e).unsafeToFuture())
     renderer.graphSVG.root.addEventListener(
       "mouseup",
       (e: MouseEvent) =>

@@ -1,8 +1,8 @@
 package com.flowtick.graphs.editor
 
 import cats.effect.IO
-import cats.effect.unsafe.IORuntime
 import cats.effect.unsafe.implicits.global
+import org.apache.logging.log4j.{LogManager, Logger}
 import scalafx.application.JFXApp
 import scalafx.scene.image.Image
 import scalafx.scene.layout.BorderPane
@@ -12,6 +12,8 @@ import java.io.File
 import java.net.URL
 
 object EditorMainJvm extends JFXApp with EditorMain {
+  protected val log: Logger = LogManager.getLogger(getClass)
+
   lazy val pageRoot = new Group
 
   lazy val editorLayout = new BorderPane {
@@ -61,12 +63,12 @@ object EditorMainJvm extends JFXApp with EditorMain {
             .flatMap {
               case Right(config) => IO.pure(config)
               case Left(error) =>
-                IO(println(s"unable to load config: $configContent")) *> IO
+                IO(log.error(s"unable to load config: $configContent")) *> IO
                   .raiseError(error)
             }
         }(source => IO(source.close()))
       } else
-        IO(println(s"config not found: $configFile")) *> IO.pure(
+        IO(log.error(s"config not found: $configFile")) *> IO.pure(
           EditorConfiguration()
         )
 

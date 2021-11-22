@@ -128,6 +128,8 @@ abstract class SVGRenderer[Builder, Output <: FragT, FragT, MatrixType](
 
   def graphSVG: GraphSVG[Output]
 
+  def toXmlString: IO[String]
+
   def resetMatrix: IO[Unit] = IO {
     applyTransformation(matrixLike.identity)
   }
