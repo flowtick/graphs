@@ -1,5 +1,7 @@
 [![latest release](https://img.shields.io/maven-central/v/com.flowtick/graphs-core_2.12.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.flowtick%20AND%20a:graphs*)
 
+# ℹ️ graphs has moved to https://gitlab.com/adrobisch/graphs ℹ️
+
 # graphs
 
 `graphs` is a simple [graph](https://en.wikipedia.org/wiki/Graph_theory) library for Scala
