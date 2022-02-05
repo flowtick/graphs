@@ -1,6 +1,6 @@
 [![latest release](https://img.shields.io/maven-central/v/com.flowtick/graphs-core_2.12.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.flowtick%20AND%20a:graphs*)
 
-# ℹ️ graphs has moved to https://gitlab.com/adrobisch/graphs ℹ️
+# ℹ️ graphs has moved to https://codeberg.org/unkonstant/graphs under a new license ℹ️
 
 # graphs
 
